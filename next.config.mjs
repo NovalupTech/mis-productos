@@ -1,18 +1,17 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     images: {
-    remotePatterns: [
-        {
-            protocol: 'https',
-            hostname: 'res.cloudinary.com',
-        },
+        remotePatterns: [
+            {
+                protocol: 'https',
+                hostname: 'res.cloudinary.com',
+            },
         ],
     },
-    eslint: {
-        // Warning: This allows production builds to successfully complete even if
-        // your project has ESLint errors.
-        ignoreDuringBuilds: true,
-    },
+    // Deshabilitar source maps para evitar errores de parsing
+    productionBrowserSourceMaps: false,
+    // Configuración de Turbopack (Next.js 16 usa Turbopack por defecto)
+    turbopack: {},
 };
 
 export default nextConfig;

@@ -15,9 +15,10 @@ interface Props {
   }
 }
 
-export default async function GenderPage({ params, searchParams }: Props) {
+export default async function GenderPage({ params, searchParams }: {params: Promise<{gender: Gender}>, searchParams: Promise<{page?: string}>}) {
 
-  const page = searchParams.page ? +searchParams.page : 1;
+  const {page} = await searchParams;
+  const pageNumber = page ? +page : 1;
 
   const labels = {
     'kid': 'Niños',
@@ -25,14 +26,15 @@ export default async function GenderPage({ params, searchParams }: Props) {
     'men': 'Hombres',
     'unisex': 'Todos'
   }
-  if(!labels[params.gender]){
+  const {gender} = await params;
+  if(!labels[gender]){
     notFound();
   }
 
-  const { products, totalPages } = await getPaginatedProductsWithImages({page, gender: params.gender});
+  const { products, totalPages } = await getPaginatedProductsWithImages({page: pageNumber, gender});
 
   if(!products.length){
-    redirect('/gender/'+params.gender
+    redirect('/gender/'+gender
     );
   }
 
@@ -40,10 +42,10 @@ export default async function GenderPage({ params, searchParams }: Props) {
     <>
       <Title
         title="Tienda"
-        subtitle={`Productos para ${labels[params.gender]}`}
+        subtitle={`Productos para ${labels[gender]}`}
         className="mb-2"
       />
-      <ProductGrid products={products.filter(prod => prod.gender === params.gender)} />
+      <ProductGrid products={products.filter(prod => prod.gender === gender)} />
 
       <Pagination totalPages={totalPages}  />
     </>

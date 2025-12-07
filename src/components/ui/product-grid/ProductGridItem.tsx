@@ -54,7 +54,6 @@ const ProductGridItem = ({product}: Props) => {
                 width={500}
                 height={500}
                 className='w-full object-cover rounded transition-transform duration-300 group-hover:scale-105'
-                layout='responsive'
             />
             {/* Overlay con botón de agregar al carrito */}
             <div className={`absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity duration-300 ${

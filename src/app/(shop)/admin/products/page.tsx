@@ -16,11 +16,12 @@ interface Props {
   };
 }
 
-export default async function OrdersPage({ searchParams }: Props) {
-  const page = searchParams.page ? parseInt(searchParams.page) : 1;
+export default async function OrdersPage({ searchParams }: {searchParams: Promise<{page?: string}>}) {
+  const {page} = await searchParams;
+  const pageNumber = page ? +page : 1;
 
-  const { products, currentPage, totalPages } =
-    await getPaginatedProductsWithImages({ page });
+  const { products, totalPages } =
+    await getPaginatedProductsWithImages({ page: pageNumber, take: 10 });
 
   return (
     <>

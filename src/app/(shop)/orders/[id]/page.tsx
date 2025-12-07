@@ -5,15 +5,9 @@ import { getOrderById } from "@/actions/orders/get-order-by-id";
 import { formatCurrency } from '@/utils/currencyFormat';
 import { OrderStatus } from "../ui/OrderStatus";
 
-interface Props {
-  params: {
-    id: string;
-  }
-}
+export default async function OrderPage({ params }: {params: Promise<{id: string}>}) {
 
-export default async function OrderPage({ params }: Props) {
-
-  const { id } = params;
+  const { id } = await params;
   const { address, order, products  } = await getOrderById(id);
 
   if(!order){

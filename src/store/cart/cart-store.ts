@@ -7,6 +7,7 @@ interface State {
 	addProductToCart: (product: ProductInCart) => void;
 	getTotalItems: () => number;
 	updateProductQuantity: (product: ProductInCart, quantity: number) => void;
+	updateProductSize: (product: ProductInCart, newSize: ProductInCart['size']) => void;
 	removeProduct: (product: ProductInCart) => void;
 	getSummaryInformation: () => {
 		totalItems: number;
@@ -61,6 +62,35 @@ export const useCartStore = create<State>()(
 					return p;
 				});
 				set({ cart: updatedCart });
+			},
+			updateProductSize: (product, newSize) => {
+				const { cart } = get();
+				// Verificar si ya existe el mismo producto con la nueva talla
+				const productWithNewSize = cart.find(
+					(p) => p.id === product.id && p.size === newSize
+				);
+
+				if (productWithNewSize) {
+					// Si existe, actualizar la cantidad y eliminar el producto con la talla antigua
+					const updatedCart = cart
+						.map((p) => {
+							if (p.id === product.id && p.size === newSize) {
+								return { ...p, quantity: p.quantity + product.quantity };
+							}
+							return p;
+						})
+						.filter((p) => !(p.id === product.id && p.size === product.size));
+					set({ cart: updatedCart });
+				} else {
+					// Si no existe, solo cambiar la talla
+					const updatedCart = cart.map((p) => {
+						if (p.id === product.id && p.size === product.size) {
+							return { ...p, size: newSize };
+						}
+						return p;
+					});
+					set({ cart: updatedCart });
+				}
 			},
 			removeProduct: (product) => {
 				const { cart } = get();

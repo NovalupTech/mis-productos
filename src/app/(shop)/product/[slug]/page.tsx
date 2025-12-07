@@ -6,7 +6,6 @@ import { ProductMobileSlideShow, ProductSlideShow, StockLabel } from "@/componen
 import { getProductBySlug } from "@/actions/product/get-product-by-slug";
 import { titleFont } from "@/config/fonts";
 import { AddToCart } from "./ui/AddToCart";
-
 interface Props {
   params: {
     slug: string;
@@ -14,13 +13,14 @@ interface Props {
 }
 
 export async function generateMetadata(
-  { params }: Props,
+  { params }: { params: Promise<{ slug: string }> },
 ): Promise<Metadata> {
+  
+  const {slug} = await params;
   // read route params
-  const slug = params.slug
- 
   // fetch data
   const product = await getProductBySlug({slug});
+
   return {
     title: product?.title,
     description: product?.description,
@@ -33,9 +33,9 @@ export async function generateMetadata(
 }
 
 
-export default async function ProductPage({params}: Props) {
+export default async function ProductPage({params}: {params: Promise<{slug: string}>}) {
 
-  const {slug} = params;
+  const {slug} = await params;
   const product = await getProductBySlug({slug});
 
   if(!product)

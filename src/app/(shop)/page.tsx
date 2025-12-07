@@ -14,11 +14,12 @@ interface Props {
   }
 }
 
-export default async function Home({ searchParams } :Props) {
+export default async function Home({ searchParams } :{searchParams: Promise<{page?: string, search?: string}>} & {params: Promise<{page?: string, search?: string}>}) {
 
-  const page = searchParams.page ? +searchParams.page : 1;
-  const search = searchParams.search ? searchParams.search : '';
-  const { products, totalPages } = await getPaginatedProductsWithImages({page, search});
+  const {page, search} = await searchParams;
+  const pageNumber = page ? +page : 1;
+  const searchQuery = search ? search : '';
+  const { products, totalPages } = await getPaginatedProductsWithImages({page: pageNumber, search: searchQuery});
 
   return (
     <>
