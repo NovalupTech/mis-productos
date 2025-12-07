@@ -10,7 +10,7 @@ interface PaginatedProducts {
     search? : string;
 }
 
-export const getPaginatedProductsWithImages = async ({ page = 1, take = 12, gender, search }:PaginatedProducts) => {
+export const getPaginatedProductsWithImages = async ({ page = 1, take = 40, gender, search }:PaginatedProducts) => {
 
     if(isNaN(page) || page < 1) page = 1;
     if(isNaN(take) || take < 0) take = 12;
