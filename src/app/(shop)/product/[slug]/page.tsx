@@ -42,16 +42,15 @@ export default async function ProductPage({params}: {params: Promise<{slug: stri
     notFound();
 
   return (
-    <div className="grid md:grid-cols-3 mt-5 mb-20 gap-3">
-
+    <div className="flex flex-col md:flex-row mt-5 mb-20 gap-4 md:gap-6 max-w-5xl mx-auto px-4">
       {/* Desktop Slideshow */}
-      <div className="col-span-1 md:col-span-2">
+      <div className="flex-shrink-0 md:w-[45%]">
         <ProductSlideShow images={product.images} title={product.title}  className="hidden md:block"/>
         <ProductMobileSlideShow images={product.images} title={product.title} className="block md:hidden" />
       </div>
 
       {/* Product Details */}
-      <div className="col-span-1 px-5">
+      <div className="flex-1 md:w-[55%] px-0 md:pl-6">
 
         <StockLabel slug={slug} />
 

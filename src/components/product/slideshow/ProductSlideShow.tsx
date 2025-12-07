@@ -46,9 +46,9 @@ export const ProductSlideShow = ({images, title, className}: Props) => {
                         key={index}
                         alt={title}
                         src={`/products/${image}`}
-                        width={1024}
-                        height={800}
-                        className='rounded-lg object-fill'
+                        width={600}
+                        height={500}
+                        className='rounded-lg object-contain w-full h-full'
                     />
                 </SwiperSlide>
             ))
@@ -70,9 +70,9 @@ export const ProductSlideShow = ({images, title, className}: Props) => {
                         key={index}
                         alt={title}
                         src={`/products/${image}`}
-                        width={300}
-                        height={300}
-                        className='rounded-lg object-fill'
+                        width={150}
+                        height={150}
+                        className='rounded-lg object-contain w-full h-full'
                     />
                 </SwiperSlide>
             ))
