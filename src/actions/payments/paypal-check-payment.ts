@@ -1,7 +1,5 @@
 'use server'
 
-export const runtime = 'nodejs';
-
 import { PaypalOrderResponse } from "@/interfaces";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";

@@ -1,7 +1,5 @@
 "use server";
 
-export const runtime = 'nodejs';
-
 import prisma from "@/lib/prisma";
 import { middleware } from "@/auth.config";
 import { Address } from "@/interfaces/Address";

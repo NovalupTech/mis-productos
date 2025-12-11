@@ -3,6 +3,8 @@ import "./globals.css";
 import { geistSans } from "@/config/fonts";
 import { Providers } from "@/providers/Providers";
 
+export const runtime = 'nodejs';
+
 export const metadata: Metadata = {
   title: "Teslo-Shop",
   description: "Una tienda virtual de productos",

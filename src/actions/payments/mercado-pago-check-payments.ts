@@ -1,7 +1,5 @@
 "use server"
 
-export const runtime = 'nodejs';
-
 import prisma from "@/lib/prisma";
 import MercadoPagoConfig, { Preference } from "mercadopago";
 import { redirect } from "next/navigation";

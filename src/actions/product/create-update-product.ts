@@ -1,7 +1,5 @@
 'use server';
 
-export const runtime = 'nodejs';
-
 import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { Product } from '@prisma/client';

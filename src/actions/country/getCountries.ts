@@ -1,7 +1,5 @@
 'use server'
 
-export const runtime = 'nodejs';
-
 import prisma from "@/lib/prisma"
 
 export const getCountries = async () => {

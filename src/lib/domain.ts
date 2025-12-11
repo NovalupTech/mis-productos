@@ -1,5 +1,3 @@
-export const runtime = 'nodejs';
-
 import { headers } from 'next/headers';
 import prisma from './prisma';
 

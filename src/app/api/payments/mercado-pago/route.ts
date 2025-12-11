@@ -1,8 +1,10 @@
-export const runtime = 'nodejs';
+
 
 import prisma from "@/lib/prisma";
 import MercadoPagoConfig, {Payment} from "mercadopago";
 import {revalidatePath} from "next/cache";
+
+export const runtime = 'nodejs';
 
 const mercadopago = new MercadoPagoConfig({
     accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN ?? '',

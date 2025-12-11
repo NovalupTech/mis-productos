@@ -1,7 +1,5 @@
 'use server'
 
-export const runtime = 'nodejs';
-
 import prisma from "@/lib/prisma"
 
 export const setTransactionId = async (orderId: string, transactionId: string) => {
