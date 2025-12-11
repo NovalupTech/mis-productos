@@ -1,4 +1,4 @@
-
+export const runtime = 'nodejs';
 
 import prisma from "@/lib/prisma";
 import MercadoPagoConfig, {Payment} from "mercadopago";

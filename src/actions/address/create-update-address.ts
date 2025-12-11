@@ -1,5 +1,7 @@
 'use server'
 
+export const runtime = 'nodejs';
+
 import { Address } from "@/interfaces/Address";
 import prisma from "@/lib/prisma"
 

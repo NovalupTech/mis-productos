@@ -1,5 +1,7 @@
 'use server'
 
+export const runtime = 'nodejs';
+
 import prisma from "@/lib/prisma"
 import { getCompanyIdFromContext } from "@/lib/company-context"
 

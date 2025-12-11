@@ -1,5 +1,7 @@
 'use server';
 
+export const runtime = 'nodejs';
+
 import { middleware } from '@/auth.config';
 import prisma from '@/lib/prisma';
 
