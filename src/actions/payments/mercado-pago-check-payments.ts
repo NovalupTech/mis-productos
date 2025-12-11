@@ -1,6 +1,5 @@
 "use server"
 
-import { ValidSizes } from "@/interfaces";
 import prisma from "@/lib/prisma";
 import MercadoPagoConfig, { Preference } from "mercadopago";
 import { redirect } from "next/navigation";
@@ -27,11 +26,11 @@ export async function submitPayment({orderId, roundedAmount}: Props): Promise<st
 
     const preference = await new Preference(mercadopago).create({
       body: {
-        items: products.map(({price, quantity, size, product}) => ({
+        items: products.map(({price, quantity, product}) => ({
             id: orderId,
             unit_price: roundedAmount,
             quantity,
-            title: `${product.title} - ${size}`,
+            title: product.title,
         })),
         back_urls:{
             success: `${site_url}/orders/${orderId}`,

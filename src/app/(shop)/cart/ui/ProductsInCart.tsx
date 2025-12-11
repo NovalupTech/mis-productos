@@ -22,7 +22,7 @@ export const ProductsInCart = () => {
 	return (
 		<>
 			{cart.map((product) => (
-				<div key={product.slug + product.size} className="flex mb-5">
+				<div key={product.slug} className="flex mb-5">
 					<Image
 						src={`/products/${product.image}`}
 						style={{
@@ -36,7 +36,7 @@ export const ProductsInCart = () => {
 					/>
 					<div>
                         <Link className="hover:underline cursor-pointer" href={`/product/${product.slug}`}>
-						    <p>{product.size} - {product.title}</p>
+						    <p>{product.title}</p>
                         </Link>
 						<p>${product.price}</p>
 						<QuantitySelector onQuantityChanged={(quantity) => updateProductQuantity(product, quantity)} quantity={product.quantity} />

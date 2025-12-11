@@ -3,16 +3,8 @@ export const revalidate = 60;
 
 import { getPaginatedProductsWithImages } from "@/actions";
 import { Pagination, Title } from "@/components";
-import ProductGrid from "@/components/ui/product-grid/ProductGrid";
-import { redirect } from "next/navigation";
-//import { geistSans, titleFont } from "@/config/fonts";
-
-interface Props {
-  searchParams: {
-    page?: string;
-    search?: string;
-  }
-}
+import { ProductGrid } from "@/components/ui/product-grid/ProductGrid";
+import { Product } from "@/interfaces";
 
 export default async function Home({ searchParams } :{searchParams: Promise<{page?: string, search?: string}>} & {params: Promise<{page?: string, search?: string}>}) {
 
@@ -32,7 +24,7 @@ export default async function Home({ searchParams } :{searchParams: Promise<{pag
         className="mb-2"
       />
 
-      <ProductGrid products={products} />
+      <ProductGrid products={products as unknown as Product[]} />
 
       {
         totalPages === 0 && <p className="text-center mt-10 mb-20">No se encontraron productos</p>

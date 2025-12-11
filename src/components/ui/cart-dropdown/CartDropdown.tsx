@@ -5,7 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useCartStore } from '@/store/cart/cart-store'
 import { formatCurrency } from '@/utils'
-import { ProductInCart, ValidSizes } from '@/interfaces'
+import { ProductAttributeWithDetails, ProductInCart } from '@/interfaces'
 import { getProductBySlug } from '@/actions/product/get-product-by-slug'
 import { IoCloseOutline, IoTrashOutline } from 'react-icons/io5'
 import { QuantitySelector } from '@/components'
@@ -16,67 +16,15 @@ interface Props {
 }
 
 export const CartDropdown = ({ isVisible }: Props) => {
-  const { cart, getSummaryInformation, removeProduct, updateProductSize, updateProductQuantity, clearCart } = useCartStore(state => state)
+  const { cart, getSummaryInformation, removeProduct, updateProductQuantity, clearCart } = useCartStore(state => state)
   const [loaded, setLoaded] = useState(false)
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
-  const [productSizes, setProductSizes] = useState<Record<string, ValidSizes[]>>({})
-  const [loadingSizes, setLoadingSizes] = useState<Set<string>>(new Set())
+  const [productAttributes, setProductAttributes] = useState<Record<string, ProductAttributeWithDetails[]>>({})
   const summaryInformation = getSummaryInformation()
 
   useEffect(() => {
     setLoaded(true)
   }, [])
-
-  const loadProductSizes = async (slug: string) => {
-    if (productSizes[slug]) return // Ya está cargado
-    
-    setLoadingSizes(prev => new Set(prev).add(slug))
-    try {
-      const product = await getProductBySlug({ slug })
-      if (product?.sizes) {
-        setProductSizes(prev => ({ ...prev, [slug]: product.sizes }))
-      }
-    } catch (error) {
-      console.error('Error loading product sizes:', error)
-    } finally {
-      setLoadingSizes(prev => {
-        const newSet = new Set(prev)
-        newSet.delete(slug)
-        return newSet
-      })
-    }
-  }
-
-  const handleSizeChange = (product: ProductInCart, newSize: ValidSizes) => {
-    const oldKey = `${product.id}-${product.size}`
-    updateProductSize(product, newSize)
-    // Cerrar el selector de tallas
-    setExpandedItems(prev => {
-      const newSet = new Set(prev)
-      newSet.delete(oldKey)
-      return newSet
-    })
-  }
-
-  const toggleSizeSelector = (product: ProductInCart) => {
-    const key = `${product.id}-${product.size}`
-    const isExpanded = expandedItems.has(key)
-    
-    if (!isExpanded) {
-      // Cargar las tallas disponibles si no están cargadas
-      loadProductSizes(product.slug)
-    }
-    
-    setExpandedItems(prev => {
-      const newSet = new Set(prev)
-      if (isExpanded) {
-        newSet.delete(key)
-      } else {
-        newSet.add(key)
-      }
-      return newSet
-    })
-  }
 
   if (!loaded || cart.length === 0) return null
 
@@ -101,14 +49,13 @@ export const CartDropdown = ({ isVisible }: Props) => {
       {/* Lista de productos */}
       <div className="overflow-y-auto flex-1 max-h-[400px]">
         {cart.map((product) => {
-          const key = `${product.id}-${product.size}`
+          const key = `${product.id}-${product.selectedAttributes}`
           const isExpanded = expandedItems.has(key)
-          const availableSizes = productSizes[product.slug] || []
-          const isLoadingSizes = loadingSizes.has(product.slug)
+          const availableAttributes = productAttributes[product.slug] || []
           
           return (
             <div 
-              key={`${product.slug}-${product.size}`} 
+              key={`${product.slug}-${product.selectedAttributes}`} 
               className="group relative p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors"
             >
               <div className="flex gap-3">
@@ -128,54 +75,6 @@ export const CartDropdown = ({ isVisible }: Props) => {
                   >
                     {product.title}
                   </Link>
-                  
-                  {/* Talla actual con botón para cambiar */}
-                  <div className="mt-1 flex items-center gap-2">
-                    <span className="text-xs text-gray-500">Talla:</span>
-                    <button
-                      onClick={() => toggleSizeSelector(product)}
-                      className={clsx(
-                        "text-xs px-2 py-1 rounded border transition-colors",
-                        isExpanded 
-                          ? "bg-blue-100 border-blue-300 text-blue-700" 
-                          : "bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200"
-                      )}
-                      disabled={isLoadingSizes}
-                    >
-                      {product.size} {isExpanded ? '▼' : '▶'}
-                    </button>
-                  </div>
-
-                  {/* Selector de tallas expandible */}
-                  {isExpanded && (
-                    <div className="mt-2 p-2 bg-gray-50 rounded border border-gray-200">
-                      {isLoadingSizes ? (
-                        <p className="text-xs text-gray-500">Cargando tallas...</p>
-                      ) : availableSizes.length > 0 ? (
-                        <>
-                          <p className="text-xs font-semibold mb-2 text-gray-700">Cambiar talla:</p>
-                          <div className="flex flex-wrap gap-1">
-                            {availableSizes.map((size) => (
-                              <button
-                                key={size}
-                                onClick={() => handleSizeChange(product, size)}
-                                className={clsx(
-                                  "text-xs px-2 py-1 rounded border transition-colors",
-                                  size === product.size
-                                    ? "bg-blue-600 text-white border-blue-600"
-                                    : "bg-white border-gray-300 text-gray-700 hover:bg-gray-100"
-                                )}
-                              >
-                                {size}
-                              </button>
-                            ))}
-                          </div>
-                        </>
-                      ) : (
-                        <p className="text-xs text-gray-500">No hay tallas disponibles</p>
-                      )}
-                    </div>
-                  )}
 
                   {/* Cantidad */}
                   <div className="mt-2">

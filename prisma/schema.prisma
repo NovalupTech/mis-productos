@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
   provider = "prisma-client-js"
@@ -10,62 +5,119 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
-enum Size {
-  XS
-  S
-  M
-  L
-  XL
-  XXL
-  XXXL
-}
-
-enum Gender {
-  men
-  women
-  kid
-  unisex
-}
+// -------------------------
+// Enums
+// -------------------------
 
 enum Role {
   admin
   user
 }
 
-model Category {
-  id      String    @id @default(uuid())
-  name    String    @unique
-  product Product[]
+enum AttributeType {
+  text
+  number
+  select
+  multiselect
 }
 
+// -------------------------
+// Company (tus clientes)
+// -------------------------
+
+model Company {
+  id          String      @id @default(uuid())
+  name        String
+  email       String?
+  phone       String?
+  logo        String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relaciones
+  products    Product[]
+  categories  Category[]
+  attributes  Attribute[]
+  customers   Customer[]
+  orders      Order[]
+  domains     Domain[]
+}
+
+// -------------------------
+// Clientes finales de cada Company
+// -------------------------
+
+model Customer {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  phone     String?
+  createdAt DateTime @default(now())
+
+  company   Company  @relation(fields: [companyId], references: [id])
+  companyId String
+
+  orders    Order[]
+}
+
+// -------------------------
+// Categorías por empresa
+// -------------------------
+
+model Category {
+  id        String   @id @default(uuid())
+  name      String
+
+  company   Company  @relation(fields: [companyId], references: [id])
+  companyId String
+
+  product   Product[]
+
+  @@unique([name, companyId])
+}
+
+// -------------------------
+// Productos por empresa
+// -------------------------
+
 model Product {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   title       String
   description String
   inStock     Int
-  price       Float    @default(0)
-  sizes       Size[]   @default([])
-  slug        String   @unique
-  tags        String[] @default([])
-  gender      Gender
+  price       Float     @default(0)
+  slug        String    @unique
 
-  category     Category       @relation(fields: [categoryId], references: [id])
-  categoryId   String
-  productImage ProductImage[]
-  OrderItem    OrderItem[]
+  company     Company   @relation(fields: [companyId], references: [id])
+  companyId   String
 
-  @@index([gender])
+  category    Category  @relation(fields: [categoryId], references: [id])
+  categoryId  String
+
+  productImage   ProductImage[]
+  OrderItem      OrderItem[]
+  ProductAttribute ProductAttribute[]
+  tags            ProductTag[]
+
+  @@index([companyId])
 }
+
+// -------------------------
+// Imágenes de productos
+// -------------------------
 
 model ProductImage {
-  id        Int     @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   url       String
-  product   Product @relation(fields: [productId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
   productId String
 }
+
+// -------------------------
+// Usuarios del sistema (admins)
+// -------------------------
 
 model User {
   id            String       @id @default(uuid())
@@ -75,9 +127,14 @@ model User {
   password      String
   role          Role         @default(user)
   image         String?
+
   UserAddress   UserAddress?
   Order         Order[]
 }
+
+// -------------------------
+// Países
+// -------------------------
 
 model Country {
   id           String         @id
@@ -85,6 +142,10 @@ model Country {
   UserAddress  UserAddress[]
   OrderAddress OrderAddress[]
 }
+
+// -------------------------
+// Dirección de usuarios administradores
+// -------------------------
 
 model UserAddress {
   id         String  @id @default(uuid())
@@ -95,42 +156,63 @@ model UserAddress {
   postalCode String
   city       String
   phone      String
+
   country    Country @relation(fields: [countryId], references: [id])
   countryId  String
+
   user       User    @relation(fields: [userId], references: [id])
   userId     String  @unique
 }
 
+// -------------------------
+// Órdenes por empresa
+// -------------------------
+
 model Order {
-  id           String        @id @default(uuid())
+  id           String      @id @default(uuid())
   subTotal     Float
   tax          Float
   total        Float
   itemsInOrder Int
-  isPaid       Boolean       @default(false)
+  isPaid       Boolean     @default(false)
   paidAt       DateTime?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  transactionId String?
+
   // Relaciones
-  user         User          @relation(fields: [userId], references: [id])
+  company      Company     @relation(fields: [companyId], references: [id])
+  companyId    String
+
+  user         User        @relation(fields: [userId], references: [id])
   userId       String
+
+  customer     Customer?   @relation(fields: [customerId], references: [id])
+  customerId   String?
+
   OrderItem    OrderItem[]
   OrderAddress OrderAddress?
-
-  transactionId String?
 }
+
+// -------------------------
+// Items de la orden
+// -------------------------
 
 model OrderItem {
-  id        String  @id @default(uuid())
+  id        String   @id @default(uuid())
   quantity  Int
   price     Float
-  size      Size
-  // Relaciones
-  order     Order   @relation(fields: [orderId], references: [id])
+
+  order     Order    @relation(fields: [orderId], references: [id])
   orderId   String
-  product   Product @relation(fields: [productId], references: [id])
+
+  product   Product  @relation(fields: [productId], references: [id])
   productId String
 }
+
+// -------------------------
+// Dirección dentro de una orden
+// -------------------------
 
 model OrderAddress {
   id         String  @id @default(uuid())
@@ -141,9 +223,110 @@ model OrderAddress {
   postalCode String
   city       String
   phone      String
-  // Relaciones
+
   country    Country @relation(fields: [countryId], references: [id])
   countryId  String
+
   Order      Order   @relation(fields: [orderId], references: [id])
   orderId    String  @unique
+}
+
+// -------------------------
+// Atributos configurables por Company (EAV optimized)
+// -------------------------
+
+model Attribute {
+  id        String        @id @default(uuid())
+  name      String
+  type      AttributeType
+
+  company   Company       @relation(fields: [companyId], references: [id])
+  companyId String
+
+  values    AttributeValue[]
+  products  ProductAttribute[]
+
+  @@unique([name, companyId])
+}
+
+// -------------------------
+// Opciones de un atributo (para selects)
+// -------------------------
+
+model AttributeValue {
+  id          String       @id @default(uuid())
+  value       String
+
+  attribute   Attribute    @relation(fields: [attributeId], references: [id])
+  attributeId String
+
+  products    ProductAttribute[]
+}
+
+// -------------------------
+// Valores asignados a productos
+// -------------------------
+
+model ProductAttribute {
+  id              String          @id @default(uuid())
+
+  product         Product         @relation(fields: [productId], references: [id])
+  productId       String
+
+  attribute       Attribute       @relation(fields: [attributeId], references: [id])
+  attributeId     String
+
+  attributeValue  AttributeValue? @relation(fields: [attributeValueId], references: [id])
+  attributeValueId String?
+
+  // Para atributos libres
+  valueText   String?
+  valueNumber Float?
+}
+
+// -------------------------
+// Tags para productos
+// -------------------------
+
+model Tag {
+  id        String       @id @default(uuid())
+  name      String       @unique
+  createdAt DateTime     @default(now())
+
+  products  ProductTag[]
+}
+
+// -------------------------
+// Relación many-to-many entre Product y Tag
+// -------------------------
+
+model ProductTag {
+  id        String   @id @default(uuid())
+  
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+
+  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  tagId     String
+
+  @@unique([productId, tagId])
+  @@index([productId])
+  @@index([tagId])
+}
+
+// -------------------------
+// Dominios por empresa
+// -------------------------
+
+model Domain {
+  id        String   @id @default(uuid())
+  domain    String   @unique
+  isPrimary Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  company   Company  @relation(fields: [companyId], references: [id])
+  companyId String
+
+  @@index([companyId])
+  @@index([domain])
 }

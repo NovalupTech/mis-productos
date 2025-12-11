@@ -34,13 +34,6 @@ export const TopMenu = () => {
             </Link>
         </div>
 
-        { /* Menu */ }
-        <div className="hidden sm:block">
-            <Link className="m-2 p-2 rounded-md transition-all hover-bg-gray-100" href="/gender/men">Hombres</Link>
-            <Link className="m-2 p-2 rounded-md transition-all hover-bg-gray-100" href="/gender/women">Mujeres</Link>
-            <Link className="m-2 p-2 rounded-md transition-all hover-bg-gray-100" href="/gender/kid">Niños</Link>
-        </div>
-
         { /* Search, Cart, menu */ }
         <div className="flex items-center">
           <div className="flex flex-row items-center justify-center">

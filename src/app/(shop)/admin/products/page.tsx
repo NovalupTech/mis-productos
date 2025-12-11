@@ -105,15 +105,11 @@ export default async function OrdersPage({ searchParams }: {searchParams: Promis
                 </td>
 
                 <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
-                  {product.gender}
+                  {product.category?.name}
                 </td>
 
                 <td className="text-sm text-gray-900 font-bold px-6 py-4 whitespace-nowrap">
                   {product.inStock}
-                </td>
-
-                <td className="text-sm text-gray-900 font-bold px-6 py-4 whitespace-nowrap">
-                  {product.sizes.join(", ")}
                 </td>
               </tr>
             ))}

@@ -14,17 +14,13 @@ interface Props {
   categories: Category[];
 }
 
-const sizes = ["XS", "S", "M", "L", "XL", "XXL"];
-
 interface FormInputs {
   title: string;
   slug: string;
   description: string;
   price: number;
   inStock: number;
-  sizes: string[];
   tags: string;
-  gender: "men" | "women" | "kid" | "unisex";
   categoryId: string;
 
   images?: FileList;
@@ -45,19 +41,11 @@ export const ProductForm = ({ product, categories }: Props) => {
     defaultValues: {
       ...product,
       tags: product.tags?.join(", "),
-      sizes: product.sizes ?? [],
 
       images: undefined,
     },
   });
 
-  watch("sizes");
-
-  const onSizeChanged = (size: string) => {
-    const sizes = new Set(getValues("sizes"));
-    sizes.has(size) ? sizes.delete(size) : sizes.add(size);
-    setValue("sizes", Array.from(sizes));
-  };
 
   const onSubmit = async (data: FormInputs) => {
     const formData = new FormData();
@@ -73,10 +61,8 @@ export const ProductForm = ({ product, categories }: Props) => {
     formData.append("description", productToSave.description);
     formData.append("price", productToSave.price.toString());
     formData.append("inStock", productToSave.inStock.toString());
-    formData.append("sizes", productToSave.sizes.toString());
     formData.append("tags", productToSave.tags);
     formData.append("categoryId", productToSave.categoryId);
-    formData.append("gender", productToSave.gender);
     
     if ( images ) {
       for ( let i = 0; i < images.length; i++  ) {
@@ -151,20 +137,6 @@ export const ProductForm = ({ product, categories }: Props) => {
         </div>
 
         <div className="flex flex-col mb-2">
-          <span>Gender</span>
-          <select
-            className="p-2 border rounded-md bg-gray-200"
-            {...register("gender", { required: true })}
-          >
-            <option value="">[Seleccione]</option>
-            <option value="men">Men</option>
-            <option value="women">Women</option>
-            <option value="kid">Kid</option>
-            <option value="unisex">Unisex</option>
-          </select>
-        </div>
-
-        <div className="flex flex-col mb-2">
           <span>Categoria</span>
           <select
             className="p-2 border rounded-md bg-gray-200"
@@ -195,25 +167,6 @@ export const ProductForm = ({ product, categories }: Props) => {
 
         {/* As checkboxes */}
         <div className="flex flex-col">
-          <span>Tallas</span>
-          <div className="flex flex-wrap">
-            {sizes.map((size) => (
-              // bg-blue-500 text-white <--- si está seleccionado
-              <div
-                key={size}
-                onClick={() => onSizeChanged(size)}
-                className={clsx(
-                  "p-2 border cursor-pointer rounded-md mr-2 mb-2 w-14 transition-all text-center",
-                  {
-                    "bg-blue-500 text-white": getValues("sizes").includes(size),
-                  }
-                )}
-              >
-                <span>{size}</span>
-              </div>
-            ))}
-          </div>
-
           <div className="flex flex-col mb-2">
             <span>Fotos</span>
             <input

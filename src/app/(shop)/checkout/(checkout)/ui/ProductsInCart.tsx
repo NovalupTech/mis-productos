@@ -20,7 +20,7 @@ export const ProductsInCart = () => {
 	return (
 		<>
 			{cart.map((product) => (
-				<div key={product.slug + product.size} className="flex mb-5">
+				<div key={product.slug} className="flex mb-5">
 					<Image
 						src={`/products/${product.image}`}
 						style={{
@@ -33,7 +33,7 @@ export const ProductsInCart = () => {
 						className="mr-5 rounded"
 					/>
 					<div>
-						<p>{product.size} - {product.title} ({product.quantity}) </p>
+						<p>{product.title} ({product.quantity}) </p>
 						<p className="font-bold">${product.price}</p>
 					</div>
 				</div>

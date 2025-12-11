@@ -27,7 +27,7 @@ export default async function OrderPage({ params }: {params: Promise<{id: string
           { /* Items */ }
           {
             products?.map((product) => (
-              <div key={product.product.slug + product.size} className="flex mb-5">
+              <div key={product.product.slug} className="flex mb-5">
                   <Image
                     src={`/products/${product.product.productImage[0].url}`}
                     style={{
@@ -41,8 +41,8 @@ export default async function OrderPage({ params }: {params: Promise<{id: string
                   />
                   <div>
                     <p>{product.product.title}</p>
-                    <p>${product.price} x 3</p>
-                    <p>Subtotal: ${product.price * 3}</p>
+                    <p>${product.price} x {product.quantity}</p>
+                    <p>Subtotal: ${product.price * product.quantity}</p>
                   </div>
                 </div>
             ))

@@ -2,13 +2,12 @@
 
 import prisma from "@/lib/prisma";
 import { middleware } from "@/auth.config";
-import { ValidSizes } from "@/interfaces";
 import { Address } from "@/interfaces/Address";
+import { requireCompanyId } from "@/lib/company-context";
 
 interface productsInCart {
 	productId: string;
 	quantity: number;
-	size: ValidSizes;
 }
 
 export const placeOrder = async (
@@ -17,6 +16,7 @@ export const placeOrder = async (
 ) => {
 	const session = await middleware();
 	const user = session?.user.id;
+	const companyId = await requireCompanyId();
 
 	if (!user) {
 		return {
@@ -93,6 +93,7 @@ export const placeOrder = async (
 			// insertar orden y productos en orden
 			const order = await tx.order.create({
 				data: {
+					companyId: companyId,
 					userId: user,
 					subTotal: subTotal,
 					total: total,
@@ -103,7 +104,6 @@ export const placeOrder = async (
 							data: productsInCart.map((prod) => ({
 								productId: prod.productId,
 								quantity: prod.quantity,
-								size: prod.size,
 								price:
 									products.find((p) => p.id === prod.productId)?.price ?? 0,
 							})),

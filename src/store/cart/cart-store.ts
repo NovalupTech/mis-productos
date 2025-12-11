@@ -7,7 +7,7 @@ interface State {
 	addProductToCart: (product: ProductInCart) => void;
 	getTotalItems: () => number;
 	updateProductQuantity: (product: ProductInCart, quantity: number) => void;
-	updateProductSize: (product: ProductInCart, newSize: ProductInCart['size']) => void;
+	updateProductAttributes: (product: ProductInCart, newAttributes: Record<string, string | number>) => void;
 	removeProduct: (product: ProductInCart) => void;
 	getSummaryInformation: () => {
 		totalItems: number;
@@ -17,6 +17,17 @@ interface State {
 	};
 	clearCart: () => void;
 }
+
+// Función helper para generar una clave única del producto basada en ID y atributos
+const getProductKey = (product: ProductInCart): string => {
+	const attrsKey = product.selectedAttributes 
+		? Object.entries(product.selectedAttributes)
+			.sort(([a], [b]) => a.localeCompare(b))
+			.map(([key, value]) => `${key}:${value}`)
+			.join('|')
+		: '';
+	return `${product.id}${attrsKey ? `|${attrsKey}` : ''}`;
+};
 
 export const useCartStore = create<State>()(
 	persist(
@@ -36,8 +47,9 @@ export const useCartStore = create<State>()(
 			},
 			addProductToCart: (product) => {
 				const { cart } = get();
-				const productInCart = cart.some(
-					(p) => p.id === product.id && p.size === product.size
+				const productKey = getProductKey(product);
+				const productInCart = cart.find(
+					(p) => getProductKey(p) === productKey
 				);
 
 				if (!productInCart) {
@@ -46,7 +58,7 @@ export const useCartStore = create<State>()(
 				}
 
 				const updatedCart = cart.map((p) => {
-					if (p.id === product.id && p.size === product.size) {
+					if (getProductKey(p) === productKey) {
 						return { ...p, quantity: p.quantity + product.quantity };
 					}
 					return p;
@@ -55,37 +67,42 @@ export const useCartStore = create<State>()(
 			},
 			updateProductQuantity: (product, quantity) => {
 				const { cart } = get();
+				const productKey = getProductKey(product);
 				const updatedCart = cart.map((p) => {
-					if (p.id === product.id && p.size === product.size) {
+					if (getProductKey(p) === productKey) {
 						return { ...p, quantity };
 					}
 					return p;
 				});
 				set({ cart: updatedCart });
 			},
-			updateProductSize: (product, newSize) => {
+			updateProductAttributes: (product, newAttributes) => {
 				const { cart } = get();
-				// Verificar si ya existe el mismo producto con la nueva talla
-				const productWithNewSize = cart.find(
-					(p) => p.id === product.id && p.size === newSize
+				const oldKey = getProductKey(product);
+				const updatedProduct = { ...product, selectedAttributes: newAttributes };
+				const newKey = getProductKey(updatedProduct);
+				
+				// Verificar si ya existe el mismo producto con los nuevos atributos
+				const productWithNewAttrs = cart.find(
+					(p) => getProductKey(p) === newKey
 				);
 
-				if (productWithNewSize) {
-					// Si existe, actualizar la cantidad y eliminar el producto con la talla antigua
+				if (productWithNewAttrs) {
+					// Si existe, actualizar la cantidad y eliminar el producto con los atributos antiguos
 					const updatedCart = cart
 						.map((p) => {
-							if (p.id === product.id && p.size === newSize) {
+							if (getProductKey(p) === newKey) {
 								return { ...p, quantity: p.quantity + product.quantity };
 							}
 							return p;
 						})
-						.filter((p) => !(p.id === product.id && p.size === product.size));
+						.filter((p) => getProductKey(p) !== oldKey);
 					set({ cart: updatedCart });
 				} else {
-					// Si no existe, solo cambiar la talla
+					// Si no existe, solo cambiar los atributos
 					const updatedCart = cart.map((p) => {
-						if (p.id === product.id && p.size === product.size) {
-							return { ...p, size: newSize };
+						if (getProductKey(p) === oldKey) {
+							return { ...p, selectedAttributes: newAttributes };
 						}
 						return p;
 					});
@@ -94,8 +111,9 @@ export const useCartStore = create<State>()(
 			},
 			removeProduct: (product) => {
 				const { cart } = get();
+				const productKey = getProductKey(product);
 				const updatedProducts = cart.filter(
-					(p) => p.id !== product.id || p.size !== product.size
+					(p) => getProductKey(p) !== productKey
 				);
 				set({ cart: updatedProducts });
 			},

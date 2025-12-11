@@ -29,7 +29,6 @@ export const PlaceOrder = () => {
             return {
                 productId: product.id,
                 quantity: product.quantity,
-                size: product.size
             }
         })
 
