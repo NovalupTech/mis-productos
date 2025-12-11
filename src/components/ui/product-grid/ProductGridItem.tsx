@@ -71,13 +71,6 @@ const ProductGridItem = ({product}: Props) => {
             <div className={`absolute inset-0 bg-black/40 flex items-center justify-center gap-3 transition-opacity duration-300 ${
               isHovered ? 'opacity-100' : 'opacity-0'
             }`}>
-              <Link 
-                href={`/product/${product.slug}`}
-                className='bg-white text-gray-900 px-6 py-3 rounded-md font-semibold hover:bg-gray-100 transition-colors duration-200'
-                onClick={(e) => e.stopPropagation()}
-              >
-                Ver detalles
-              </Link>
               <button
                 onClick={handleBuyClick}
                 className='bg-blue-600 text-white px-6 py-3 rounded-md font-semibold hover:bg-blue-700 transition-colors duration-200'

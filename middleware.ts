@@ -29,6 +29,7 @@ export default auth(async (req) => {
     }
 
     // Crear respuesta y agregar headers
+    // La lógica de renderizado de landing/shop se maneja en el layout de (shop)
     const response = NextResponse.next();
     response.headers.set('x-company-id', companyId || '');
     response.headers.set('x-domain', domain);
@@ -36,6 +37,7 @@ export default auth(async (req) => {
     return response;
   } catch (error) {
     console.error('Error in domain middleware:', error);
+    
     const response = NextResponse.next();
     response.headers.set('x-company-id', '');
     response.headers.set('x-domain', domain || '');
