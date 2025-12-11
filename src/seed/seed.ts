@@ -1,3 +1,4 @@
+export const runtime = 'nodejs';
 import bcryptjs from 'bcryptjs';
 import { countries, Country } from './seed-countries';
 

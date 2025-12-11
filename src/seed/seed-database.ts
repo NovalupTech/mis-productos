@@ -1,3 +1,4 @@
+export const runtime = 'nodejs';
 import 'dotenv/config';
 import { initialData } from './seed';
 import prisma from '../lib/prisma';

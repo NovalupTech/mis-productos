@@ -1,3 +1,4 @@
+export const runtime = 'nodejs';
 export interface Country {
     name: string;
     id: string;
