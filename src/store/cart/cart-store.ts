@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { ProductInCart } from "@/interfaces";
+import { useToastStore } from "../toast/toast-store";
 
 interface State {
 	cart: ProductInCart[];
@@ -54,6 +55,10 @@ export const useCartStore = create<State>()(
 
 				if (!productInCart) {
 					set({ cart: [...cart, product] });
+					useToastStore.getState().addToast(
+						`${product.title} agregado al carrito`,
+						'success'
+					);
 					return;
 				}
 
@@ -64,10 +69,18 @@ export const useCartStore = create<State>()(
 					return p;
 				});
 				set({ cart: updatedCart });
+				useToastStore.getState().addToast(
+					`Cantidad de ${product.title} actualizada`,
+					'success'
+				);
 			},
 			updateProductQuantity: (product, quantity) => {
 				const { cart } = get();
 				const productKey = getProductKey(product);
+				const productInCart = cart.find((p) => getProductKey(p) === productKey);
+				
+				if (!productInCart) return;
+				
 				const updatedCart = cart.map((p) => {
 					if (getProductKey(p) === productKey) {
 						return { ...p, quantity };
@@ -75,6 +88,23 @@ export const useCartStore = create<State>()(
 					return p;
 				});
 				set({ cart: updatedCart });
+				
+				if (quantity === 0) {
+					useToastStore.getState().addToast(
+						`${product.title} eliminado del carrito`,
+						'info'
+					);
+				} else if (quantity > productInCart.quantity) {
+					useToastStore.getState().addToast(
+						`Cantidad de ${product.title} aumentada`,
+						'success'
+					);
+				} else {
+					useToastStore.getState().addToast(
+						`Cantidad de ${product.title} disminuida`,
+						'info'
+					);
+				}
 			},
 			updateProductAttributes: (product, newAttributes) => {
 				const { cart } = get();
@@ -116,8 +146,18 @@ export const useCartStore = create<State>()(
 					(p) => getProductKey(p) !== productKey
 				);
 				set({ cart: updatedProducts });
+				useToastStore.getState().addToast(
+					`${product.title} eliminado del carrito`,
+					'info'
+				);
 			},
-			clearCart: () => set({ cart: [] }),
+			clearCart: () => {
+				set({ cart: [] });
+				useToastStore.getState().addToast(
+					'Carrito vaciado',
+					'warning'
+				);
+			},
 		}),
 		{
 			name: "shopping-cart",

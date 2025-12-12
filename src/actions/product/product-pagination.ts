@@ -9,14 +9,18 @@ interface PaginatedProducts {
   companyId?: string;
   categoryId?: string;
   search?: string;
+  tag?: string; // Nombre del tag para filtrar
+  attributeFilters?: Record<string, string>; // attributeId -> attributeValueId
 }
 
 export const getPaginatedProductsWithImages = async ({ 
   page = 1, 
-  take = 40, 
+  take = 20, 
   companyId,
   categoryId,
-  search 
+  search,
+  tag,
+  attributeFilters = {}
 }: PaginatedProducts) => {
 
   if(isNaN(page) || page < 1) page = 1;
@@ -39,6 +43,40 @@ export const getPaginatedProductsWithImages = async ({
 
     if (categoryId) {
       where.categoryId = categoryId;
+    }
+
+    // Aplicar filtro por tag
+    if (tag) {
+      where.tags = {
+        some: {
+          tag: {
+            name: tag,
+          },
+        },
+      };
+    }
+
+    // Aplicar filtros de atributos
+    // Para múltiples filtros, necesitamos que el producto tenga TODOS los atributos filtrados
+    if (Object.keys(attributeFilters).length > 0) {
+      const attributeFilterConditions = Object.entries(attributeFilters).map(([attributeId, attributeValueId]) => ({
+        ProductAttribute: {
+          some: {
+            attributeId,
+            attributeValueId,
+          },
+        },
+      }));
+      
+      // Si hay múltiples filtros, combinarlos con AND
+      if (attributeFilterConditions.length === 1) {
+        Object.assign(where, attributeFilterConditions[0]);
+      } else {
+        where.AND = [
+          ...(where.AND || []),
+          ...attributeFilterConditions,
+        ];
+      }
     }
 
     const productsPromise = prisma.product.findMany({

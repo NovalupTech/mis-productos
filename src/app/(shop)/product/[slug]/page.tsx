@@ -6,6 +6,7 @@ import { ProductMobileSlideShow, ProductSlideShow, StockLabel } from "@/componen
 import { getProductBySlug } from "@/actions/product/get-product-by-slug";
 import { titleFont } from "@/config/fonts";
 import { AddToCart } from "./ui/AddToCart";
+
 interface Props {
   params: {
     slug: string;
@@ -45,8 +46,8 @@ export default async function ProductPage({params}: {params: Promise<{slug: stri
     <div className="flex flex-col md:flex-row mt-5 mb-20 gap-4 md:gap-6 max-w-5xl mx-auto px-4">
       {/* Desktop Slideshow */}
       <div className="flex-shrink-0 md:w-[45%]">
-        <ProductSlideShow images={product.images} title={product.title}  className="hidden md:block"/>
-        <ProductMobileSlideShow images={product.images} title={product.title} className="block md:hidden" />
+        <ProductSlideShow images={product.images} title={product.title} slug={slug} className="hidden md:block"/>
+        <ProductMobileSlideShow images={product.images} title={product.title} slug={slug} className="block md:hidden" />
       </div>
 
       {/* Product Details */}

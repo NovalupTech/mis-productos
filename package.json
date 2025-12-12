@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "seed": "ts-node src/seed/seed-database.ts",
-    "prisma:deploy": "npx prisma migrate dev && npx prisma generate"
+    "prisma:deploy": "npx prisma generate",
+    "prisma:deploy-local": "npx prisma migrate dev && npx prisma generate"
   },
   "dependencies": {
     "@paypal/paypal-js": "^8.1.2",

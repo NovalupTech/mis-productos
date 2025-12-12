@@ -61,7 +61,7 @@ export const CartDropdown = ({ isVisible }: Props) => {
               <div className="flex gap-3">
                 <Link href={`/product/${product.slug}`} className="flex-shrink-0">
                   <Image
-                    src={`/products/${product.image}`}
+                    src={product.image.startsWith('http') || product.image.startsWith('https') ? product.image : `/products/${product.image}`}
                     width={60}
                     height={60}
                     alt={product.title}

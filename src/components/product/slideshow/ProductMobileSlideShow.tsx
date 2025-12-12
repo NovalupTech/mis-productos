@@ -16,10 +16,11 @@ import Image from 'next/image';
 interface Props {
     images: string[];
     title: string;
+    slug: string;
     className?: string;
 }
 
-export const ProductMobileSlideShow = ({images, title, className}: Props) => {
+export const ProductMobileSlideShow = ({images, title, slug, className}: Props) => {
 
   return (
     <div className={className}>
@@ -39,10 +40,11 @@ export const ProductMobileSlideShow = ({images, title, className}: Props) => {
                     <Image
                         key={index}
                         alt={title}
-                        src={`/products/${image}`}
+                        src={image.startsWith('http') || image.startsWith('https') ? image : `/products/${image}`}
                         width={600}
                         height={400}
                         className='object-contain w-full h-full'
+                        style={{ viewTransitionName: `product-image-${slug}` }}
                     />
                 </SwiperSlide>
             ))

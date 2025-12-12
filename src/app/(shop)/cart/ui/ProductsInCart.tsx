@@ -24,7 +24,7 @@ export const ProductsInCart = () => {
 			{cart.map((product) => (
 				<div key={product.slug} className="flex mb-5">
 					<Image
-						src={`/products/${product.image}`}
+						src={product.image.startsWith('http') || product.image.startsWith('https') ? product.image : `/products/${product.image}`}
 						style={{
 							width: "100px",
 							height: "100px",

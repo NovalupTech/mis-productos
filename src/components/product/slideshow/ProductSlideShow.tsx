@@ -19,10 +19,11 @@ import Image from 'next/image';
 interface Props {
     images: string[];
     title: string;
+    slug: string;
     className?: string;
 }
 
-export const ProductSlideShow = ({images, title, className}: Props) => {
+export const ProductSlideShow = ({images, title, slug, className}: Props) => {
   const [thumbsSwiper, setThumbsSwiper] = useState<SwiperObject>();
 
   return (
@@ -45,10 +46,11 @@ export const ProductSlideShow = ({images, title, className}: Props) => {
                     <Image
                         key={index}
                         alt={title}
-                        src={`/products/${image}`}
+                        src={image.startsWith('http') || image.startsWith('https') ? image : `/products/${image}`}
                         width={600}
                         height={500}
                         className='rounded-lg object-contain w-full h-full'
+                        style={{ viewTransitionName: `product-image-${slug}` }}
                     />
                 </SwiperSlide>
             ))
@@ -69,7 +71,7 @@ export const ProductSlideShow = ({images, title, className}: Props) => {
                     <Image
                         key={index}
                         alt={title}
-                        src={`/products/${image}`}
+                        src={image.startsWith('http') || image.startsWith('https') ? image : `/products/${image}`}
                         width={150}
                         height={150}
                         className='rounded-lg object-contain w-full h-full'

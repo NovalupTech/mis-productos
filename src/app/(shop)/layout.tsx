@@ -1,8 +1,11 @@
 import { TopMenu, Sidebar, Footer } from "@/components";
+import { CompanyProvider } from "@/components/providers/CompanyProvider";
+import { Toast } from "@/components/ui/toast/Toast";
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { getCurrentCompanyId, getCurrentDomain } from '@/lib/domain';
-import LandingPage from './landing/page';
+import prisma from '@/lib/prisma';
+import LandingPage from '../landing/page';
 
 export const metadata: Metadata = {
   title: {
@@ -26,12 +29,44 @@ export default async function ShopLayout({
     return <LandingPage />;
   }
 
+  // Obtener la información completa de la compañía con sus atributos
+  const company = await prisma.company.findUnique({
+    where: { id: companyId },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      phone: true,
+      logo: true,
+      attributes: {
+        select: {
+          id: true,
+          name: true,
+          type: true,
+          values: {
+            select: {
+              id: true,
+              value: true,
+            },
+            orderBy: {
+              value: 'asc',
+            },
+          },
+        },
+        orderBy: {
+          name: 'asc',
+        },
+      },
+    },
+  });
+
   // Si hay companyId, renderizar el shop normal
   return (
     <main className="min-h-screen">
-
-      <TopMenu/>
+      <CompanyProvider company={company} />
+      <TopMenu />
       <Sidebar/>
+      <Toast />
 
       <div className="mx-0 sm:mx-10">
         { children }

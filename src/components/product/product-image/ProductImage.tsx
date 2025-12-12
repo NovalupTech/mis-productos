@@ -19,10 +19,12 @@ export const ProductImage = ({
 }: Props) => {
 
   const localSrc = ( src ) 
-    ? src.startsWith('http') // https://urlcompletodelaimagen.jpg
+    ? src.startsWith('http') || src.startsWith('https') // https://urlcompletodelaimagen.jpg
       ? src
       : `/products/${ src }`
     : '/imgs/placeholder.jpg';
+
+    console.log(localSrc);
 
     return (
         <Image

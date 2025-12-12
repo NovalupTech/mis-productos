@@ -53,17 +53,17 @@ export default function LandingPage() {
                 <a className={`${styles.button} ${styles.buttonPrimary}`} href="#contacto">Crear mi tienda</a>
                 <a className={`${styles.button} ${styles.buttonGhost}`} href="#galeria">Ver ejemplos</a>
               </div>
-              <ul className={styles.hero__bullets}>
-                <li>Administra productos, precios, categorías y descuentos en segundos.</li>
-                <li>Autoadministrable, rápido y seguro.</li>
-                <li>Subdominios cliente.misproductos.shop para tu empresa.</li>
-              </ul>
             </div>
             <div className={styles.hero__media}>
               <div className={styles.mockup} role="img" aria-label="Vista previa del catálogo">
-                <img src="https://via.placeholder.com/640x420.png?text=Mockup+Cat%C3%A1logo" alt="Mockup del catálogo Misproductos" />
+                <img src="/landing/dispositivos.jpg" alt="Mockup del catálogo Misproductos" />
               </div>
             </div>
+            <ul className={styles.hero__bullets}>
+              <li>Administra productos, precios, categorías y descuentos en segundos.</li>
+              <li>Autoadministrable, rápido y seguro.</li>
+              <li>Subdominios cliente.misproductos.shop para tu empresa.</li>
+            </ul>
           </div>
         </section>
 
@@ -83,12 +83,12 @@ export default function LandingPage() {
                 <p>Acepta pagos online. Proximamente Mercado Pago.</p>
               </article>
               <article className={styles.card}>
-                <h3>Subdominios para clientes</h3>
-                <p>Ofrece URLs como cliente.misproductos.shop o usa tu dominio.</p>
-              </article>
-              <article className={styles.card}>
                 <h3>Personalización total</h3>
                 <p>Logos, banners, temas y orden de productos a tu medida.</p>
+              </article>
+              <article className={styles.card}>
+                <h3>Permanente asistencia</h3>
+                <p>Asistencia permanente por whatsapp para guiarte en la configuración y resolución de problemas.</p>
               </article>
             </div>
           </div>
@@ -141,10 +141,10 @@ export default function LandingPage() {
                 <div>
                   <h3>Integraciones de pago</h3>
                   <p>Stripe listo para cobrar. Proximamente Mercado Pago.</p>
-                  <div className={styles.payments}>
+                  {/* <div className={styles.payments}>
                     <img src="https://via.placeholder.com/110x40.png?text=Mercado+Pago" alt="Logo Mercado Pago" />
                     <img src="https://via.placeholder.com/90x40.png?text=Stripe" alt="Logo Stripe" />
-                  </div>
+                  </div> */}
                 </div>
               </article>
               <article className={`${styles.card} ${styles.cardFeature}`}>
@@ -174,18 +174,24 @@ export default function LandingPage() {
             <div className={styles.grid}>
               <article className={`${styles.card} ${styles.cardStep}`}>
                 <div className={styles.icon} aria-hidden="true">🧭</div>
-                <h3>Crear tu cuenta y elegir plantilla</h3>
-                <p>Elige un tema base y activa tu catálogo en minutos.</p>
+                <div>
+                  <h3>Crear tu cuenta y elegir plantilla</h3>
+                  <p>Elige un tema base y activa tu catálogo en minutos.</p>
+                </div>
               </article>
               <article className={`${styles.card} ${styles.cardStep}`}>
                 <div className={styles.icon} aria-hidden="true">📦</div>
-                <h3>Subir productos y personalizar</h3>
-                <p>Carga fotos, precios, variantes y banners con tu marca.</p>
+                <div>
+                  <h3>Subir productos y personalizar</h3>
+                  <p>Carga fotos, precios, variantes y banners con tu marca.</p>
+                </div>
               </article>
               <article className={`${styles.card} ${styles.cardStep}`}>
                 <div className={styles.icon} aria-hidden="true">🚀</div>
-                <h3>Compartir y vender</h3>
-                <p>Usa un subdominio o conecta tu dominio propio.</p>
+                <div>
+                  <h3>Compartir y vender</h3>
+                  <p>Usa un subdominio o conecta tu dominio propio.</p>
+                </div>
               </article>
             </div>
           </div>
@@ -199,52 +205,45 @@ export default function LandingPage() {
             </div>
             <div className={styles.grid}>
               <article className={`${styles.card} ${styles.cardGallery}`}>
-                <img src="https://via.placeholder.com/360x220.png?text=Ejemplo+1" alt="Ejemplo catálogo Escuela de Yoga" />
-                <div>
-                  <h3>Escuela de Yoga — cursos</h3>
-                  <p>Agenda de clases y reservas online.</p>
-                </div>
-              </article>
-              <article className={`${styles.card} ${styles.cardGallery}`}>
-                <img src="https://via.placeholder.com/360x220.png?text=Ejemplo+2" alt="Ejemplo catálogo Pastelería" />
+                <img src="/landing/pasteleria.png" alt="Ejemplo catálogo Pastelería" />
                 <div>
                   <h3>Pastelería — catálogo</h3>
                   <p>Pedidos personalizados con entregas programadas.</p>
                 </div>
               </article>
               <article className={`${styles.card} ${styles.cardGallery}`}>
-                <img src="https://via.placeholder.com/360x220.png?text=Ejemplo+3" alt="Ejemplo catálogo Coach" />
+                <img src="/landing/tecnologia.png" alt="Ejemplo catálogo Tecnologia" />
                 <div>
-                  <h3>Coach — servicios</h3>
-                  <p>Sesiones y paquetes con reservas online.</p>
+                  <h3>Tecnologia — productos</h3>
+                  <p>Productos tecnológicos y accesorios.</p>
                 </div>
               </article>
               <article className={`${styles.card} ${styles.cardGallery}`}>
-                <img src="https://via.placeholder.com/360x220.png?text=Ejemplo+4" alt="Ejemplo catálogo Indumentaria" />
+                <img src="/landing/indumentaria.png" alt="Ejemplo catálogo Indumentaria" />
                 <div>
                   <h3>Indumentaria — ecommerce ligero</h3>
                   <p>Variantes por color/talle y cupones.</p>
                 </div>
               </article>
               <article className={`${styles.card} ${styles.cardGallery}`}>
-                <img src="https://via.placeholder.com/360x220.png?text=Ejemplo+5" alt="Ejemplo catálogo Servicios creativos" />
-                <div>
-                  <h3>Servicios creativos</h3>
-                  <p>Portafolio y venta de paquetes.</p>
-                </div>
-              </article>
-              <article className={`${styles.card} ${styles.cardGallery}`}>
-                <img src="https://via.placeholder.com/360x220.png?text=Ejemplo+6" alt="Ejemplo catálogo Cursos online" />
+                <img src="/landing/cursos.png" alt="Ejemplo catálogo Cursos online" />
                 <div>
                   <h3>Cursos online</h3>
                   <p>Landing de cursos con pagos integrados.</p>
+                </div>
+              </article>
+              <article className={`${styles.card} ${styles.cardGallery}`}>
+                <img src="/landing/libros.png" alt="Ejemplo catálogo Libros" />
+                <div>
+                  <h3>Catalogo de libros</h3>
+                  <p>Catalogo de libros con pagos integrados.</p>
                 </div>
               </article>
             </div>
           </div>
         </section>
 
-        <section className={styles.testimonials} id="testimonios">
+        {/* <section className={styles.testimonials} id="testimonios">
           <div className={styles.container}>
             <div className={styles.sectionHeading}>
               <h2>Testimonios</h2>
@@ -274,7 +273,7 @@ export default function LandingPage() {
               </article>
             </div>
           </div>
-        </section>
+        </section> */}
 
         <section className={styles.faq} id="faq">
           <div className={styles.container}>
@@ -293,7 +292,7 @@ export default function LandingPage() {
               </details>
               <details open>
                 <summary>¿Tienen soporte?</summary>
-                <p>Soporte por email y onboarding en 48h para lanzar tu catálogo.</p>
+                <p>Soporte por whatsapp y onboarding en 48h para lanzar tu catálogo.</p>
               </details>
               <details open>
                 <summary>¿Puedo cambiar la apariencia del catálogo?</summary>

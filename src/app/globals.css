@@ -61,3 +61,14 @@ body {
 .btn-disabled {
   @apply bg-gray-600 text-white py-2 px-4 rounded transition-all;
 }
+
+/* View Transitions */
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.3s;
+  animation-timing-function: ease-in-out;
+}
