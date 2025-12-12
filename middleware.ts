@@ -11,6 +11,14 @@ const { auth } = NextAuth(authConfig);
 export default auth(async (req) => {
   // Esta función se ejecuta después de que NextAuth procesa la autenticación
   // req.auth contiene la sesión si existe
+
+  const host = req.headers.get('host');
+
+  if (host && host.startsWith('www.')) {
+    const url = req.nextUrl.clone();
+    url.hostname = host.replace('www.', '');
+    return NextResponse.redirect(url);
+  }
   
   // El middleware solo maneja NextAuth
   // La lógica de búsqueda del dominio y redirección se maneja en el layout de (shop)
