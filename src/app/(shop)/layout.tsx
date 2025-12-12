@@ -1,6 +1,7 @@
 import { TopMenu, Sidebar, Footer } from "@/components";
 import { Metadata } from 'next';
-import { getCompanyIdFromContext } from '@/lib/company-context';
+import { redirect } from 'next/navigation';
+import { getCurrentCompanyId, getCurrentDomain } from '@/lib/domain';
 import LandingPage from './landing/page';
 
 export const metadata: Metadata = {
@@ -16,11 +17,24 @@ export default async function ShopLayout({
 }: {
  children: React.ReactNode;
 }) {
-  // Evaluar si hay companyId
-  const companyId = await getCompanyIdFromContext();
+  // Obtener el dominio actual
+  const domain = await getCurrentDomain();
+  
+  // Buscar el companyId asociado al dominio
+  const companyId = await getCurrentCompanyId();
 
-  // Si no hay companyId, renderizar la landing page
+  // Si no hay companyId, verificar si debemos redirigir
   if (!companyId) {
+    const baseDomain = process.env.BASE_DOMAIN || 'misproductos.shop';
+    const siteUrl = process.env.SITE_URL;
+    
+    // Si el dominio actual no es el dominio base, redirigir al dominio base
+    if (domain !== baseDomain) {
+      const redirectUrl = siteUrl || `https://${baseDomain}/`;
+      redirect(redirectUrl);
+    }
+    
+    // Si ya estamos en el dominio base, mostrar la landing page
     return <LandingPage />;
   }
 

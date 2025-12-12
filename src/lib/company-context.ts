@@ -1,20 +1,11 @@
-import { headers } from 'next/headers';
 import { getCurrentCompanyId } from './domain';
 
 /**
- * Obtiene el companyId del contexto actual (desde headers del middleware)
- * Si no está disponible en headers, intenta obtenerlo del dominio
+ * Obtiene el companyId del dominio actual
+ * @deprecated Usar getCurrentCompanyId directamente
  */
 export async function getCompanyIdFromContext(): Promise<string | null> {
   try {
-    const headersList = await headers();
-    const companyIdFromHeader = headersList.get('x-company-id');
-    
-    if (companyIdFromHeader) {
-      return companyIdFromHeader;
-    }
-
-    // Fallback: obtener del dominio si no está en headers
     return await getCurrentCompanyId();
   } catch (error) {
     console.error('Error getting companyId from context:', error);
