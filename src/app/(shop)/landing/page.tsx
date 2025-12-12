@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import styles from './landing.module.css';
+import ContactForm from './ContactForm';
 
 export const metadata: Metadata = {
   title: 'Misproductos | Catálogo online personalizable para vender',
@@ -333,21 +334,7 @@ export default function LandingPage() {
                 <h2>Contacto</h2>
                 <p>Escríbenos y te ayudamos a lanzar en 48h.</p>
               </div>
-              <form className={styles.form} action="mailto:desarrollos@novaluptech.com" method="post" encType="text/plain">
-                <label>
-                  Nombre
-                  <input type="text" name="nombre" placeholder="Tu nombre" required />
-                </label>
-                <label>
-                  Email
-                  <input type="email" name="email" placeholder="tu@email.com" required />
-                </label>
-                <label>
-                  Mensaje
-                  <textarea name="mensaje" rows={4} placeholder="Cuéntanos sobre tu catálogo" required></textarea>
-                </label>
-                <button className={`${styles.button} ${styles.buttonPrimary}`} type="submit">Enviar mensaje</button>
-              </form>
+              <ContactForm />
             </div>
             <div className={styles.contact__info}>
               <div className={styles.card}>

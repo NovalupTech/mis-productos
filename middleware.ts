@@ -12,11 +12,12 @@ export default auth(async (req) => {
   // Esta función se ejecuta después de que NextAuth procesa la autenticación
   // req.auth contiene la sesión si existe
 
-  const host = req.headers.get('host');
+  //obtener url actual
+  const url = req.nextUrl;
 
-  if (host && host.startsWith('www.')) {
+  if (url.hostname.startsWith('www.')) {
     const url = req.nextUrl.clone();
-    url.hostname = host.replace('www.', '');
+    url.hostname = url.hostname.replace('www.', '');
     return NextResponse.redirect(url);
   }
   
