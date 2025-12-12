@@ -17,23 +17,11 @@ export default async function ShopLayout({
 }: {
  children: React.ReactNode;
 }) {
-  // Obtener el dominio actual
-  const domain = await getCurrentDomain();
-  
   // Buscar el companyId asociado al dominio
   const companyId = await getCurrentCompanyId();
 
   // Si no hay companyId, verificar si debemos redirigir
   if (!companyId) {
-    const baseDomain = process.env.BASE_DOMAIN || 'misproductos.shop';
-    const siteUrl = process.env.SITE_URL;
-    
-    // Si el dominio actual no es el dominio base, redirigir al dominio base
-    if (domain !== baseDomain) {
-      const redirectUrl = siteUrl || `https://${baseDomain}/`;
-      redirect(redirectUrl);
-    }
-    
     // Si ya estamos en el dominio base, mostrar la landing page
     return <LandingPage />;
   }
