@@ -33,7 +33,7 @@ export default auth(async (req) => {
       if (pathname !== '/') {
         const url = req.nextUrl.clone();
         url.pathname = '/';
-        return NextResponse.redirect(url);
+        return NextResponse.redirect(process.env.SITE_URL || url);
       }
     }
 
