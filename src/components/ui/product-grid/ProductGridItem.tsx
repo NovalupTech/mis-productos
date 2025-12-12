@@ -59,7 +59,7 @@ const ProductGridItem = ({product}: Props) => {
         setImage(product.images[0]);
       }}
     >
-        <Link href={`/product/${product.slug}`} className='block relative'>
+        <Link href={`/product/${product.slug}`}  className='block relative'>
             <Image
                 src={`/products/${image}`}
                 alt={product.title}

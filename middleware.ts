@@ -23,9 +23,18 @@ export default auth(async (req) => {
     // Verificar si el dominio existe en la base de datos
     companyId = await getCompanyIdByDomain(domain);
     
+    const pathname = req.nextUrl.pathname;
+    
     if (!companyId) {
       // Si no se encuentra el dominio, loguear warning
       console.warn(`Domain ${domain} not found in database`);
+      
+      // Si no estamos ya en "/", redirigir a "/" para mostrar la landing page
+      if (pathname !== '/') {
+        const url = req.nextUrl.clone();
+        url.pathname = '/';
+        return NextResponse.redirect(url);
+      }
     }
 
     // Crear respuesta y agregar headers
@@ -37,6 +46,15 @@ export default auth(async (req) => {
     return response;
   } catch (error) {
     console.error('Error in domain middleware:', error);
+    
+    const pathname = req.nextUrl.pathname;
+    
+    // Si hay error y no estamos en "/", redirigir a "/"
+    if (pathname !== '/') {
+      const url = req.nextUrl.clone();
+      url.pathname = '/';
+      return NextResponse.redirect(url);
+    }
     
     const response = NextResponse.next();
     response.headers.set('x-company-id', '');
