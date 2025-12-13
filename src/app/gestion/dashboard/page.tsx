@@ -5,7 +5,7 @@ export default async function AdminDashboardPage() {
   const session = await middleware();
 
   if (!session?.user) {
-    redirect('/admin');
+    redirect('/gestion');
   }
 
   // Verificar que el usuario tenga rol de admin
