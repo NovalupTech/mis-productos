@@ -1,6 +1,9 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import styles from './landing.module.css';
 import ContactForm from './ContactForm';
+import CalendlyButton from './CalendlyButton';
+import MobileNav from './MobileNav';
 
 export const metadata: Metadata = {
   title: 'Misproductos | Catálogo online personalizable para vender',
@@ -17,30 +20,34 @@ export const metadata: Metadata = {
 export default function LandingPage() {
   return (
     <div style={{ fontFamily: '"Poppins", system-ui, -apple-system, "Segoe UI", sans-serif', color: 'var(--color-text)', background: 'var(--color-bg)', lineHeight: '1.6', margin: 0 }}>
-      <header className={styles.header} aria-label="Barra de navegación principal">
-        <div className={`${styles.container} ${styles.header__bar}`}>
-          <a className={styles.logo} href="#top" aria-label="Ir al inicio">
-            <svg className={styles.logo__icon} viewBox="0 0 64 64" role="img" aria-label="Misproductos logo">
-              <rect x="6" y="10" width="52" height="44" rx="10" ry="10" fill="var(--color-primary)" opacity="0.12"></rect>
-              <path d="M16 22h20M16 32h32M16 42h24" stroke="var(--color-primary)" strokeWidth="4" strokeLinecap="round"></path>
-              <circle cx="50" cy="22" r="4" fill="var(--color-accent)"></circle>
-            </svg>
-            <span className={styles.logo__text}>Misproductos</span>
-          </a>
-          <input type="checkbox" id="nav-toggle" className={styles.navToggle} aria-label="Abrir menú" />
-          <label htmlFor="nav-toggle" className={styles.navToggle__label} aria-hidden="true">
-            <span></span><span></span><span></span>
-          </label>
-          <nav className={styles.nav}>
-            <a href="#caracteristicas">Características</a>
-            <a href="#como-funciona">Cómo funciona</a>
-            <a href="#galeria">Demo/Galería</a>
-            <a href="#faq">FAQ</a>
-            <a href="#contacto">Contacto</a>
-            <a className={`${styles.button} ${styles.buttonPrimary} ${styles.nav__cta}`} href="#contacto">Crear mi tienda</a>
-          </nav>
-        </div>
-      </header>
+      <MobileNav>
+        <header className={styles.header} aria-label="Barra de navegación principal">
+          <div className={`${styles.container} ${styles.header__bar}`}>
+            <a className={styles.logo} href="#top" aria-label="Ir al inicio">
+              <Image
+                src="/logo.png"
+                alt="Misproductos logo"
+                width={120}
+                height={40}
+                className={styles.logo__icon}
+                priority
+              />
+              <span className={styles.logo__text}>Misproductos</span>
+            </a>
+            <input type="checkbox" id="nav-toggle" className={styles.navToggle} aria-label="Abrir menú" />
+            <label htmlFor="nav-toggle" className={styles.navToggle__label} aria-hidden="true">
+              <span></span><span></span><span></span>
+            </label>
+            <nav className={styles.nav}>
+              <a href="#caracteristicas">Características</a>
+              <a href="#como-funciona">Cómo funciona</a>
+              <a href="#galeria">Demo/Galería</a>
+              <a href="#faq">FAQ</a>
+              <CalendlyButton className={`${styles.button} ${styles.buttonPrimary} ${styles.nav__cta}`}>Agendá una reunión</CalendlyButton>
+            </nav>
+          </div>
+        </header>
+      </MobileNav>
 
       <main id="top">
         <section className={styles.hero}>
@@ -48,16 +55,11 @@ export default function LandingPage() {
             <div className={styles.hero__text}>
               <p className={styles.pill}>Catálogo personalizable</p>
               <h1>Vende tus productos y servicios desde tu propia web — fácil y rápido.</h1>
-              <p className={styles.lead}>Misproductos: catálogos autoadministrables, pagos integrados y subdominio para tu empresa.</p>
+              <p className={styles.lead}>Misproductos: catálogos autoadministrables, precios, categorías y descuentos en segundos, pagos integrados y subdominio para tu empresa.</p>
               <div className={styles.hero__actions}>
-                <a className={`${styles.button} ${styles.buttonPrimary}`} href="#contacto">Crear mi tienda</a>
+                <CalendlyButton className={`${styles.button} ${styles.buttonPrimary}`}>Agendá una reunión</CalendlyButton>
                 <a className={`${styles.button} ${styles.buttonGhost}`} href="#galeria">Ver ejemplos</a>
               </div>
-              <ul className={styles.hero__bullets}>
-                <li>Administra productos, precios, categorías y descuentos en segundos.</li>
-                <li>Autoadministrable, rápido y seguro.</li>
-                <li>Subdominios cliente.misproductos.shop para tu empresa.</li>
-              </ul>
             </div>
             <div className={styles.hero__media}>
               <div className={styles.mockup} role="img" aria-label="Vista previa del catálogo">
@@ -85,6 +87,26 @@ export default function LandingPage() {
               <article className={styles.card}>
                 <h3>Personalización total</h3>
                 <p>Logos, banners, temas y orden de productos a tu medida.</p>
+              </article>
+              <article className={styles.card}>
+                <h3>Control de stock</h3>
+                <p>Gestiona inventario en tiempo real con alertas automáticas de productos agotados.</p>
+              </article>
+              <article className={styles.card}>
+                <h3>Precios especiales</h3>
+                <p>Configura precios diferenciados, descuentos por volumen y ofertas por tiempo limitado.</p>
+              </article>
+              <article className={styles.card}>
+                <h3>Banners promocionales</h3>
+                <p>Crea banners rotativos para destacar ofertas, novedades y campañas especiales.</p>
+              </article>
+              <article className={styles.card}>
+                <h3>Productos destacados</h3>
+                <p>Destaca tus productos más importantes para aumentar su visibilidad y ventas.</p>
+              </article>
+              <article className={styles.card}>
+                <h3>Integraciones API</h3>
+                <p>Si ya tenes un programador o un sistema propio, podemos ayudarte a integrar tu catalogo.</p>
               </article>
               <article className={styles.card}>
                 <h3>Permanente asistencia</h3>
@@ -159,6 +181,41 @@ export default function LandingPage() {
                 <div>
                   <h3>Dominios y subdominios</h3>
                   <p>cliente.misproductos.shop o dominio propio con DNS asistido.</p>
+                </div>
+              </article>
+              <article className={`${styles.card} ${styles.cardFeature}`}>
+                <div className={styles.icon} aria-hidden="true">📊</div>
+                <div>
+                  <h3>Control de stock</h3>
+                  <p>Gestión de inventario en tiempo real con alertas de productos agotados.</p>
+                </div>
+              </article>
+              <article className={`${styles.card} ${styles.cardFeature}`}>
+                <div className={styles.icon} aria-hidden="true">⭐</div>
+                <div>
+                  <h3>Destacar productos</h3>
+                  <p>Marca productos como destacados para aparecer en secciones especiales.</p>
+                </div>
+              </article>
+              <article className={`${styles.card} ${styles.cardFeature}`}>
+                <div className={styles.icon} aria-hidden="true">💰</div>
+                <div>
+                  <h3>Precios especiales</h3>
+                  <p>Configura precios diferenciados por cliente, descuentos por cantidad y ofertas temporales.</p>
+                </div>
+              </article>
+              <article className={`${styles.card} ${styles.cardFeature}`}>
+                <div className={styles.icon} aria-hidden="true">🎯</div>
+                <div>
+                  <h3>Banners personalizados</h3>
+                  <p>Crea y gestiona banners rotativos con imágenes y enlaces para promociones.</p>
+                </div>
+              </article>
+              <article className={`${styles.card} ${styles.cardFeature}`}>
+                <div className={styles.icon} aria-hidden="true">🔌</div>
+                <div>
+                  <h3>API REST</h3>
+                  <p>Si ya tenes un programador o un sistema propio, podemos ayudarte a integrar tu catalogo.</p>
                 </div>
               </article>
             </div>
@@ -298,50 +355,51 @@ export default function LandingPage() {
                 <summary>¿Puedo cambiar la apariencia del catálogo?</summary>
                 <p>Sí. Temas, logos, banners, orden y estilos de tarjetas son configurables.</p>
               </details>
+              <details open>
+                <summary>¿Cómo funcionan los banners promocionales?</summary>
+                <p>Puedes crear banners rotativos con imágenes y enlaces personalizados. Se muestran en la parte superior del catálogo y puedes configurar múltiples banners que rotan automáticamente.</p>
+              </details>
+              <details open>
+                <summary>¿Puedo configurar precios especiales o descuentos?</summary>
+                <p>Sí. Puedes crear descuentos por porcentaje o monto fijo, cupones de descuento, precios especiales por cliente y ofertas temporales con fechas de inicio y fin.</p>
+              </details>
+              <details open>
+                <summary>¿Cómo destaco productos importantes?</summary>
+                <p>Puedes marcar productos como "destacados" y aparecerán en secciones especiales del catálogo, aumentando su visibilidad para tus clientes.</p>
+              </details>
+              <details open>
+                <summary>¿Tienen control de stock?</summary>
+                <p>Sí. El sistema gestiona el inventario en tiempo real, muestra alertas cuando los productos se agotan y puedes configurar notificaciones automáticas.</p>
+              </details>
+              <details open>
+                <summary>¿Ofrecen integraciones por API?</summary>
+                <p>Sí. Disponemos de API REST completa que te permite sincronizar productos, categorías, stock y pedidos con otros sistemas como ERPs, sistemas de inventario o plataformas de gestión.</p>
+              </details>
+              <details open>
+                <summary>¿Puedo importar productos masivamente?</summary>
+                <p>Sí. Puedes importar productos desde archivos CSV, lo que te permite cargar grandes catálogos de forma rápida y eficiente.</p>
+              </details>
+              <details open>
+                <summary>¿Qué métodos de pago aceptan?</summary>
+                <p>Actualmente Stripe está disponible. Próximamente agregaremos Mercado Pago y otros métodos de pago populares en Argentina.</p>
+              </details>
+              <details open>
+                <summary>¿Puedo personalizar los banners con mi marca?</summary>
+                <p>Sí. Los banners son completamente personalizables: puedes subir tus propias imágenes, agregar enlaces a productos específicos o páginas externas, y configurar el orden de rotación.</p>
+              </details>
             </div>
-          </div>
-        </section>
-
-        <section className={styles.dev} id="tecnico">
-          <div className={`${styles.container} ${styles.dev__box}`}>
-            <div>
-              <p className={styles.pill}>Para equipos técnicos</p>
-              <h2>Soporte para exportar/importar, API y DNS.</h2>
-              <p>Exporta/Importa CSV, conecta tu API y configura subdominios y dominios propios con nuestro equipo.</p>
-            </div>
-            <a className={`${styles.button} ${styles.buttonGhost}`} href="#contacto">Hablar con soporte</a>
           </div>
         </section>
 
         <section className={styles.cta} id="cta-final">
           <div className={`${styles.container} ${styles.cta__box}`}>
             <div>
-              <h2>Crear mi tienda en misproductos.shop</h2>
+              <h2>Agendá una reunión y empezá hoy</h2>
               <p>¿Listo para vender? Hacemos todo en 48h.</p>
             </div>
             <div className={styles.cta__actions}>
-              <a className={`${styles.button} ${styles.buttonPrimary}`} href="#contacto">Crear mi tienda</a>
-              <a className={`${styles.button} ${styles.buttonGhost}`} href="#contacto">Solicitar demo</a>
-            </div>
-          </div>
-        </section>
-
-        <section className={styles.contact} id="contacto">
-          <div className={`${styles.container} ${styles.contact__grid}`}>
-            <div>
-              <div className={styles.sectionHeading}>
-                <h2>Contacto</h2>
-                <p>Escríbenos y te ayudamos a lanzar en 48h.</p>
-              </div>
-              <ContactForm />
-            </div>
-            <div className={styles.contact__info}>
-              <div className={styles.card}>
-                <h3>Datos de contacto</h3>
-                <p>Email: <a href="mailto:desarrollos@novaluptech.com">desarrollos@novaluptech.com</a></p>
-                <p>Redes: <a href="#" aria-label="Instagram">Instagram</a> · <a href="#" aria-label="LinkedIn">LinkedIn</a></p>
-                <p>Legales: <a href="#">Términos</a> · <a href="#">Privacidad</a></p>
-              </div>
+              <CalendlyButton className={`${styles.button} ${styles.buttonPrimary}`}>Agendá una reunión</CalendlyButton>
+              <a className={`${styles.button} ${styles.buttonGhost}`} target="_blank" rel="noopener noreferrer" href="https://wa.me/5491163717386?text=Hola%2C%20quiero%20m%C3%A1s%20informaci%C3%B3n%20sobre%20Misproductos">Solicitar demo</a>
             </div>
           </div>
         </section>
