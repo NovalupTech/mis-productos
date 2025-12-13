@@ -20,6 +20,16 @@ export default auth(async (req) => {
     url.hostname = url.hostname.replace('www.', '');
     return NextResponse.redirect(url);
   }
+
+  // Redirigir admin.misproductos.shop a /admin
+  if (url.hostname === 'admin.misproductos.shop' || url.hostname === 'admin.localhost') {
+    // Si ya está en /admin, permitir continuar
+    if (!url.pathname.startsWith('/admin')) {
+      const adminUrl = req.nextUrl.clone();
+      adminUrl.pathname = '/admin';
+      return NextResponse.redirect(adminUrl);
+    }
+  }
   
   // El middleware solo maneja NextAuth
   // La lógica de búsqueda del dominio y redirección se maneja en el layout de (shop)
