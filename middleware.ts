@@ -24,9 +24,9 @@ export default auth(async (req) => {
   // Redirigir admin.misproductos.shop a /admin
   if (url.hostname === 'admin.misproductos.shop' || url.hostname === 'admin.localhost') {
     // Si ya está en /admin, permitir continuar
-    if (!url.pathname.startsWith('/admin')) {
+    if (!url.pathname.startsWith('/gestion')) {
       const adminUrl = req.nextUrl.clone();
-      adminUrl.pathname = '/admin';
+      adminUrl.pathname = '/gestion';
       return NextResponse.redirect(adminUrl);
     }
   }
