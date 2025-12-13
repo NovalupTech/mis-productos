@@ -53,17 +53,17 @@ export default function LandingPage() {
                 <a className={`${styles.button} ${styles.buttonPrimary}`} href="#contacto">Crear mi tienda</a>
                 <a className={`${styles.button} ${styles.buttonGhost}`} href="#galeria">Ver ejemplos</a>
               </div>
+              <ul className={styles.hero__bullets}>
+                <li>Administra productos, precios, categorías y descuentos en segundos.</li>
+                <li>Autoadministrable, rápido y seguro.</li>
+                <li>Subdominios cliente.misproductos.shop para tu empresa.</li>
+              </ul>
             </div>
             <div className={styles.hero__media}>
               <div className={styles.mockup} role="img" aria-label="Vista previa del catálogo">
                 <img src="/landing/dispositivos.jpg" alt="Mockup del catálogo Misproductos" />
               </div>
             </div>
-            <ul className={styles.hero__bullets}>
-              <li>Administra productos, precios, categorías y descuentos en segundos.</li>
-              <li>Autoadministrable, rápido y seguro.</li>
-              <li>Subdominios cliente.misproductos.shop para tu empresa.</li>
-            </ul>
           </div>
         </section>
 
