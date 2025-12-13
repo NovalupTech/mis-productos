@@ -6,8 +6,8 @@ import { Providers } from "@/providers/Providers";
 export const runtime = 'nodejs';
 
 export const metadata: Metadata = {
-  title: "Teslo-Shop",
-  description: "Una tienda virtual de productos",
+  title: "Misproductos",
+  description: "Catálogo online personalizable para vender tus productos y servicios",
   openGraph: {
     images: ["/oc_image.png"],
   },

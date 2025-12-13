@@ -15,10 +15,10 @@ export async function generateMetadata(): Promise<Metadata> {
   if (!companyId) {
     return {
       title: {
-        default: 'Shop',
-        template: '%s - Catalogo',
+        default: 'Misproductos',
+        template: '%s - Misproductos',
       },
-      description: 'Una tienda de productos',
+      description: 'Catálogo online personalizable para vender tus productos y servicios',
     };
   }
 
