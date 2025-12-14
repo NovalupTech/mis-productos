@@ -8,7 +8,7 @@ export const getPaginatedUsers = async() => {
 
   const session = await middleware();
 
-  if ( session?.user.role !== 'admin' ) {
+  if ( session?.user.role !== 'admin' && session?.user.role !== 'companyAdmin'  ) {
     return {
       ok: false,
       message: 'Debe de ser un usuario administrador'

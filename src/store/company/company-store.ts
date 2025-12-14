@@ -12,6 +12,24 @@ export interface Attribute {
   values: AttributeValue[];
 }
 
+export interface Page {
+  id: string;
+  type: 'HOME' | 'CATALOG' | 'INFO';
+  slug: string;
+  title: string;
+  enabled: boolean;
+  isLanding: boolean;
+}
+
+export interface CompanySocial {
+  id: string;
+  type: 'INSTAGRAM' | 'FACEBOOK' | 'TIKTOK' | 'X' | 'LINKEDIN' | 'YOUTUBE' | 'WHATSAPP' | 'WEBSITE';
+  url: string;
+  label: string | null;
+  enabled: boolean;
+  order: number;
+}
+
 export interface Company {
   id: string;
   name: string;
@@ -19,6 +37,8 @@ export interface Company {
   phone?: string | null;
   logo?: string | null;
   attributes?: Attribute[];
+  pages?: Page[];
+  socials?: CompanySocial[];
 }
 
 interface State {

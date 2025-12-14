@@ -9,7 +9,7 @@ export const changeUserRole = async( userId: string, role: string ) => {
 
   const session = await middleware();
 
-  if ( session?.user.role !== 'admin' ) {
+  if ( session?.user.role !== 'admin' && session?.user.role !== 'companyAdmin'  ) {
     return {
       ok: false,
       message: 'Debe de estar autenticado como admin'
@@ -18,7 +18,8 @@ export const changeUserRole = async( userId: string, role: string ) => {
 
   try {
 
-    const newRole = role === 'admin' ? 'admin':'user';
+    const validRoles: ('admin' | 'user' | 'companyAdmin')[] = ['admin', 'user', 'companyAdmin'];
+    const newRole = validRoles.includes(role as any) ? role as 'admin' | 'user' | 'companyAdmin' : 'user';
 
 
     const user = await prisma.user.update({

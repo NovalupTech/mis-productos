@@ -4,6 +4,7 @@ import Credentials from 'next-auth/providers/credentials';
 import { z } from 'zod';
 import prisma from './lib/prisma';
 import bcryptjs from 'bcryptjs';
+import { getCurrentCompanyId } from './lib/domain';
 
 const url_denied = [
   '/checkout/address',
@@ -50,10 +51,28 @@ export const authConfig = {
 
             const { email, password } = parsedCredentials.data;
 
+            // Obtener el companyId del dominio actual
+            const companyId = await getCurrentCompanyId();
+
+            // Construir las condiciones de búsqueda según si hay companyId o no
+            const whereClause: any = {
+              email: email.toLowerCase(),
+            };
+
+            if (companyId) {
+              // Si hay companyId, buscar usuario con role "companyAdmin" y ese companyId
+              whereClause.companyId = companyId;
+              whereClause.role = 'companyAdmin';
+            } else {
+              // Si no hay companyId, buscar admin superior con role "admin" y companyId null
+              whereClause.role = 'admin';
+              whereClause.companyId = null;
+            }
+
+            console.log({whereClause});
+
             const userDB = await prisma.user.findFirst({
-                where: {
-                    email: email.toLowerCase(),
-                },
+                where: whereClause,
             });
 
             if(!userDB) return null

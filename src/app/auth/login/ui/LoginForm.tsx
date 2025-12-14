@@ -12,7 +12,7 @@ export const LoginForm = () => {
 
 	useEffect(() => {
 	  if(state === 'success'){
-		window.location.replace('/')
+		window.location.replace('/gestion/dashboard')
 		return;
 	  }
 	}, [state])

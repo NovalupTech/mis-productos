@@ -4,6 +4,8 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Product } from '@/interfaces'
 import { ProductGrid } from '../product-grid/ProductGrid'
+import { ProductList } from '../product-list/ProductList'
+import { ViewToggle, ViewMode } from '../view-toggle/ViewToggle'
 import { getPaginatedProductsWithImages } from '@/actions'
 
 interface InfiniteScrollProductsProps {
@@ -13,6 +15,8 @@ interface InfiniteScrollProductsProps {
   search?: string
   tag?: string
   attributeFilters?: Record<string, string>
+  catalogColumns?: number
+  catalogImageSize?: 'small' | 'medium' | 'large'
 }
 
 export const InfiniteScrollProducts = ({
@@ -22,12 +26,15 @@ export const InfiniteScrollProducts = ({
   search,
   tag,
   attributeFilters,
+  catalogColumns = 4,
+  catalogImageSize = 'medium',
 }: InfiniteScrollProductsProps) => {
   const [products, setProducts] = useState<Product[]>(initialProducts)
   const [currentPage, setCurrentPage] = useState(initialPage)
   const [totalPages, setTotalPages] = useState(initialTotalPages)
   const [isLoading, setIsLoading] = useState(false)
   const [hasMore, setHasMore] = useState(initialPage < initialTotalPages)
+  const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const observerTarget = useRef<HTMLDivElement>(null)
   const searchParams = useSearchParams()
   const prevFiltersRef = useRef<string>('')
@@ -101,7 +108,17 @@ export const InfiniteScrollProducts = ({
 
   return (
     <>
-      <ProductGrid products={products} />
+      {/* Selector de vista */}
+      <div className="flex items-center justify-end mb-4">
+        <ViewToggle onViewChange={setViewMode} />
+      </div>
+
+      {/* Vista de productos según el modo seleccionado */}
+      {viewMode === 'grid' ? (
+        <ProductGrid products={products} selectedTag={tag} columns={catalogColumns} imageSize={catalogImageSize} />
+      ) : (
+        <ProductList products={products} selectedTag={tag} />
+      )}
       
       {products.length === 0 && (
         <p className="text-center mt-10 mb-20">No se encontraron productos</p>

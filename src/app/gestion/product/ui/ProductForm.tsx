@@ -79,7 +79,7 @@ export const ProductForm = ({ product, categories }: Props) => {
       return;
     }
 
-    router.replace(`/admin/product/${ updatedProduct?.slug }`)
+    router.replace(`/gestion/product/${ updatedProduct?.slug }`)
 
 
   };

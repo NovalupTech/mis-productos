@@ -17,7 +17,7 @@ export default async function ProductPage({ params }: {params: Promise<{slug: st
 
   // Todo: new
   if ( !product && slug !== 'new' ) {
-    redirect('/admin/products')
+    redirect('/gestion/products')
   }
 
   const title = (slug === 'new') ? 'Nuevo producto' : 'Editar producto'

@@ -6,6 +6,7 @@ import { Product } from '@prisma/client';
 import { z } from 'zod';
 import {v2 as cloudinary} from 'cloudinary';
 import { requireCompanyId } from '@/lib/company-context';
+import { getCurrentDomain } from '@/lib/domain';
 cloudinary.config( process.env.CLOUDINARY_URL ?? '' );
 
 
@@ -115,8 +116,8 @@ export const createUpdateProduct = async( formData: FormData ) => {
 
 
     // Todo: RevalidatePaths
-    revalidatePath('/admin/products');
-    revalidatePath(`/admin/product/${ product.slug }`);
+    revalidatePath('/gestion/products');
+    revalidatePath(`/gestion/product/${ product.slug }`);
     revalidatePath(`/products/${ product.slug }`);
 
 
@@ -148,8 +149,9 @@ const uploadImages = async( images: File[] ) => {
         const buffer = await image.arrayBuffer();
         const base64Image = Buffer.from(buffer).toString('base64');
   
+        const domain = await getCurrentDomain();
         return cloudinary.uploader.upload(`data:image/png;base64,${ base64Image }`, {
-          folder: 'teslo-shop'
+          folder: `misproductos/products/${domain}`
         })
           .then( r => r.secure_url );
         

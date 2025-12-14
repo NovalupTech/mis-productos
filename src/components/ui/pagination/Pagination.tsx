@@ -62,7 +62,7 @@ export const Pagination = ({ totalPages }: Props) => {
 								<Link
 									className={
 										clsx("page-link relative block py-1.5 px-3 rounded border-0 bg-transparent outline-none transition-all duration-300  text-gray-800 hover:text-gray-800 hover:bg-gray-200 focus:shadow-non",{
-											'bg-blue-400 text-white hover:bg-blue-700 hover:text-white shadow-md rounded': page === currentPage,
+											'bg-blue-400 text-blue-600 hover:bg-blue-700 hover:text-white shadow-md rounded': page === currentPage,
 										})
 									}
 									href={createPageUrl(page)}

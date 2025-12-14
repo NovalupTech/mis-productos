@@ -20,6 +20,10 @@ async function main() {
   await prisma.attribute.deleteMany();
   await prisma.category.deleteMany();
   await prisma.tag.deleteMany();
+  await prisma.pageSection.deleteMany();
+  await prisma.page.deleteMany();
+  await prisma.companySocial.deleteMany();
+  await prisma.companyConfig.deleteMany();
   await prisma.domain.deleteMany();
   await prisma.company.deleteMany();
   await prisma.userAddress.deleteMany();
@@ -35,12 +39,8 @@ async function main() {
   await prisma.country.createMany({ data: countries });
   console.log(`✅ ${countries.length} países creados`);
 
-  // 2. Crear usuarios
-  console.log('👤 Creando usuarios...');
-  await prisma.user.createMany({ data: users });
-  console.log(`✅ ${users.length} usuarios creados`);
-
-  // 3. Crear companies y sus datos relacionados
+  // 2. Crear companies y sus datos relacionados (primero para tener los IDs)
+  const companyMap = new Map<string, string>(); // Mapa nombre -> id
   for (const companyData of companies) {
     console.log(`\n🏢 Creando empresa: ${companyData.name}...`);
 
@@ -235,12 +235,110 @@ async function main() {
       }
     }
 
+    // Crear páginas de la empresa
+    console.log(`  📄 Creando páginas...`);
+    
+    // Página CATALOG (siempre se crea, enabled = true)
+    await prisma.page.create({
+      data: {
+        companyId: company.id,
+        type: 'CATALOG',
+        slug: 'catalog',
+        title: 'Catálogo',
+        enabled: true,
+        isLanding: true,
+      },
+    });
+
+    // Página HOME (opcional, enabled = false)
+    await prisma.page.create({
+      data: {
+        companyId: company.id,
+        type: 'HOME',
+        slug: 'home',
+        title: 'Inicio',
+        enabled: false,
+        isLanding: false,
+      },
+    });
+
+    // Página INFO (opcional, enabled = false)
+    await prisma.page.create({
+      data: {
+        companyId: company.id,
+        type: 'INFO',
+        slug: 'info',
+        title: 'Información',
+        enabled: false,
+        isLanding: false,
+      },
+    });
+
+    // Crear redes sociales de la empresa
+    if (companyData.socials && companyData.socials.length > 0) {
+      console.log(`  📱 Creando ${companyData.socials.length} redes sociales...`);
+      await prisma.companySocial.createMany({
+        data: companyData.socials.map((social) => ({
+          companyId: company.id,
+          type: social.type,
+          url: social.url,
+          label: social.label,
+          enabled: social.enabled ?? true,
+          order: social.order ?? 0,
+        })),
+      });
+    }
+
+    // Crear configuración de la empresa
+    if (companyData.config && companyData.config.length > 0) {
+      console.log(`  ⚙️  Creando ${companyData.config.length} configuraciones...`);
+      await prisma.companyConfig.createMany({
+        data: companyData.config.map((cfg) => ({
+          companyId: company.id,
+          key: cfg.key,
+          value: cfg.value,
+        })),
+      });
+    }
+
+    // Guardar el ID de la compañía en el mapa
+    companyMap.set(companyData.name, company.id);
+
     console.log(`✅ Empresa "${companyData.name}" creada exitosamente`);
   }
+
+  // 3. Crear usuarios (después de las compañías para poder asignar companyId)
+  console.log('\n👤 Creando usuarios...');
+  for (const userData of users) {
+    const userPayload: any = {
+      email: userData.email,
+      password: userData.password,
+      name: userData.name,
+      role: userData.role,
+    };
+
+    // Si el usuario es companyAdmin y tiene companyName, buscar el ID
+    if (userData.role === 'companyAdmin' && userData.companyName) {
+      const companyId = companyMap.get(userData.companyName);
+      if (companyId) {
+        userPayload.companyId = companyId;
+      } else {
+        console.warn(`⚠️  Compañía "${userData.companyName}" no encontrada para usuario "${userData.email}"`);
+      }
+    }
+
+    await prisma.user.create({
+      data: userPayload,
+    });
+  }
+  console.log(`✅ ${users.length} usuarios creados`);
 
   console.log('\n🎉 Base de datos sembrada exitosamente!');
   console.log(`\n📊 Resumen:`);
   console.log(`   - ${companies.length} empresas`);
+  console.log(`   - ${companies.length * 3} páginas (${companies.length} CATALOG, ${companies.length} HOME, ${companies.length} INFO)`);
+  console.log(`   - ${companies.reduce((acc, c) => acc + (c.socials?.length || 0), 0)} redes sociales`);
+  console.log(`   - ${companies.reduce((acc, c) => acc + (c.config?.length || 0), 0)} configuraciones`);
   console.log(`   - ${companies.reduce((acc, c) => acc + c.categories.length, 0)} categorías`);
   console.log(`   - ${companies.reduce((acc, c) => acc + c.attributes.length, 0)} atributos`);
   console.log(`   - ${companies.reduce((acc, c) => acc + c.products.length, 0)} productos`);

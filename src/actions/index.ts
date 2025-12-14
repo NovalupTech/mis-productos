@@ -31,3 +31,24 @@ export * from './product/product-pagination';
 
 export * from './user/change-user-role';
 export * from './user/get-pagination-users';
+export * from './user/get-paginated-users-by-company';
+export * from './page/get-pages';
+export * from './page/update-page';
+export * from './page/create-page';
+export * from './page-section/create-section';
+export * from './page-section/update-section';
+export * from './page-section/delete-section';
+export * from './page-section/reorder-sections';
+export * from './dashboard/get-dashboard-stats';
+export * from './company/get-company';
+export * from './company/update-company';
+export * from './company/upload-company-logo';
+export * from './company-social/get-company-socials';
+export * from './company-social/create-company-social';
+export * from './company-social/update-company-social';
+export * from './company-social/delete-company-social';
+
+export * from './company-config/get-company-config';
+export * from './company-config/update-company-config';
+export * from './company-config/delete-company-config';
+export * from './company-config/get-company-config-public';

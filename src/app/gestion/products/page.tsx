@@ -28,7 +28,7 @@ export default async function OrdersPage({ searchParams }: {searchParams: Promis
       <Title title="Mantenimiento de productos" />
 
       <div className="flex justify-end mb-5">
-        <Link href="/admin/product/new" className="btn-primary">
+        <Link href="/gestion/product/new" className="btn-primary">
           Nuevo producto
         </Link>
       </div>
@@ -59,19 +59,13 @@ export default async function OrdersPage({ searchParams }: {searchParams: Promis
                 scope="col"
                 className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
               >
-                Género
+                Categoría
               </th>
               <th
                 scope="col"
                 className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
               >
-                Inventario
-              </th>
-              <th
-                scope="col"
-                className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
-              >
-                Tallas
+                Stock
               </th>
             </tr>
           </thead>
@@ -82,7 +76,7 @@ export default async function OrdersPage({ searchParams }: {searchParams: Promis
                 className="bg-white border-b transition duration-300 ease-in-out hover:bg-gray-100"
               >
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  <Link href={`/product/${product.slug}`}>
+                  <Link href={`/gestion/product/${product.slug}`}>
                     <ProductImage
                       src={ product.productImage[0].url}
                       width={80}
@@ -94,7 +88,7 @@ export default async function OrdersPage({ searchParams }: {searchParams: Promis
                 </td>
                 <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
                   <Link
-                    href={`/admin/product/${product.slug}`}
+                    href={`/gestion/product/${product.slug}`}
                     className="hover:underline"
                   >
                     {product.title}

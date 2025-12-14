@@ -15,6 +15,7 @@ datasource db {
 enum Role {
   admin
   user
+  companyAdmin
 }
 
 enum AttributeType {
@@ -23,6 +24,34 @@ enum AttributeType {
   select
   multiselect
 }
+
+enum PageType {
+  HOME
+  CATALOG
+  INFO
+}
+
+enum SectionType {
+  HERO
+  BANNER
+  TEXT
+  IMAGE
+  FEATURES
+  GALLERY
+  CTA
+}
+
+enum SocialType {
+  INSTAGRAM
+  FACEBOOK
+  TIKTOK
+  X
+  LINKEDIN
+  YOUTUBE
+  WHATSAPP
+  WEBSITE
+}
+
 
 // -------------------------
 // Company (tus clientes)
@@ -44,6 +73,10 @@ model Company {
   customers   Customer[]
   orders      Order[]
   domains     Domain[]
+  users       User[]
+  pages       Page[]
+  socials     CompanySocial[]
+  configs     CompanyConfig[]
 }
 
 // -------------------------
@@ -128,6 +161,9 @@ model User {
   password      String
   role          Role         @default(user)
   image         String?
+
+  company       Company?     @relation(fields: [companyId], references: [id])
+  companyId     String?
 
   UserAddress   UserAddress?
   Order         Order[]
@@ -330,4 +366,73 @@ model Domain {
 
   @@index([companyId])
   @@index([domain])
+}
+
+model PageSection {
+  id        String        @id @default(uuid())
+  pageId   String
+  page     Page          @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  type      SectionType
+  position  Int
+  content   Json
+  enabled   Boolean       @default(true)
+
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@index([pageId, position])
+}
+
+model Page {
+  id          String      @id @default(uuid())
+  companyId   String
+  company     Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  type        PageType
+  slug        String
+  title       String
+  enabled     Boolean     @default(true)
+  isLanding   Boolean     @default(false)
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  sections    PageSection[]
+
+  @@unique([companyId, type])
+  @@unique([companyId, slug])
+}
+
+model CompanySocial {
+  id        String   @id @default(uuid())
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  type      SocialType
+  url       String
+  label     String?
+  enabled   Boolean  @default(true)
+  order     Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([companyId, type])
+}
+
+model CompanyConfig {
+  id        String   @id @default(cuid())
+  companyId String
+
+  key       String
+  value     Json
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, key])
+  @@index([companyId])
 }

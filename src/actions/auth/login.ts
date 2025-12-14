@@ -11,6 +11,7 @@ export async function authenticate(
 	try {
 		await signIn("credentials", {
 			redirect: false,
+			callbackUrl: '/gestion/dashboard',
 			...Object.fromEntries(formData),
 		});
 

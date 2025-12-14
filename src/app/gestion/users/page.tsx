@@ -1,7 +1,7 @@
 export const revalidate = 0;
 
 // https://tailwindcomponents.com/component/hoverable-table
-import {  getPaginatedUsers } from "@/actions";
+import {  getPaginatedUsers, getPaginatedUsersByCompany } from "@/actions";
 import { Pagination, Title } from "@/components";
 
 import Link from "next/link";
@@ -11,7 +11,7 @@ import { UsersTable } from './ui/UsersTable';
 
 export default async function OrdersPage() {
 
-  const { ok, users = [] } = await getPaginatedUsers();
+  const { ok, users = [] } = await getPaginatedUsersByCompany();
 
   if (!ok) {
     redirect("/gestion");

@@ -1,7 +1,8 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
 import type { ProductInCart } from "@/interfaces";
 import { useToastStore } from "../toast/toast-store";
+import { useCompanyStore } from "../company/company-store";
 
 interface State {
 	cart: ProductInCart[];
@@ -28,6 +29,41 @@ const getProductKey = (product: ProductInCart): string => {
 			.join('|')
 		: '';
 	return `${product.id}${attrsKey ? `|${attrsKey}` : ''}`;
+};
+
+// Función helper para obtener la clave del localStorage basada en companyId
+const getStorageKey = (): string => {
+	if (typeof window === 'undefined') {
+		return 'shopping-cart';
+	}
+	
+	// Intentar obtener el companyId del store de company
+	const companyId = useCompanyStore.getState().company?.id;
+	
+	if (companyId) {
+		return `shopping-cart-${companyId}`;
+	}
+	
+	// Si no hay companyId, usar la clave por defecto (para compatibilidad)
+	return 'shopping-cart';
+};
+
+// Storage personalizado que usa la clave dinámica
+const createCompanyStorage = () => {
+	return {
+		getItem: (name: string): string | null => {
+			const key = getStorageKey();
+			return localStorage.getItem(key);
+		},
+		setItem: (name: string, value: string): void => {
+			const key = getStorageKey();
+			localStorage.setItem(key, value);
+		},
+		removeItem: (name: string): void => {
+			const key = getStorageKey();
+			localStorage.removeItem(key);
+		},
+	};
 };
 
 export const useCartStore = create<State>()(
@@ -161,6 +197,7 @@ export const useCartStore = create<State>()(
 		}),
 		{
 			name: "shopping-cart",
+			storage: createJSONStorage(() => createCompanyStorage()),
 		}
 	)
 );

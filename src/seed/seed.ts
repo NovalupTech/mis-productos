@@ -15,6 +15,21 @@ interface SeedCompany {
   categories: string[];
   attributes: SeedAttribute[];
   products: SeedProduct[];
+  socials?: SeedSocial[]; // Redes sociales de la empresa
+  config?: SeedCompanyConfig[]; // Configuración de la empresa
+}
+
+interface SeedCompanyConfig {
+  key: string;
+  value: any; // Puede ser cualquier tipo JSON-serializable
+}
+
+interface SeedSocial {
+  type: 'INSTAGRAM' | 'FACEBOOK' | 'TIKTOK' | 'X' | 'LINKEDIN' | 'YOUTUBE' | 'WHATSAPP' | 'WEBSITE';
+  url: string;
+  label?: string;
+  enabled?: boolean;
+  order?: number;
 }
 
 interface SeedAttribute {
@@ -39,7 +54,8 @@ interface SeedUser {
   email: string;
   password: string;
   name: string;
-  role: 'admin' | 'user';
+  role: 'admin' | 'user' | 'companyAdmin';
+  companyName?: string; // Nombre de la compañía en lugar de ID
 }
 
 interface SeedData {
@@ -67,6 +83,13 @@ export const initialData: SeedData = {
       password: bcryptjs.hashSync('123456'),
       role: 'user',
     },
+    {
+      email: 'tecnologia@misproductos.shop',
+      name: 'Tecnología Admin User',
+      password: bcryptjs.hashSync('123456'),
+      role: 'companyAdmin',
+      companyName: 'Tecnología Avanzada', // Nombre de la compañía que se creará
+    },
   ],
   companies: [
     {
@@ -74,6 +97,18 @@ export const initialData: SeedData = {
       email: 'pedidos@pasteleria.com',
       phone: '+5491198765432',
       domains: ['pasteleria.misproductos.shop', 'pasteleriaartesanal.com'],
+      socials: [
+        { type: 'INSTAGRAM', url: 'https://instagram.com/pasteleriaartesanal', label: '@pasteleriaartesanal', enabled: true, order: 1 },
+        { type: 'FACEBOOK', url: 'https://facebook.com/pasteleriaartesanal', label: 'Pastelería Artesanal', enabled: true, order: 2 },
+        { type: 'WHATSAPP', url: 'https://wa.me/5491198765432', label: 'WhatsApp', enabled: true, order: 3 },
+        { type: 'TIKTOK', url: 'https://tiktok.com/@pasteleriaartesanal', label: '@pasteleriaartesanal', enabled: true, order: 4 },
+      ],
+      config: [
+        { key: 'theme.primaryColor', value: '#ec4899' }, // Rosa (pasteles)
+        { key: 'theme.secondaryColor', value: '#f59e0b' }, // Naranja (dorado)
+        { key: 'catalog.columns', value: 4 }, // 4 columnas en desktop
+        { key: 'catalog.imageSize', value: 'medium' }, // Tamaño mediano de imágenes
+      ],
       categories: ['Tortas', 'Postres', 'Panadería', 'Especiales', 'Tartas', 'Cupcakes'],
       attributes: [
         {
@@ -330,6 +365,18 @@ export const initialData: SeedData = {
       email: 'ventas@tecnologia.com',
       phone: '+5491123456789',
       domains: ['tecnologia.misproductos.shop', 'tecnologiaavanzada.com'],
+      socials: [
+        { type: 'INSTAGRAM', url: 'https://instagram.com/tecnologiaavanzada', label: '@tecnologiaavanzada', enabled: true, order: 1 },
+        { type: 'FACEBOOK', url: 'https://facebook.com/tecnologiaavanzada', label: 'Tecnología Avanzada', enabled: true, order: 2 },
+        { type: 'WHATSAPP', url: 'https://wa.me/5491123456789', label: 'WhatsApp', enabled: true, order: 3 },
+        { type: 'TIKTOK', url: 'https://tiktok.com/@tecnologiaavanzada', label: '@tecnologiaavanzada', enabled: true, order: 4 },
+      ],
+      config: [
+        { key: 'theme.primaryColor', value: '#3b82f6' }, // Azul (tecnología)
+        { key: 'theme.secondaryColor', value: '#1e40af' }, // Azul oscuro
+        { key: 'catalog.columns', value: 3 }, // 3 columnas en desktop
+        { key: 'catalog.imageSize', value: 'large' }, // Tamaño grande de imágenes
+      ],
       categories: ['Smartphones', 'Laptops', 'Tablets', 'Accesorios', 'Audio', 'Smart Home'],
       attributes: [
         {
@@ -654,6 +701,18 @@ export const initialData: SeedData = {
       email: 'contacto@indumentaria.com',
       phone: '+5491112345678',
       domains: ['indumentaria.misproductos.shop', 'indumentariapremium.com'],
+      socials: [
+        { type: 'INSTAGRAM', url: 'https://instagram.com/indumentariapremium', label: '@indumentariapremium', enabled: true, order: 1 },
+        { type: 'FACEBOOK', url: 'https://facebook.com/indumentariapremium', label: 'Indumentaria Premium', enabled: true, order: 2 },
+        { type: 'WHATSAPP', url: 'https://wa.me/5491112345678', label: 'WhatsApp', enabled: true, order: 3 },
+        { type: 'TIKTOK', url: 'https://tiktok.com/@indumentariapremium', label: '@indumentariapremium', enabled: true, order: 4 },
+      ],
+      config: [
+        { key: 'theme.primaryColor', value: '#8b5cf6' }, // Violeta (moda)
+        { key: 'theme.secondaryColor', value: '#6366f1' }, // Índigo
+        { key: 'catalog.columns', value: 5 }, // 5 columnas en desktop (más productos)
+        { key: 'catalog.imageSize', value: 'small' }, // Tamaño pequeño (para mostrar más)
+      ],
       categories: ['Remeras', 'Pantalones', 'Buzos', 'Accesorios', 'Abrigos', 'Zapatillas'],
       attributes: [
         {
@@ -978,6 +1037,18 @@ export const initialData: SeedData = {
       email: 'info@curs online.com',
       phone: '+5491123456789',
       domains: ['cursosonline.misproductos.shop', 'cursos.com'],
+      socials: [
+        { type: 'INSTAGRAM', url: 'https://instagram.com/curs online', label: '@curs online', enabled: true, order: 1 },
+        { type: 'FACEBOOK', url: 'https://facebook.com/curs online', label: 'Cursos Online', enabled: true, order: 2 },
+        { type: 'WHATSAPP', url: 'https://wa.me/5491123456789', label: 'WhatsApp', enabled: true, order: 3 },
+        { type: 'TIKTOK', url: 'https://tiktok.com/@curs online', label: '@curs online', enabled: true, order: 4 },
+      ],
+      config: [
+        { key: 'theme.primaryColor', value: '#10b981' }, // Verde (educación)
+        { key: 'theme.secondaryColor', value: '#059669' }, // Verde oscuro
+        { key: 'catalog.columns', value: 3 }, // 3 columnas en desktop
+        { key: 'catalog.imageSize', value: 'medium' }, // Tamaño mediano
+      ],
       categories: ['Programación', 'Diseño', 'Marketing', 'Negocios', 'Idiomas', 'Fotografía'],
       attributes: [
         {
@@ -1303,6 +1374,18 @@ export const initialData: SeedData = {
       phone: '+5491134567890',
       domains: ['libreria.misproductos.shop', 'libreriaelsaber.com'],
       logo: 'https://imgs.search.brave.com/o6SdOOWNuAm-SGKz1vRlPcMOdeueS4CN0OOa9qqW8bY/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pLnBp/bmltZy5jb20vb3Jp/Z2luYWxzLzQzLzRk/LzcxLzQzNGQ3MWI2/N2UyNGM0NGM0MjZj/OGJkMDQzM2YwNGU2/LmpwZw',
+      socials: [
+        { type: 'INSTAGRAM', url: 'https://instagram.com/libroselsaber', label: '@libroselsaber', enabled: true, order: 1 },
+        { type: 'FACEBOOK', url: 'https://facebook.com/libroselsaber', label: 'Librería El Saber', enabled: true, order: 2 },
+        { type: 'WHATSAPP', url: 'https://wa.me/5491134567890', label: 'WhatsApp', enabled: true, order: 3 },
+        { type: 'TIKTOK', url: 'https://tiktok.com/@libroselsaber', label: '@libroselsaber', enabled: true, order: 4 },
+      ],
+      config: [
+        { key: 'theme.primaryColor', value: '#f59e0b' }, // Naranja/Ámbar (libros clásicos)
+        { key: 'theme.secondaryColor', value: '#d97706' }, // Naranja oscuro
+        { key: 'catalog.columns', value: 4 }, // 4 columnas en desktop
+        { key: 'catalog.imageSize', value: 'large' }, // Tamaño grande (portadas de libros)
+      ],
       categories: ['Ficción', 'No Ficción', 'Infantil', 'Juvenil', 'Ciencia', 'Historia', 'Biografías', 'Autoayuda'],
       attributes: [
         {
