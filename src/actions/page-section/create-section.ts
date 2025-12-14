@@ -4,6 +4,7 @@ import { middleware } from '@/auth.config';
 import prisma from '@/lib/prisma';
 import { getCompanyIdFromContext } from '@/lib/company-context';
 import { revalidatePath } from 'next/cache';
+import { InputJsonValue } from '@prisma/client/runtime/client';
 
 interface CreateSectionData {
   pageId: string;
@@ -63,7 +64,7 @@ export const createSection = async (data: CreateSectionData) => {
         pageId: data.pageId,
         type: data.type,
         position: newPosition,
-        content: data.content,
+        content: data.content as InputJsonValue,
         enabled: data.enabled ?? true,
       },
     });

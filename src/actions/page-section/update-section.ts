@@ -4,6 +4,7 @@ import { middleware } from '@/auth.config';
 import prisma from '@/lib/prisma';
 import { getCompanyIdFromContext } from '@/lib/company-context';
 import { revalidatePath } from 'next/cache';
+import { InputJsonValue } from '@prisma/client/runtime/client';
 
 interface UpdateSectionData {
   sectionId: string;
@@ -57,14 +58,14 @@ export const updateSection = async (data: UpdateSectionData) => {
     const updateData: Partial<UpdateSectionData> = {};
     if (data.type !== undefined) updateData.type = data.type;
     if (data.position !== undefined) updateData.position = data.position;
-    if (data.content !== undefined) updateData.content = data.content;
+    if (data.content !== undefined) updateData.content = data.content as unknown as Record<string, unknown>;
     if (data.enabled !== undefined) updateData.enabled = data.enabled;
 
     await prisma.pageSection.update({
       where: {
         id: data.sectionId,
       },
-      data: updateData,
+      data: updateData as unknown as Record<string, unknown>,
     });
 
     revalidatePath('/gestion/pages');

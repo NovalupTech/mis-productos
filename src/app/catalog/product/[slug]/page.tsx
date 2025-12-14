@@ -9,6 +9,7 @@ import { AddToCart } from "./ui/AddToCart";
 import { getCurrentCompanyId } from '@/lib/domain';
 import { getCompanyConfigPublic } from '@/actions';
 import { getPriceConfig, formatPrice } from '@/utils';
+import { PriceConfig } from "@/utils/priceFormat";
 
 interface Props {
   params: {
@@ -47,11 +48,11 @@ export default async function ProductPage({params}: {params: Promise<{slug: stri
 
   // Obtener configuración de precios
   const companyId = await getCurrentCompanyId();
-  let priceConfig = { currency: 'USD', format: 'symbol-before', showPrices: true };
+  let priceConfig: PriceConfig = { currency: 'USD', format: 'symbol-before', showPrices: true };
   if (companyId) {
     const { configs } = await getCompanyConfigPublic(companyId);
-    if (configs && typeof configs === 'object' && !Array.isArray(configs)) {
-      priceConfig = getPriceConfig(configs as Record<string, any>);
+    if (configs && typeof configs === 'object' && !Array.isArray(configs)) {  
+      priceConfig = getPriceConfig(configs as unknown as Record<string, any>) as PriceConfig;
     }
   }
   const formattedPrice = formatPrice(product.price, priceConfig);
