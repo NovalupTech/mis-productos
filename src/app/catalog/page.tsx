@@ -1,11 +1,9 @@
 export const revalidate = 60;
 
 import { getPaginatedProductsWithImages, getCompanyConfigPublic } from "@/actions";
-import { Title } from "@/components";
-import { InfiniteScrollProducts } from "@/components/ui/infinite-scroll/InfiniteScrollProducts";
 import { Product } from "@/interfaces";
-import { RemoveTagButton } from "./ui/RemoveTagButton";
 import { getCurrentCompanyId } from '@/lib/domain';
+import { CatalogHeaderWrapper } from "./ui/CatalogHeaderWrapper";
 
 export default async function CatalogPage({ searchParams } :{searchParams: Promise<{page?: string, search?: string, [key: string]: string | undefined}>} & {params: Promise<{page?: string, search?: string}>}) {
 
@@ -59,33 +57,12 @@ export default async function CatalogPage({ searchParams } :{searchParams: Promi
 
   return (
     <>
-      <div className="mb-2">
-        <div className="mt-3">
-          <h1 className="antialiased text-4xl font-semibold my-7"></h1>
-          {(tag || search) && (
-            <div className="flex items-center gap-2 mb-5">
-              <h2 className="text-xl">
-                {tag 
-                  ? `Productos con tag: ${tag}` 
-                  : search 
-                    ? `Resultados de la búsqueda: ${search}` 
-                    : 'Todos los productos'}
-              </h2>
-              {tag && <RemoveTagButton />}
-            </div>
-          )}
-          {!tag && !search && (
-            <h2 className="text-xl mb-5">Todos los productos</h2>
-          )}
-        </div>
-      </div>
-
-      <InfiniteScrollProducts
+      <CatalogHeaderWrapper 
+        tag={tagFilter} 
+        search={searchQuery}
         initialProducts={products as unknown as Product[]}
         initialPage={1}
         initialTotalPages={totalPages}
-        search={searchQuery}
-        tag={tagFilter}
         attributeFilters={Object.keys(attributeFilters).length > 0 ? attributeFilters : undefined}
         catalogColumns={columns}
         catalogImageSize={imageSize}

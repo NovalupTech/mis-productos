@@ -17,6 +17,8 @@ interface InfiniteScrollProductsProps {
   attributeFilters?: Record<string, string>
   catalogColumns?: number
   catalogImageSize?: 'small' | 'medium' | 'large'
+  viewMode?: ViewMode
+  onViewModeChange?: (view: ViewMode) => void
 }
 
 export const InfiniteScrollProducts = ({
@@ -28,16 +30,31 @@ export const InfiniteScrollProducts = ({
   attributeFilters,
   catalogColumns = 4,
   catalogImageSize = 'medium',
+  viewMode: externalViewMode,
+  onViewModeChange,
 }: InfiniteScrollProductsProps) => {
   const [products, setProducts] = useState<Product[]>(initialProducts)
   const [currentPage, setCurrentPage] = useState(initialPage)
   const [totalPages, setTotalPages] = useState(initialTotalPages)
   const [isLoading, setIsLoading] = useState(false)
   const [hasMore, setHasMore] = useState(initialPage < initialTotalPages)
-  const [viewMode, setViewMode] = useState<ViewMode>('grid')
+  const [internalViewMode, setInternalViewMode] = useState<ViewMode>('grid')
   const observerTarget = useRef<HTMLDivElement>(null)
   const searchParams = useSearchParams()
   const prevFiltersRef = useRef<string>('')
+
+  // Usar viewMode externo si está disponible, sino usar el interno
+  const viewMode = externalViewMode ?? internalViewMode
+
+  // Sincronizar viewMode interno con localStorage si no hay viewMode externo
+  useEffect(() => {
+    if (!externalViewMode && typeof window !== 'undefined') {
+      const savedView = localStorage.getItem('product-view-mode') as ViewMode | null
+      if (savedView === 'grid' || savedView === 'list') {
+        setInternalViewMode(savedView)
+      }
+    }
+  }, [externalViewMode])
 
   // Crear una clave única para detectar cambios en los filtros
   const filtersKey = JSON.stringify({ search, tag, attributeFilters })
@@ -108,11 +125,6 @@ export const InfiniteScrollProducts = ({
 
   return (
     <>
-      {/* Selector de vista */}
-      <div className="flex items-center justify-end mb-4">
-        <ViewToggle onViewChange={setViewMode} />
-      </div>
-
       {/* Vista de productos según el modo seleccionado */}
       {viewMode === 'grid' ? (
         <ProductGrid products={products} selectedTag={tag} columns={catalogColumns} imageSize={catalogImageSize} />

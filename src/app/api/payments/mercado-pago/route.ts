@@ -31,7 +31,7 @@ export async function POST(request: Request) {
         })
 
         // Revalidamos la página de inicio para mostrar los datos actualizados
-        revalidatePath(`/orders/${orderId}`);
+        revalidatePath(`/catalog/orders/${orderId}`);
     }
     // Respondemos con un estado 200 para indicarle que la notificación fue recibida
     return new Response(null, {status: 200});

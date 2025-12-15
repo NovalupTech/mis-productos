@@ -52,3 +52,17 @@ export * from './company-config/get-company-config';
 export * from './company-config/update-company-config';
 export * from './company-config/delete-company-config';
 export * from './company-config/get-company-config-public';
+
+export * from './tag/get-all-tags';
+export * from './tag/create-tag';
+export * from './tag/update-tag';
+export * from './tag/delete-tag';
+
+export * from './attribute/get-all-attributes';
+export * from './attribute/create-attribute';
+export * from './attribute/update-attribute';
+export * from './attribute/delete-attribute';
+
+export * from './attribute-value/create-attribute-value';
+export * from './attribute-value/update-attribute-value';
+export * from './attribute-value/delete-attribute-value';

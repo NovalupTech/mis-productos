@@ -3,6 +3,7 @@ import 'dotenv/config';
 import { initialData } from './seed';
 import prisma from '../lib/prisma';
 import { AttributeType } from '@prisma/client';
+import bcryptjs from 'bcryptjs';
 
 async function main() {
   console.log('🧹 Limpiando base de datos...');
@@ -119,7 +120,7 @@ async function main() {
       attributeValuesMap.set(attr.name, valueMap);
     }
 
-    // Crear tags únicos globalmente
+    // Crear tags únicos por compañía
     const allTags = new Set<string>();
     companyData.products.forEach((p) => {
       p.tags.forEach((tag) => allTags.add(tag));
@@ -127,10 +128,22 @@ async function main() {
 
     const tagMap = new Map<string, string>();
     for (const tagName of allTags) {
-      // Buscar o crear el tag (son únicos globalmente)
-      let tag = await prisma.tag.findUnique({ where: { name: tagName } });
+      // Buscar o crear el tag (son únicos por compañía)
+      let tag = await prisma.tag.findUnique({ 
+        where: { 
+          name_companyId: {
+            name: tagName,
+            companyId: company.id
+          }
+        } 
+      });
       if (!tag) {
-        tag = await prisma.tag.create({ data: { name: tagName } });
+        tag = await prisma.tag.create({ 
+          data: { 
+            name: tagName,
+            companyId: company.id
+          } 
+        });
       }
       tagMap.set(tagName, tag.id);
     }
@@ -309,6 +322,8 @@ async function main() {
 
   // 3. Crear usuarios (después de las compañías para poder asignar companyId)
   console.log('\n👤 Creando usuarios...');
+  
+  // Crear usuarios definidos en el seed
   for (const userData of users) {
     const userPayload: any = {
       email: userData.email,
@@ -331,7 +346,48 @@ async function main() {
       data: userPayload,
     });
   }
-  console.log(`✅ ${users.length} usuarios creados`);
+  
+  // Crear un usuario companyAdmin automático para cada compañía que no tenga uno
+  console.log('\n👤 Creando usuarios companyAdmin automáticos para cada compañía...');
+  const existingCompanyAdmins = new Set<string>();
+  
+  // Obtener las compañías que ya tienen un companyAdmin definido
+  for (const userData of users) {
+    if (userData.role === 'companyAdmin' && userData.companyName) {
+      existingCompanyAdmins.add(userData.companyName);
+    }
+  }
+  
+  // Crear un companyAdmin para cada compañía que no tenga uno
+  for (const [companyName, companyId] of companyMap.entries()) {
+    if (!existingCompanyAdmins.has(companyName)) {
+      // Generar email basado en el nombre de la compañía
+      const emailBase = companyName
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // Remover acentos
+        .replace(/[^a-z0-9]/g, '') // Remover caracteres especiales
+        .substring(0, 20); // Limitar longitud
+      
+      const email = `${emailBase}@misproductos.shop`;
+      const name = `Admin ${companyName}`;
+      
+      await prisma.user.create({
+        data: {
+          email,
+          password: bcryptjs.hashSync('123456'), // Contraseña por defecto
+          name,
+          role: 'companyAdmin',
+          companyId,
+        },
+      });
+      
+      console.log(`  ✅ Creado usuario companyAdmin: ${email} para "${companyName}"`);
+    }
+  }
+  
+  const totalUsers = users.length + (companyMap.size - existingCompanyAdmins.size);
+  console.log(`✅ ${totalUsers} usuarios creados en total`);
 
   console.log('\n🎉 Base de datos sembrada exitosamente!');
   console.log(`\n📊 Resumen:`);

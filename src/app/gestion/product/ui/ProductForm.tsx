@@ -8,6 +8,10 @@ import { useRouter } from 'next/navigation';
 import { ProductImage } from '@/components';
 import { createUpdateProduct } from "@/actions/product/create-update-product";
 import { deleteProductImage } from "@/actions/product/delete-product-image";
+import { TagsModal } from './TagsModal';
+import { AttributesManager } from './AttributesManager';
+import { useState } from 'react';
+import { ProductAttributeWithDetails } from '@/interfaces';
 
 interface Props {
   product: Partial<Product> & { productImage?: ProductWithImage[] };
@@ -20,7 +24,7 @@ interface FormInputs {
   description: string;
   price: number;
   inStock: number;
-  tags: string;
+  tagIds: string[];
   categoryId: string;
 
   images?: FileList;
@@ -29,6 +33,14 @@ interface FormInputs {
 export const ProductForm = ({ product, categories }: Props) => {
 
   const router = useRouter();
+  const [isTagsModalOpen, setIsTagsModalOpen] = useState(false);
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>(
+    product.tags?.map(tag => tag.id) || []
+  );
+  const [selectedTagNames, setSelectedTagNames] = useState<string[]>(
+    product.tags?.map(tag => tag.name) || []
+  );
+  const [productAttributes, setProductAttributes] = useState<any[]>([]);
 
   const {
     handleSubmit,
@@ -40,7 +52,7 @@ export const ProductForm = ({ product, categories }: Props) => {
   } = useForm<FormInputs>({
     defaultValues: {
       ...product,
-      tags: product.tags?.join(", "),
+      tagIds: product.tags?.map(tag => tag.id) || [],
 
       images: undefined,
     },
@@ -61,8 +73,20 @@ export const ProductForm = ({ product, categories }: Props) => {
     formData.append("description", productToSave.description);
     formData.append("price", productToSave.price.toString());
     formData.append("inStock", productToSave.inStock.toString());
-    formData.append("tags", productToSave.tags);
+    // Enviar los tagIds como array
+    selectedTagIds.forEach(tagId => {
+      formData.append("tagIds", tagId);
+    });
     formData.append("categoryId", productToSave.categoryId);
+    
+    // Enviar los atributos como JSON (solo los que tienen valores válidos)
+    const validAttributes = productAttributes.filter(attr => {
+      if (attr.attributeValueIds && attr.attributeValueIds.length > 0) return true;
+      if (attr.valueText !== undefined && attr.valueText !== null && attr.valueText !== '') return true;
+      if (attr.valueNumber !== undefined && attr.valueNumber !== null) return true;
+      return false;
+    });
+    formData.append("attributes", JSON.stringify(validAttributes));
     
     if ( images ) {
       for ( let i = 0; i < images.length; i++  ) {
@@ -82,6 +106,17 @@ export const ProductForm = ({ product, categories }: Props) => {
     router.replace(`/gestion/product/${ updatedProduct?.slug }`)
 
 
+  };
+
+  const handleTagsChange = (tagIds: string[], tagNames: string[]) => {
+    setSelectedTagIds(tagIds);
+    setSelectedTagNames(tagNames);
+    setValue("tagIds", tagIds);
+  };
+
+  const handleAttributesChange = (attributes: any[]) => {
+    // Guardar los atributos en el formato que espera el servidor
+    setProductAttributes(attributes);
   };
 
   return (
@@ -129,10 +164,29 @@ export const ProductForm = ({ product, categories }: Props) => {
 
         <div className="flex flex-col mb-2">
           <span>Tags</span>
-          <input
-            type="text"
-            className="p-2 border rounded-md bg-gray-200"
-            {...register("tags", { required: true })}
+          <div className="flex gap-2">
+            <input
+              type="text"
+              className="p-2 border rounded-md bg-gray-200 flex-1"
+              value={selectedTagNames.join(", ")}
+              readOnly
+              placeholder="Selecciona los tags del producto"
+            />
+            <button
+              type="button"
+              onClick={() => setIsTagsModalOpen(true)}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            >
+              Gestionar Tags
+            </button>
+          </div>
+        </div>
+
+        <div className="flex flex-col mb-4">
+          <AttributesManager
+            productAttributes={product.attributes}
+            companyId={product.companyId || product.company?.id}
+            onAttributesChange={handleAttributesChange}
           />
         </div>
 
@@ -157,7 +211,7 @@ export const ProductForm = ({ product, categories }: Props) => {
       {/* Selector de tallas y fotos */}
       <div className="w-full">
         <div className="flex flex-col mb-2">
-          <span>Inventario</span>
+          <span>Stock</span>
           <input
             type="number"
             className="p-2 border rounded-md bg-gray-200"
@@ -201,6 +255,15 @@ export const ProductForm = ({ product, categories }: Props) => {
           </div>
         </div>
       </div>
+
+      {/* Modal de Tags */}
+      <TagsModal
+        isOpen={isTagsModalOpen}
+        onClose={() => setIsTagsModalOpen(false)}
+        selectedTagIds={selectedTagIds}
+        onTagsChange={handleTagsChange}
+        companyId={product.companyId || product.company?.id}
+      />
     </form>
   );
 };

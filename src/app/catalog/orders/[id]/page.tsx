@@ -29,7 +29,7 @@ export default async function OrderPage({ params }: {params: Promise<{id: string
             products?.map((product) => (
               <div key={product.product.slug} className="flex mb-5">
                   <Image
-                    src={`/products/${product.product.productImage[0].url}`}
+                    src={product.product.productImage[0].url.startsWith('http') || product.product.productImage[0].url.startsWith('https') ? product.product.productImage[0].url : `/products/${product.product.productImage[0].url}` as string}
                     style={{
                       width: '100px',
                       height: '100px',

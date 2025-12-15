@@ -13,7 +13,9 @@ import {
   IoDocumentTextOutline,
   IoBusinessOutline,
   IoColorPaletteOutline,
-  IoPricetagOutline
+  IoPricetagOutline,
+  IoBookmarkOutline,
+  IoBagOutline,
 } from "react-icons/io5";
 import clsx from "clsx";
 import { logout } from "@/actions/auth/logout";
@@ -56,6 +58,16 @@ const navItems: NavItem[] = [
     href: "/gestion/prices",
     label: "Precios",
     icon: IoPricetagOutline,
+  },
+  {
+    href: "/gestion/tags",
+    label: "Tags",
+    icon: IoBookmarkOutline,
+  },
+  {
+    href: "/gestion/attributes",
+    label: "Atributos",
+    icon: IoBagOutline,
   },
   {
     href: "/gestion/orders",

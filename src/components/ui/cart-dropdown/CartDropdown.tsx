@@ -114,15 +114,15 @@ export const CartDropdown = ({ isVisible }: Props) => {
         <div className="space-y-2 mb-4">
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Subtotal</span>
-            <span className="font-medium">{formatPrice(summaryInformation.subTotal, priceConfig) || '-'}</span>
+            <span className="font-medium">{formatPrice(Number(summaryInformation.subTotal.toFixed(2)), priceConfig) || '-'}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Impuestos (15%)</span>
-            <span className="font-medium">{formatPrice(summaryInformation.tax, priceConfig) || '-'}</span>
+            <span className="font-medium">{formatPrice(Number(summaryInformation.tax.toFixed(2)), priceConfig) || '-'}</span>
           </div>
           <div className="flex justify-between text-lg font-bold pt-2 border-t border-gray-300">
             <span>Total</span>
-            <span>{formatPrice(summaryInformation.total, priceConfig) || '-'}</span>
+            <span>{formatPrice(Number(summaryInformation.total.toFixed(2)), priceConfig) || '-'}</span>
           </div>
         </div>
         <Link 

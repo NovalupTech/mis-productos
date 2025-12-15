@@ -1,14 +1,12 @@
 export const revalidate = 0;
 
 // https://tailwindcomponents.com/component/hoverable-table
-import { getPaginatedOrders, getPaginatedProductsWithImages } from "@/actions";
+import { getPaginatedOrders, getPaginatedProductsWithImages, getCompanyConfig } from "@/actions";
 import { Pagination, ProductImage, Title } from "@/components";
-import { formatCurrency } from "@/utils";
-import Image from "next/image";
-
+import { formatPrice, getPriceConfig } from "@/utils";
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { IoCardOutline } from "react-icons/io5";
+import { getCurrentCompanyId } from "@/lib/domain";
+import { PriceConfig } from "@/utils/priceFormat";
 
 interface Props {
   searchParams: {
@@ -22,6 +20,17 @@ export default async function OrdersPage({ searchParams }: {searchParams: Promis
 
   const { products, totalPages } =
     await getPaginatedProductsWithImages({ page: pageNumber, take: 10 });
+
+  // Obtener configuración de precios de la compañía
+  const companyId = await getCurrentCompanyId();
+  let priceConfig = { currency: 'USD', format: 'symbol-before', showPrices: true }; // Valores por defecto
+  
+  if (companyId) {
+    const { ok, configs } = await getCompanyConfig();
+    if (ok && configs && typeof configs === 'object' && !Array.isArray(configs)) {
+      priceConfig = getPriceConfig(configs as unknown as Record<string, any>) as unknown as { currency: string; format: string; showPrices: boolean };
+    }
+  }
 
   return (
     <>
@@ -95,7 +104,7 @@ export default async function OrdersPage({ searchParams }: {searchParams: Promis
                   </Link>
                 </td>
                 <td className="text-sm font-bold  text-gray-900 px-6 py-4 whitespace-nowrap">
-                  {formatCurrency(product.price)}
+                  {formatPrice(product.price, priceConfig) || '-'}
                 </td>
 
                 <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">

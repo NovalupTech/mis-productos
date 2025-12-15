@@ -15,7 +15,7 @@ export const CheckoutButton = () => {
       onMouseLeave={(e) => {
         e.currentTarget.style.backgroundColor = 'var(--theme-secondary-color)';
       }}
-      href={'/checkout/address'}
+      href={'/catalog/checkout/address'}
     >
       Checkout
     </Link>

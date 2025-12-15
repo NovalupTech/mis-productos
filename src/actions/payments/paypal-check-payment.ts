@@ -44,7 +44,7 @@ export const paypalCheckPaymnent = async (paypalTransactionId: string) => {
         }
     })
 
-    revalidatePath(`/orders/${orderId}`);
+    revalidatePath(`/catalog/orders/${orderId}`);
 
     return {
         ok: true,

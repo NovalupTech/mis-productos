@@ -240,7 +240,7 @@ export const TopMenu = () => {
 
           { /* Search, Socials, Cart, menu */ }
           <div className="flex items-center">
-            {/* Redes sociales */}
+            {/* Redes sociales - Solo en desktop */}
             {sortedSocials.length > 0 && (
               <div className="hidden md:flex items-center gap-2 mx-2">
                 {sortedSocials.map((social) => {
@@ -267,18 +267,18 @@ export const TopMenu = () => {
             )}
 
             {/* Botón de búsqueda */}
-            <button onClick={handleSearchClick} className="m-2">
+            <button onClick={handleSearchClick} className="m-2 flex items-center justify-center">
               <IoSearchOutline className="w-5 h-5" />
             </button>
 
             <div 
-              className="relative m-2"
+              className="relative m-2 flex items-center justify-center"
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
             >
               {isMobile ? (
                 // En mobile, usar botón que navega directamente
-                <button onClick={handleCartClick} className="relative">
+                <button onClick={handleCartClick} className="relative flex items-center justify-center">
                   {
                     (loaded && totalItemsInCart > 0) &&
                     <span 
@@ -294,20 +294,18 @@ export const TopMenu = () => {
                 </button>
               ) : (
                 // En desktop, usar Link con hover
-                <Link href="/catalog/cart">
-                  <div className="relative">
-                    {
-                      (loaded && totalItemsInCart > 0) &&
-                      <span 
-                        className="absolute text-xs px-1 font-bold -top-2 -right-2 rounded-full text-white fade-in"
-                        style={{
-                          backgroundColor: 'var(--theme-secondary-color)',
-                        }}
-                      >
-                        { totalItemsInCart }
-                      </span>
-                    }
-                  </div>
+                <Link href="/catalog/cart" className="relative flex items-center justify-center">
+                  {
+                    (loaded && totalItemsInCart > 0) &&
+                    <span 
+                      className="absolute text-xs px-1 font-bold -top-2 -right-2 rounded-full text-white fade-in"
+                      style={{
+                        backgroundColor: 'var(--theme-secondary-color)',
+                      }}
+                    >
+                      { totalItemsInCart }
+                    </span>
+                  }
                   <IoCartOutline className="w-5 h-5" />
                 </Link>
               )}
@@ -319,12 +317,13 @@ export const TopMenu = () => {
               {!isMobile && <CartDropdown isVisible={showCartDropdown} />}
             </div>
 
+            {/* Botón "Gestionar" - Solo en desktop */}
             {isCompanyAdmin && (
               <Link
                 href="/gestion"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="m-2 px-4 py-2 text-white rounded-md transition-all font-medium"
+                className="hidden md:block m-2 px-4 py-2 text-white rounded-md transition-all font-medium"
                 style={{
                   backgroundColor: 'var(--theme-secondary-color)',
                 }}
@@ -338,7 +337,12 @@ export const TopMenu = () => {
                 Gestionar
               </Link>
             )}
-            <button onClick={openSideMenu} className="m-2 p-2 rounded-md transition-all hover:bg-gray-100">
+
+            {/* Botón Menú - Solo visible en mobile */}
+            <button 
+              onClick={openSideMenu} 
+              className="md:hidden m-2 p-2 rounded-md transition-all hover:bg-gray-100"
+            >
               Menú
             </button>
           </div>

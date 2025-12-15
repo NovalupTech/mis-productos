@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useAddressStore } from "@/store/address/address-stlore";
 import { useCartStore } from "@/store/cart/cart-store";
-import { formatCurrency } from "@/utils";
+import { formatPrice } from "@/utils";
+import { usePriceConfig } from "@/components/providers/PriceConfigProvider";
 import clsx from "clsx";
 import { placeOrder } from "@/actions/orders/putOrder";
 
@@ -15,6 +16,7 @@ export const PlaceOrder = () => {
     const cart = useCartStore(store => store.cart);
     const summaryInformation = useCartStore(store => store.getSummaryInformation());
     const clearCart = useCartStore(store => store.clearCart);
+    const priceConfig = usePriceConfig();
 
 	useEffect(() => {
 		setLoaded(true);
@@ -40,7 +42,7 @@ export const PlaceOrder = () => {
 		}
 
 		clearCart();
-		window.location.replace('/orders/' + result.orden?.id) 
+		window.location.replace('/catalog/orders/' + result.orden?.id) 
     }
 
 	return (
@@ -68,17 +70,17 @@ export const PlaceOrder = () => {
 
 			<span>Subtotal</span>
 			<span className="text-right">
-                {formatCurrency(summaryInformation.subTotal)}
+                {formatPrice(summaryInformation.subTotal, priceConfig) || '-'}
             </span>
 
 			<span>Inpuestos (15%)</span>
 			<span className="text-right">
-                {formatCurrency(summaryInformation.tax)}
+                {formatPrice(summaryInformation.tax, priceConfig) || '-'}
             </span>
 
 			<span className="mt-5 text-2xl">Total:</span>
 			<span className="mt-5 text-2xl text-right">
-                {formatCurrency(summaryInformation.total)}
+                {formatPrice(summaryInformation.total, priceConfig) || '-'}
             </span>
 		</div>
 

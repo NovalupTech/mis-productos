@@ -77,6 +77,7 @@ model Company {
   pages       Page[]
   socials     CompanySocial[]
   configs     CompanyConfig[]
+  tags        Tag[]
 }
 
 // -------------------------
@@ -327,10 +328,16 @@ model ProductAttribute {
 
 model Tag {
   id        String       @id @default(uuid())
-  name      String       @unique
+  name      String
   createdAt DateTime     @default(now())
 
+  company   Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId String
+
   products  ProductTag[]
+
+  @@unique([name, companyId])
+  @@index([companyId])
 }
 
 // -------------------------

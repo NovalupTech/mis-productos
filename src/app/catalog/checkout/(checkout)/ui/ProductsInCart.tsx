@@ -4,10 +4,13 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import { useCartStore } from "@/store/cart/cart-store";
+import { formatPrice } from "@/utils";
+import { usePriceConfig } from "@/components/providers/PriceConfigProvider";
 
 export const ProductsInCart = () => {
     const { cart } = useCartStore(state => state)
     const [loaded, setLoaded] = useState(false)
+    const priceConfig = usePriceConfig()
 
     useEffect(() => {
       setLoaded(true)
@@ -22,7 +25,7 @@ export const ProductsInCart = () => {
 			{cart.map((product) => (
 				<div key={product.slug} className="flex mb-5">
 					<Image
-						src={`/products/${product.image}`}
+						src={product.image.startsWith('http') || product.image.startsWith('https') ? product.image : `/products/${product.image}` as string}
 						style={{
 							width: "100px",
 							height: "100px",
@@ -34,7 +37,7 @@ export const ProductsInCart = () => {
 					/>
 					<div>
 						<p>{product.title} ({product.quantity}) </p>
-						<p className="font-bold">${product.price}</p>
+						<p className="font-bold">{formatPrice(product.price, priceConfig) || '-'}</p>
 					</div>
 				</div>
 			))}

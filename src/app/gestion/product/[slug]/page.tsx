@@ -2,6 +2,7 @@ import { getCategories, getProductBySlug } from '@/actions';
 import { Title } from '@/components';
 import { redirect } from 'next/navigation';
 import { ProductForm } from '../ui/ProductForm';
+import { getCurrentCompanyId } from '@/lib/domain';
 
 
 
@@ -9,9 +10,10 @@ export default async function ProductPage({ params }: {params: Promise<{slug: st
 
   const { slug } = await params;
 
-  const [ product, categories ] = await Promise.all([
+  const [ product, categories, companyId ] = await Promise.all([
     getProductBySlug({slug}),
-    getCategories()
+    getCategories(),
+    getCurrentCompanyId()
   ]);
  
 
@@ -22,11 +24,16 @@ export default async function ProductPage({ params }: {params: Promise<{slug: st
 
   const title = (slug === 'new') ? 'Nuevo producto' : 'Editar producto'
 
+  // Si es un producto nuevo, agregar el companyId
+  const productWithCompanyId = product 
+    ? product 
+    : (companyId ? { companyId } : {});
+
   return (
     <>
       <Title title={ title } />
 
-      <ProductForm product={ product ?? {} } categories={ categories } />
+      <ProductForm product={ productWithCompanyId } categories={ categories } />
     </>
   );
 }

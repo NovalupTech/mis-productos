@@ -29,7 +29,7 @@ const ProductGridItem = ({product, selectedTag, imageSize = 'medium'}: Props) =>
     attr.attribute.type === 'select' || attr.attribute.type === 'multiselect'
   ) || false;
 
-  const handleBuyClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
     
@@ -51,6 +51,12 @@ const ProductGridItem = ({product, selectedTag, imageSize = 'medium'}: Props) =>
     };
 
     addProductToCart(productCart);
+  };
+
+  const handleViewDetails = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    router.push(`/catalog/product/${product.slug}`);
   };
 
   return (
@@ -88,24 +94,32 @@ const ProductGridItem = ({product, selectedTag, imageSize = 'medium'}: Props) =>
                 style={{ viewTransitionName: `product-image-${product.slug}` }}
             />
             {/* Overlay con botones - Solo visible en desktop */}
-            <div className={`hidden sm:flex absolute inset-0 bg-black/20 items-center justify-center gap-3 transition-opacity duration-300 ${
+            <div className={`hidden sm:flex absolute inset-0 bg-black/20 items-center justify-center transition-opacity duration-300 ${
               isHovered ? 'opacity-100' : 'opacity-0'
             }`}>
-              <button
-                onClick={handleBuyClick}
-                className='text-white px-6 py-3 rounded-md font-semibold transition-colors duration-200'
-                style={{
-                  backgroundColor: 'var(--theme-secondary-color)',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--theme-secondary-color-hover)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--theme-secondary-color)';
-                }}
-              >
-                Comprar
-              </button>
+              <div className='flex flex-col gap-2'>
+                <button
+                  onClick={handleAddToCart}
+                  className='text-white px-6 py-3 rounded-md font-semibold transition-colors duration-200 w-full'
+                  style={{
+                    backgroundColor: 'var(--theme-secondary-color)',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'var(--theme-secondary-color-hover)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'var(--theme-secondary-color)';
+                  }}
+                >
+                  Agregar
+                </button>
+                <button
+                  onClick={handleViewDetails}
+                  className='text-white px-6 py-3 rounded-md font-semibold transition-colors duration-200 w-full bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30'
+                >
+                  Ver detalles
+                </button>
+              </div>
             </div>
           </Link>
         </div>
@@ -152,22 +166,30 @@ const ProductGridItem = ({product, selectedTag, imageSize = 'medium'}: Props) =>
                 })}
               </div>
             )}
-            {/* Botón comprar visible solo en mobile */}
-            <button
-              onClick={handleBuyClick}
-              className='mt-2 sm:hidden text-white px-4 py-2 rounded-md text-sm font-semibold transition-colors w-full'
-              style={{
-                backgroundColor: 'var(--theme-secondary-color)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--theme-secondary-color-hover)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--theme-secondary-color)';
-              }}
-            >
-              Comprar
-            </button>
+            {/* Botones visibles solo en mobile */}
+            <div className='mt-2 sm:hidden flex flex-col gap-2'>
+              <button
+                onClick={handleAddToCart}
+                className='text-white px-4 py-2 rounded-md text-sm font-semibold transition-colors w-full'
+                style={{
+                  backgroundColor: 'var(--theme-secondary-color)',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--theme-secondary-color-hover)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--theme-secondary-color)';
+                }}
+              >
+                Agregar
+              </button>
+              <Link
+                href={`/catalog/product/${product.slug}`}
+                className='text-center text-gray-700 px-4 py-2 rounded-md text-sm font-semibold transition-colors w-full border border-gray-300 hover:bg-gray-50'
+              >
+                Ver detalles
+              </Link>
+            </div>
         </div>
     </div>
   )

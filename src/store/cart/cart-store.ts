@@ -18,6 +18,7 @@ interface State {
 		total: number;
 	};
 	clearCart: () => void;
+	syncCartFromStorage: (companyId: string) => void;
 }
 
 // Función helper para generar una clave única del producto basada en ID y atributos
@@ -52,14 +53,33 @@ const getStorageKey = (): string => {
 const createCompanyStorage = () => {
 	return {
 		getItem: (name: string): string | null => {
+			if (typeof window === 'undefined') return null;
+			
 			const key = getStorageKey();
-			return localStorage.getItem(key);
+			const data = localStorage.getItem(key);
+			
+			// Si no hay companyId y no encontramos datos, intentar leer de la clave por defecto
+			// Esto puede pasar en la primera carga antes de que el companyId esté disponible
+			if (!data) {
+				const companyId = useCompanyStore.getState().company?.id;
+				if (!companyId) {
+					// Si no hay companyId, retornar null para que Zustand use el estado inicial
+					// La sincronización se hará cuando el companyId esté disponible
+					return null;
+				}
+			}
+			
+			return data;
 		},
 		setItem: (name: string, value: string): void => {
+			if (typeof window === 'undefined') return;
+			
 			const key = getStorageKey();
 			localStorage.setItem(key, value);
 		},
 		removeItem: (name: string): void => {
+			if (typeof window === 'undefined') return;
+			
 			const key = getStorageKey();
 			localStorage.removeItem(key);
 		},
@@ -193,6 +213,29 @@ export const useCartStore = create<State>()(
 					'Carrito vaciado',
 					'warning'
 				);
+			},
+			syncCartFromStorage: (companyId: string) => {
+				if (typeof window === 'undefined') return;
+				
+				const storageKey = `shopping-cart-${companyId}`;
+				const storedData = localStorage.getItem(storageKey);
+				
+				if (storedData) {
+					try {
+						const parsed = JSON.parse(storedData);
+						// El formato de Zustand persist es { state: { cart: [...] }, version: 0 }
+						if (parsed?.state?.cart && Array.isArray(parsed.state.cart)) {
+							// Solo sincronizar si el carrito actual está vacío (primera carga)
+							// Esto evita sobrescribir cambios del usuario
+							const { cart: currentCart } = get();
+							if (currentCart.length === 0) {
+								set({ cart: parsed.state.cart });
+							}
+						}
+					} catch (error) {
+						console.error('Error al sincronizar carrito desde localStorage:', error);
+					}
+				}
 			},
 		}),
 		{

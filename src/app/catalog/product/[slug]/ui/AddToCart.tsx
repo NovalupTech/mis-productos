@@ -150,6 +150,13 @@ export const AddToCart = ({product}: Props) => {
           );
         })}
 
+        {/* Mensaje de stock bajo */}
+        {product.inStock <= 5 && product.inStock > 0 && (
+          <p className="text-red-500 font-semibold mb-2">
+            Solo quedan {product.inStock} disponibles
+          </p>
+        )}
+
         {/* selector de cantidad */}
         <QuantitySelector quantity={selectedCount} onQuantityChanged={setSelectedCount} />
 

@@ -74,7 +74,12 @@ export default async function ProductPage({params}: {params: Promise<{slug: stri
           {product.title}
         </h1>
         {formattedPrice && (
-          <p className="text-lg mb-5">{formattedPrice}</p>
+          <p 
+            className="text-lg mb-5 font-bold"
+            style={{ color: 'var(--theme-secondary-color)' }}
+          >
+            {formattedPrice}
+          </p>
         )}
 
         <AddToCart product={product} />

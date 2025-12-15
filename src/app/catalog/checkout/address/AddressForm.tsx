@@ -59,7 +59,7 @@ export const AddressForm = ({countries, userAddress = {}}: Props) => {
 		} else{
 			deleteUserAddress(session?.user.id)
 		}
-		router.push('/checkout')
+		router.push('/catalog/checkout')
 	}
 
 	

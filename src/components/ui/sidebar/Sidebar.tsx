@@ -4,16 +4,61 @@ import { useSession } from "next-auth/react"
 import Link from "next/link"
 import { useState } from 'react';
 import { useUIStore } from "@/store/ui/ui-store"
-import { IoCloseOutline, IoLogInOutline, IoLogOutOutline, IoPeopleOutline, IoPersonOutline, IoSearchOutline, IoShirtOutline, IoTicketOutline } from "react-icons/io5"
+import { useCompanyStore } from "@/store/company/company-store"
+import { IoCloseOutline, IoLogInOutline, IoLogOutOutline, IoPeopleOutline, IoPersonOutline, IoSearchOutline, IoShirtOutline, IoTicketOutline, IoBusinessOutline } from "react-icons/io5"
+import { FaInstagram, FaFacebook, FaTiktok, FaTwitter, FaLinkedin, FaYoutube, FaWhatsapp, FaGlobe } from 'react-icons/fa'
+import { SocialType } from '@prisma/client'
 import clsx from "clsx"
 import { logout } from "@/actions/auth/logout";
 
 export const Sidebar = () => {
 
   const { isSideMenuOpen, closeSideMenu } = useUIStore(state => state)
+  const company = useCompanyStore((state) => state.company)
 
   const { data: session } = useSession()
   const isAuthenticated = !!session?.user;
+  const isCompanyAdmin = session?.user?.role === 'companyAdmin';
+
+  // Obtener redes sociales habilitadas y ordenadas
+  const enabledSocials = company?.socials?.filter(social => social.enabled) || [];
+  const sortedSocials = [...enabledSocials].sort((a, b) => a.order - b.order);
+
+  // Mapeo de iconos de redes sociales
+  const SOCIAL_TYPE_ICONS: Record<SocialType, React.ComponentType<{ size?: number; className?: string }>> = {
+    INSTAGRAM: FaInstagram,
+    FACEBOOK: FaFacebook,
+    TIKTOK: FaTiktok,
+    X: FaTwitter,
+    LINKEDIN: FaLinkedin,
+    YOUTUBE: FaYoutube,
+    WHATSAPP: FaWhatsapp,
+    WEBSITE: FaGlobe,
+  };
+
+  // Colores para cada red social
+  const SOCIAL_TYPE_COLORS: Record<SocialType, string> = {
+    INSTAGRAM: 'text-pink-600',
+    FACEBOOK: 'text-blue-600',
+    TIKTOK: 'text-black',
+    X: 'text-gray-900',
+    LINKEDIN: 'text-blue-700',
+    YOUTUBE: 'text-red-600',
+    WHATSAPP: 'text-green-600',
+    WEBSITE: 'text-gray-600',
+  };
+
+  // Fondos circulares para cada red social
+  const SOCIAL_TYPE_BG: Record<SocialType, string> = {
+    INSTAGRAM: 'bg-pink-100 hover:bg-pink-200',
+    FACEBOOK: 'bg-blue-100 hover:bg-blue-200',
+    TIKTOK: 'bg-gray-100 hover:bg-gray-200',
+    X: 'bg-gray-100 hover:bg-gray-200',
+    LINKEDIN: 'bg-blue-50 hover:bg-blue-100',
+    YOUTUBE: 'bg-red-100 hover:bg-red-200',
+    WHATSAPP: 'bg-green-100 hover:bg-green-200',
+    WEBSITE: 'bg-gray-50 hover:bg-gray-100',
+  };
 
   const log_out = async () => {
     await logout();
@@ -22,98 +67,120 @@ export const Sidebar = () => {
   }
 
   return (
-    <div>
-      { /* Background black */}
-      {
-        isSideMenuOpen &&
-          <div className="fixed top-0 left-0 w-screen h-screen z-10 bg-black opacity-30"/>
-      }
+    <>
+      { /* Overlay de fondo - solo visible cuando el menú está abierto */}
+      {isSideMenuOpen && (
+        <div 
+          onClick={closeSideMenu} 
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity duration-300"
+        />
+      )}
 
-      { /* Blur */}
-      {
-        isSideMenuOpen &&
-          <div onClick={closeSideMenu} className="fade-in fixed top-0 left-0 w-screen h-screen z-10 backdrop-filter backdrop-blur-sm"/>
-      }
-
-      { /* SideMenu */}
+      { /* SideMenu - se desliza desde la derecha */}
       <nav
-        //TODO: efecto de slide
         className={
           clsx(
-            "fixed p-5 right-0 top-0 w-[500px] h-screen bg-white z-20 shadow-2xl transform transition-all duration-300",
+            "fixed right-0 top-0 h-screen bg-white z-50 shadow-2xl transform transition-transform duration-300 ease-in-out overflow-y-auto",
+            "w-[85%] max-w-sm", // En mobile: 85% del ancho, máximo 384px (sm)
             {
-              "translate-x-full": !isSideMenuOpen,
+              "translate-x-0": isSideMenuOpen, // Visible cuando está abierto
+              "translate-x-full": !isSideMenuOpen, // Oculto fuera de la pantalla cuando está cerrado
             }
           )
         }
       >
-        <IoCloseOutline
-          size={50}
-          className="cursor-pointer absolute top-5 right-5" 
-          onClick={closeSideMenu}
-        />
-
-        {
-          isAuthenticated && (
-            <>
-            <Link onClick={closeSideMenu} href="/profile" className="flex items-center mt-10 p-2 hover:bg-gray-100 rounded transition-all">
-              <IoPersonOutline size={30} />
-              <span className="ml-3 text-xl">Perfil</span>
-            </Link>
-
-            <Link onClick={closeSideMenu} href="/orders" className="flex items-center mt-10 p-2 hover:bg-gray-100 rounded transition-all">
-              <IoTicketOutline size={30} />
-              <span className="ml-3 text-xl">Ordenes</span>
-            </Link>
-            </>
-          )
-        }
-
-        {
-          !isAuthenticated ?
-            <Link onClick={closeSideMenu} href="/auth/login" className="flex items-center mt-10 p-2 hover:bg-gray-100 rounded transition-all">
-              <IoLogInOutline size={30} />
-              <span className="ml-3 text-xl">Ingresar</span>
-            </Link> :
-            <button onClick={log_out} className="w-full flex items-center mt-10 p-2 hover:bg-gray-100 rounded transition-all">
-              <IoLogOutOutline size={30} />
-              <span className="ml-3 text-xl">Salir</span>
+        <div className="p-5">
+          {/* Botón de cerrar */}
+          <div className="flex justify-end mb-4">
+            <button
+              onClick={closeSideMenu}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              aria-label="Cerrar menú"
+            >
+              <IoCloseOutline size={28} />
             </button>
-        }
+          </div>
 
+          {/* {
+            isAuthenticated && (
+              <>
+                <Link onClick={closeSideMenu} href="/profile" className="flex items-center mt-6 p-2 hover:bg-gray-100 rounded transition-all">
+                  <IoPersonOutline size={30} />
+                  <span className="ml-3 text-xl">Perfil</span>
+                </Link>
 
+                <Link onClick={closeSideMenu} href="/orders" className="flex items-center mt-6 p-2 hover:bg-gray-100 rounded transition-all">
+                  <IoTicketOutline size={30} />
+                  <span className="ml-3 text-xl">Ordenes</span>
+                </Link>
+              </>
+            )
+          } */}
 
-        { /* Line separator */}
+          {/* {
+            !isAuthenticated ?
+              <Link onClick={closeSideMenu} href="/auth/login" className="flex items-center mt-6 p-2 hover:bg-gray-100 rounded transition-all">
+                <IoLogInOutline size={30} />
+                <span className="ml-3 text-xl">Ingresar</span>
+              </Link> :
+              <button onClick={log_out} className="w-full flex items-center mt-6 p-2 hover:bg-gray-100 rounded transition-all">
+                <IoLogOutOutline size={30} />
+                <span className="ml-3 text-xl">Salir</span>
+              </button>
+          } */}
 
-        {
-          isAuthenticated && (session?.user.role === 'admin' || session?.user.role === 'companyAdmin') && (
+          {/* Botón Gestionar - Solo para companyAdmin, visible en mobile */}
+          {isCompanyAdmin && (
             <>
-              <div className="w-full h-px bg-gray-200 my-10"  />
-              <Link onClick={closeSideMenu} href="/gestion/products" className="flex items-center mt-10 p-2 hover:bg-gray-100 rounded transition-all">
-                <IoShirtOutline size={30} />
-                <span className="ml-3 text-xl">Productos</span>
-              </Link>
-
-              <Link onClick={closeSideMenu} href="/gestion/orders" className="flex items-center mt-10 p-2 hover:bg-gray-100 rounded transition-all">
-                <IoTicketOutline size={30} />
-                <span className="ml-3 text-xl">Ordenes</span>
-              </Link>
-
-              <Link onClick={closeSideMenu} href="/gestion/users" className="flex items-center mt-10 p-2 hover:bg-gray-100 rounded transition-all">
-                <IoPeopleOutline size={30} />
-                <span className="ml-3 text-xl">Clientes</span>
+              <div className="w-full h-px bg-gray-200 my-6" />
+              <Link
+                onClick={closeSideMenu}
+                href="/gestion"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center mt-6 p-2 hover:bg-gray-100 rounded transition-all"
+              >
+                <IoBusinessOutline size={30} />
+                <span className="ml-3 text-xl">Gestionar</span>
               </Link>
             </>
-          )
-        }
-        
+          )}
 
-
+          {/* Redes sociales - Al final del menú */}
+          {sortedSocials.length > 0 && (
+            <>
+              <div className="w-full h-px bg-gray-200 my-6" />
+              <div className="mt-6 pb-6">
+                <h3 className="text-lg font-semibold mb-4 text-gray-700">Redes Sociales</h3>
+                <div className="flex flex-wrap gap-3">
+                  {sortedSocials.map((social) => {
+                    const Icon = SOCIAL_TYPE_ICONS[social.type];
+                    return (
+                      <a
+                        key={social.id}
+                        href={social.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={closeSideMenu}
+                        className={clsx(
+                          'flex items-center justify-center w-12 h-12 rounded-full transition-colors',
+                          SOCIAL_TYPE_BG[social.type],
+                          SOCIAL_TYPE_COLORS[social.type]
+                        )}
+                        title={social.label || `Ir a ${social.type}`}
+                        aria-label={social.label || `Ir a ${social.type}`}
+                      >
+                        <Icon size={24} />
+                      </a>
+                    );
+                  })}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
       </nav>
-
-
-
-    </div>
+    </>
   )
 }
 

@@ -25,7 +25,7 @@ const productSchema = z.object({
     .min(0)
     .transform( val => Number(val.toFixed(0)) ),
   categoryId: z.string().uuid(),
-  tags: z.string(),
+  tagIds: z.array(z.string().uuid()).optional().default([]),
 });
 
 
@@ -36,7 +36,25 @@ const productSchema = z.object({
 
 export const createUpdateProduct = async( formData: FormData ) => {
 
-  const data = Object.fromEntries( formData );
+  // Extraer tagIds del FormData (puede haber múltiples valores con la misma clave)
+  const tagIds = formData.getAll('tagIds').filter((id): id is string => typeof id === 'string');
+  
+  // Extraer atributos del FormData
+  const attributesJson = formData.get('attributes');
+  let attributes: any[] = [];
+  if (attributesJson && typeof attributesJson === 'string') {
+    try {
+      attributes = JSON.parse(attributesJson);
+    } catch (error) {
+      console.error('Error al parsear atributos:', error);
+    }
+  }
+  
+  const data = {
+    ...Object.fromEntries( formData ),
+    tagIds: tagIds.length > 0 ? tagIds : [],
+  };
+  
   const productParsed = productSchema.safeParse( data );
 
   if ( !productParsed.success) {
@@ -84,6 +102,95 @@ export const createUpdateProduct = async( formData: FormData ) => {
             categoryId: rest.categoryId,
           }
         })
+      }
+
+      // Gestionar tags del producto
+      // Primero, eliminar todas las relaciones existentes
+      await tx.productTag.deleteMany({
+        where: { productId: product.id }
+      });
+
+      // Luego, crear las nuevas relaciones con los tags seleccionados
+      if (rest.tagIds && rest.tagIds.length > 0) {
+        await tx.productTag.createMany({
+          data: rest.tagIds.map(tagId => ({
+            productId: product.id,
+            tagId: tagId,
+          })),
+          skipDuplicates: true, // Por si acaso hay duplicados
+        });
+      }
+
+      // Gestionar atributos del producto
+      // Primero, eliminar todos los atributos existentes
+      await tx.productAttribute.deleteMany({
+        where: { productId: product.id }
+      });
+
+      // Luego, crear los nuevos atributos
+      if (attributes && attributes.length > 0) {
+        // Obtener información de los atributos para saber su tipo
+        const attributeIds = [...new Set(attributes.map(attr => attr.attributeId))];
+        const attributesInfo = await tx.attribute.findMany({
+          where: {
+            id: { in: attributeIds },
+            companyId: companyId,
+          },
+          select: {
+            id: true,
+            type: true,
+          },
+        });
+
+        const attributeTypeMap = new Map(
+          attributesInfo.map(attr => [attr.id, attr.type])
+        );
+
+        // Crear los ProductAttribute según el tipo
+        const productAttributesToCreate: any[] = [];
+
+        for (const attr of attributes) {
+          const attributeType = attributeTypeMap.get(attr.attributeId);
+          if (!attributeType) continue;
+
+          if (attributeType === 'select' || attributeType === 'multiselect') {
+            // Para select y multiselect, crear un ProductAttribute por cada attributeValueId
+            if (attr.attributeValueIds && attr.attributeValueIds.length > 0) {
+              for (const valueId of attr.attributeValueIds) {
+                productAttributesToCreate.push({
+                  productId: product.id,
+                  attributeId: attr.attributeId,
+                  attributeValueId: valueId,
+                });
+              }
+            }
+          } else if (attributeType === 'text') {
+            // Para text, guardar en valueText
+            if (attr.valueText !== undefined && attr.valueText !== null && attr.valueText !== '') {
+              productAttributesToCreate.push({
+                productId: product.id,
+                attributeId: attr.attributeId,
+                valueText: attr.valueText,
+              });
+            }
+          } else if (attributeType === 'number') {
+            // Para number, guardar en valueNumber
+            if (attr.valueNumber !== undefined && attr.valueNumber !== null) {
+              productAttributesToCreate.push({
+                productId: product.id,
+                attributeId: attr.attributeId,
+                valueNumber: attr.valueNumber,
+              });
+            }
+          }
+        }
+
+        if (productAttributesToCreate.length > 0) {
+          await tx.productAttribute.createMany({
+            data: productAttributesToCreate,
+            skipDuplicates: true,
+          });
+        }
       }
   
       

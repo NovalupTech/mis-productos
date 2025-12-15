@@ -8,21 +8,25 @@ export type ViewMode = 'grid' | 'list'
 
 interface Props {
   onViewChange?: (view: ViewMode) => void
+  value?: ViewMode // Prop opcional para control externo
 }
 
-export const ViewToggle = ({ onViewChange }: Props) => {
-  const [viewMode, setViewMode] = useState<ViewMode>('grid')
+export const ViewToggle = ({ onViewChange, value }: Props) => {
+  const [internalViewMode, setInternalViewMode] = useState<ViewMode>('grid')
 
-  // Cargar preferencia del localStorage al montar
+  // Si hay un value externo, usarlo; sino usar el estado interno
+  const viewMode = value ?? internalViewMode
+
+  // Cargar preferencia del localStorage al montar (solo si no hay value externo)
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (!value && typeof window !== 'undefined') {
       const savedView = localStorage.getItem('product-view-mode') as ViewMode | null
       if (savedView === 'grid' || savedView === 'list') {
-        setViewMode(savedView)
+        setInternalViewMode(savedView)
         onViewChange?.(savedView)
       }
     }
-  }, [onViewChange])
+  }, [value, onViewChange])
 
   // Guardar preferencia en localStorage cuando cambia
   useEffect(() => {
@@ -32,10 +36,17 @@ export const ViewToggle = ({ onViewChange }: Props) => {
     }
   }, [viewMode, onViewChange])
 
+  const handleViewChange = (newView: ViewMode) => {
+    if (!value) {
+      setInternalViewMode(newView)
+    }
+    onViewChange?.(newView)
+  }
+
   return (
     <div className="flex items-center gap-1 border border-gray-300 rounded-md overflow-hidden">
       <button
-        onClick={() => setViewMode('grid')}
+        onClick={() => handleViewChange('grid')}
         className="p-2 transition-colors"
         style={{
           backgroundColor: viewMode === 'grid' 
@@ -61,7 +72,7 @@ export const ViewToggle = ({ onViewChange }: Props) => {
         <IoGridOutline size={20} />
       </button>
       <button
-        onClick={() => setViewMode('list')}
+        onClick={() => handleViewChange('list')}
         className="p-2 transition-colors"
         style={{
           backgroundColor: viewMode === 'list' 
