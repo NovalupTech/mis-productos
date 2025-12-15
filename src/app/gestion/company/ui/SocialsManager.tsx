@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   createCompanySocial,
   updateCompanySocial,
   deleteCompanySocial,
+  getCompanyConfig,
+  updateCompanyConfig,
 } from '@/actions';
 import { IoAddOutline, IoCreateOutline, IoTrashOutline, IoCheckmarkCircleOutline, IoCloseCircleOutline } from 'react-icons/io5';
 import { FaInstagram, FaFacebook, FaTiktok, FaTwitter, FaLinkedin, FaYoutube, FaWhatsapp, FaGlobe } from 'react-icons/fa';
@@ -59,12 +61,26 @@ const SOCIAL_TYPE_COLORS: Record<SocialType, string> = {
   WEBSITE: 'text-gray-600',
 };
 
+interface FloatingSocialConfig {
+  enabled: boolean;
+  socialType: SocialType;
+  position: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
+  style: 'rounded' | 'square' | 'circle';
+}
+
 export const SocialsManager = ({ initialSocials }: Props) => {
   const router = useRouter();
   const [socials, setSocials] = useState<CompanySocial[]>(initialSocials);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSocial, setEditingSocial] = useState<CompanySocial | null>(null);
   const [loading, setLoading] = useState<string | null>(null);
+  const [floatingConfig, setFloatingConfig] = useState<FloatingSocialConfig>({
+    enabled: false,
+    socialType: 'WHATSAPP',
+    position: 'bottom-right',
+    style: 'rounded',
+  });
+  const [loadingConfig, setLoadingConfig] = useState(false);
 
   const handleCreate = () => {
     setEditingSocial(null);
@@ -117,7 +133,44 @@ export const SocialsManager = ({ initialSocials }: Props) => {
     router.refresh();
   };
 
+  // Cargar configuración del botón flotante
+  useEffect(() => {
+    const loadFloatingConfig = async () => {
+      const result = await getCompanyConfig();
+      if (result.ok && result.configs) {
+        const config = result.configs['ui.floatingSocial'];
+        if (config) {
+          setFloatingConfig(config);
+        }
+      }
+    };
+    loadFloatingConfig();
+  }, []);
+
+  const handleFloatingConfigChange = async (newConfig: FloatingSocialConfig) => {
+    setLoadingConfig(true);
+    try {
+      const result = await updateCompanyConfig([
+        {
+          key: 'ui.floatingSocial',
+          value: newConfig,
+        },
+      ]);
+      if (result.ok) {
+        setFloatingConfig(newConfig);
+        router.refresh();
+      } else {
+        alert(result.message || 'Error al actualizar la configuración');
+      }
+    } catch (error) {
+      alert('Error al actualizar la configuración');
+    } finally {
+      setLoadingConfig(false);
+    }
+  };
+
   const sortedSocials = [...socials].sort((a, b) => a.order - b.order);
+  const enabledSocials = sortedSocials.filter(s => s.enabled);
 
   return (
     <div>
@@ -251,6 +304,139 @@ export const SocialsManager = ({ initialSocials }: Props) => {
         onSuccess={handleModalSuccess}
         editingSocial={editingSocial}
       />
+
+      {/* Configuración del botón flotante */}
+      <div className="mt-8 pt-8 border-t border-gray-200">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          Botón Flotante de Red Social
+        </h3>
+        <p className="text-sm text-gray-600 mb-4">
+          Configura una red social para que aparezca como botón flotante en tu sitio
+        </p>
+
+        <div className="bg-gray-50 rounded-lg p-4 space-y-4">
+          {/* Habilitar/Deshabilitar */}
+          <div className="flex items-center gap-3">
+            <input
+              type="checkbox"
+              id="floatingEnabled"
+              checked={floatingConfig.enabled}
+              onChange={(e) =>
+                handleFloatingConfigChange({
+                  ...floatingConfig,
+                  enabled: e.target.checked,
+                })
+              }
+              disabled={loadingConfig}
+              className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
+            />
+            <label htmlFor="floatingEnabled" className="text-sm font-medium text-gray-700 cursor-pointer">
+              Habilitar botón flotante
+            </label>
+          </div>
+
+          {floatingConfig.enabled && (
+            <>
+              {/* Seleccionar red social */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Red Social
+                </label>
+                <select
+                  value={floatingConfig.socialType}
+                  onChange={(e) =>
+                    handleFloatingConfigChange({
+                      ...floatingConfig,
+                      socialType: e.target.value as SocialType,
+                    })
+                  }
+                  disabled={loadingConfig}
+                  className="w-full p-2 border border-gray-300 rounded-md bg-white"
+                >
+                  {enabledSocials.map((social) => (
+                    <option key={social.id} value={social.type}>
+                      {SOCIAL_TYPE_LABELS[social.type]}
+                    </option>
+                  ))}
+                  {enabledSocials.length === 0 && (
+                    <option value="">No hay redes sociales habilitadas</option>
+                  )}
+                </select>
+                {enabledSocials.length === 0 && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    Debes habilitar al menos una red social arriba
+                  </p>
+                )}
+              </div>
+
+              {/* Posición */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Posición
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {(['top-left', 'top-right', 'bottom-left', 'bottom-right' , ] as const).map((pos) => (
+                    <button
+                      key={pos}
+                      type="button"
+                      onClick={() =>
+                        handleFloatingConfigChange({
+                          ...floatingConfig,
+                          position: pos,
+                        })
+                      }
+                      disabled={loadingConfig}
+                      className={clsx(
+                        'p-2 text-sm border rounded-md transition-colors',
+                        floatingConfig.position === pos
+                          ? 'bg-blue-600 text-white border-blue-600'
+                          : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                      )}
+                    >
+                      {pos === 'bottom-right' && 'Abajo Derecha'}
+                      {pos === 'bottom-left' && 'Abajo Izquierda'}
+                      {pos === 'top-right' && 'Arriba Derecha'}
+                      {pos === 'top-left' && 'Arriba Izquierda'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Estilo */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Estilo
+                </label>
+                <div className="flex gap-2">
+                  {(['rounded', 'square', 'circle'] as const).map((style) => (
+                    <button
+                      key={style}
+                      type="button"
+                      onClick={() =>
+                        handleFloatingConfigChange({
+                          ...floatingConfig,
+                          style: style,
+                        })
+                      }
+                      disabled={loadingConfig}
+                      className={clsx(
+                        'flex-1 p-2 text-sm border rounded-md transition-colors',
+                        floatingConfig.style === style
+                          ? 'bg-blue-600 text-white border-blue-600'
+                          : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                      )}
+                    >
+                      {style === 'rounded' && 'Redondeado'}
+                      {style === 'square' && 'Cuadrado'}
+                      {style === 'circle' && 'Circular'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

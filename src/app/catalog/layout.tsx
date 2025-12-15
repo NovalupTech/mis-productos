@@ -1,4 +1,4 @@
-import { TopMenu, Sidebar, Footer } from "@/components";
+import { TopMenu, Sidebar, Footer, FloatingSocialButton } from "@/components";
 import { CompanyProvider } from "@/components/providers/CompanyProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { PriceConfigProvider } from "@/components/providers/PriceConfigProvider";
@@ -212,6 +212,7 @@ export default async function ShopLayout({
         </div>
 
         <Footer />
+        <FloatingSocialButton />
         </PriceConfigProvider>
       </ThemeProvider>
     </main>

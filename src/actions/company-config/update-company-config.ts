@@ -64,6 +64,10 @@ export const updateCompanyConfig = async (configs: UpdateConfigData[]) => {
       revalidatePath('/catalog');
       revalidatePath('/catalog/product');
     }
+    if (keys.some(k => k.startsWith('ui.'))) {
+      revalidatePath('/gestion/company');
+      revalidatePath('/catalog');
+    }
 
     return {
       ok: true,

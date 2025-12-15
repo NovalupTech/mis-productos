@@ -8,6 +8,7 @@ import Link from "next/link";
 import { getCurrentCompanyId } from "@/lib/domain";
 import { PriceConfig } from "@/utils/priceFormat";
 import { ImportProductsButton } from "./ui/ImportProductsButton";
+import { ApiImportButton } from "./ui/ApiImportButton";
 
 interface Props {
   searchParams: {
@@ -39,6 +40,7 @@ export default async function OrdersPage({ searchParams }: {searchParams: Promis
 
       <div className="flex justify-end gap-3 mb-5">
         <ImportProductsButton />
+        <ApiImportButton />
         <Link href="/gestion/product/new" className="btn-primary">
           Nuevo producto
         </Link>
@@ -100,7 +102,7 @@ export default async function OrdersPage({ searchParams }: {searchParams: Promis
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     <Link href={`/gestion/product/${product.slug}`}>
                       <ProductImage
-                        src={product.productImage[0].url}
+                        src={product.productImage[0]?.url}
                         width={80}
                         height={80}
                         alt={product.title}

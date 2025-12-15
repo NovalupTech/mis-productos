@@ -18,3 +18,4 @@ export { Title } from './ui/title/Title';
 export { PaypalButtons } from './ui/paypal/PaypalButtons';
 export { MercadoPagoButton } from './ui/mercado-pago/MercadoPagoButtons';
 export { RequiredAttributesModal } from './ui/required-attributes-modal/RequiredAttributesModal';
+export { FloatingSocialButton } from './ui/floating-social-button/FloatingSocialButton';
