@@ -8,10 +8,12 @@ import { useRouter } from 'next/navigation';
 import { ProductImage } from '@/components';
 import { createUpdateProduct } from "@/actions/product/create-update-product";
 import { deleteProductImage } from "@/actions/product/delete-product-image";
+import { deleteProduct } from "@/actions/product/delete-product";
 import { TagsModal } from './TagsModal';
 import { AttributesManager } from './AttributesManager';
 import { useState } from 'react';
 import { ProductAttributeWithDetails } from '@/interfaces';
+import { IoTrashOutline } from 'react-icons/io5';
 
 interface Props {
   product: Partial<Product> & { productImage?: ProductWithImage[] };
@@ -26,6 +28,8 @@ interface FormInputs {
   inStock: number;
   tagIds: string[];
   categoryId: string;
+  featured: boolean;
+  code?: string | null;
 
   images?: FileList;
 }
@@ -34,6 +38,8 @@ export const ProductForm = ({ product, categories }: Props) => {
 
   const router = useRouter();
   const [isTagsModalOpen, setIsTagsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>(
     product.tags?.map(tag => tag.id) || []
   );
@@ -53,7 +59,8 @@ export const ProductForm = ({ product, categories }: Props) => {
     defaultValues: {
       ...product,
       tagIds: product.tags?.map(tag => tag.id) || [],
-
+      featured: product.featured ?? false,
+      code: product.code || '',
       images: undefined,
     },
   });
@@ -73,6 +80,10 @@ export const ProductForm = ({ product, categories }: Props) => {
     formData.append("description", productToSave.description);
     formData.append("price", productToSave.price.toString());
     formData.append("inStock", productToSave.inStock.toString());
+    formData.append("featured", productToSave.featured.toString());
+    if (productToSave.code) {
+      formData.append("code", productToSave.code);
+    }
     // Enviar los tagIds como array
     selectedTagIds.forEach(tagId => {
       formData.append("tagIds", tagId);
@@ -119,6 +130,36 @@ export const ProductForm = ({ product, categories }: Props) => {
     setProductAttributes(attributes);
   };
 
+  const handleDeleteProduct = async () => {
+    if (!product.id) return;
+
+    const confirmed = window.confirm(
+      '¿Estás seguro de que deseas eliminar este producto?\n\n' +
+      'Esta acción eliminará:\n' +
+      '- El producto\n' +
+      '- Todas las imágenes asociadas\n\n' +
+      'Esta acción no se puede deshacer.'
+    );
+
+    if (!confirmed) return;
+
+    setIsDeleting(true);
+    try {
+      const result = await deleteProduct(product.id);
+      
+      if (result.ok) {
+        router.push('/gestion/products');
+        router.refresh();
+      } else {
+        alert(result.message || 'Error al eliminar el producto');
+      }
+    } catch (error) {
+      alert('Error al eliminar el producto');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
@@ -142,6 +183,19 @@ export const ProductForm = ({ product, categories }: Props) => {
             className="p-2 border rounded-md bg-gray-200"
             {...register("slug", { required: true })}
           />
+        </div>
+
+        <div className="flex flex-col mb-2">
+          <span>Código</span>
+          <input
+            type="text"
+            className="p-2 border rounded-md bg-gray-200"
+            {...register("code")}
+            placeholder="Se genera automáticamente si se deja vacío (MP-00001, MP-00002...)"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Si se deja vacío, se generará automáticamente con formato MP-XXXXX
+          </p>
         </div>
 
         <div className="flex flex-col mb-2">
@@ -206,6 +260,19 @@ export const ProductForm = ({ product, categories }: Props) => {
         </div>
 
         <button className="btn-primary w-full">Guardar</button>
+        
+        {/* Botón de eliminar producto - solo si el producto existe */}
+        {product.id && (
+          <button
+            type="button"
+            onClick={handleDeleteProduct}
+            disabled={isDeleting}
+            className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md transition-colors w-full mt-3 flex items-center justify-center gap-2"
+          >
+            <IoTrashOutline size={20} />
+            {isDeleting ? 'Eliminando...' : 'Eliminar producto'}
+          </button>
+        )}
       </div>
 
       {/* Selector de tallas y fotos */}
@@ -217,6 +284,22 @@ export const ProductForm = ({ product, categories }: Props) => {
             className="p-2 border rounded-md bg-gray-200"
             {...register("inStock", { required: true, min: 0 })}
           />
+        </div>
+
+        <div className="flex flex-col mb-2">
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              {...register("featured")}
+              className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
+            />
+            <span className="text-sm font-medium text-gray-700">
+              Producto destacado
+            </span>
+          </label>
+          <p className="text-xs text-gray-500 mt-1 ml-8">
+            Marca este producto como destacado para que aparezca en secciones especiales
+          </p>
         </div>
 
         {/* As checkboxes */}

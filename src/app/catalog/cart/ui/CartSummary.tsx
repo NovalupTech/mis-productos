@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 
 export const CartSummary = () => {
   const priceConfig = usePriceConfig();
-	const summaryInformation = useCartStore(store => store.getSummaryInformation());
+	const summaryInformation = useCartStore(store => store.getSummaryInformation(priceConfig));
 	const [loaded, setLoaded] = useState(false);
 
 	useEffect(() => {
@@ -15,6 +15,17 @@ export const CartSummary = () => {
 	}, []);
 
 	if (!loaded) return <p>Loading...</p>;
+
+	// Formatear el texto del IVA según la configuración
+	const getTaxLabel = () => {
+		if (!priceConfig.enableTax || !priceConfig.taxValue || priceConfig.taxValue === 0) {
+			return 'Impuestos';
+		}
+		if (priceConfig.taxType === 'percentage') {
+			return `Impuestos (${priceConfig.taxValue}%)`;
+		}
+		return 'Impuestos';
+	};
 
 	return (
 		<div className="grid grid-cols-2">
@@ -28,7 +39,7 @@ export const CartSummary = () => {
                 {formatPrice(summaryInformation.subTotal, priceConfig) || '-'}
             </span>
 
-			<span>Inpuestos (15%)</span>
+			<span>{getTaxLabel()}</span>
 			<span className="text-right">
                 {formatPrice(summaryInformation.tax, priceConfig) || '-'}
             </span>

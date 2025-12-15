@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { updateCompanyConfig, deleteCompanyConfig } from '@/actions';
-import { IoPricetagOutline, IoRefreshOutline, IoEyeOutline, IoEyeOffOutline } from 'react-icons/io5';
+import { IoPricetagOutline, IoRefreshOutline, IoEyeOutline, IoEyeOffOutline, IoReceiptOutline } from 'react-icons/io5';
 
 interface PricesFormProps {
   initialConfig: Record<string, any>;
@@ -31,6 +31,9 @@ const FORMAT_OPTIONS = [
 const DEFAULT_CURRENCY = 'USD';
 const DEFAULT_FORMAT = 'symbol-before';
 const DEFAULT_SHOW_PRICES = true;
+const DEFAULT_ENABLE_TAX = false;
+const DEFAULT_TAX_TYPE = 'percentage';
+const DEFAULT_TAX_VALUE = 0;
 
 export const PricesForm = ({ initialConfig }: PricesFormProps) => {
   const router = useRouter();
@@ -45,6 +48,19 @@ export const PricesForm = ({ initialConfig }: PricesFormProps) => {
       ? initialConfig['prices.showPrices'] 
       : DEFAULT_SHOW_PRICES
   );
+  const [enableTax, setEnableTax] = useState<boolean>(
+    initialConfig['prices.enableTax'] !== undefined 
+      ? initialConfig['prices.enableTax'] 
+      : DEFAULT_ENABLE_TAX
+  );
+  const [taxType, setTaxType] = useState<'percentage' | 'fixed'>(
+    initialConfig['prices.taxType'] || DEFAULT_TAX_TYPE
+  );
+  const [taxValue, setTaxValue] = useState<number>(
+    initialConfig['prices.taxValue'] !== undefined 
+      ? Number(initialConfig['prices.taxValue']) 
+      : DEFAULT_TAX_VALUE
+  );
   const [loading, setLoading] = useState(false);
   const [deletingKey, setDeletingKey] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -53,6 +69,9 @@ export const PricesForm = ({ initialConfig }: PricesFormProps) => {
   const hasCurrency = !!initialConfig['prices.currency'];
   const hasFormat = !!initialConfig['prices.format'];
   const hasShowPrices = initialConfig['prices.showPrices'] !== undefined;
+  const hasEnableTax = initialConfig['prices.enableTax'] !== undefined;
+  const hasTaxType = !!initialConfig['prices.taxType'];
+  const hasTaxValue = initialConfig['prices.taxValue'] !== undefined;
 
   // Obtener el símbolo de la moneda seleccionada
   const selectedCurrency = CURRENCIES.find(c => c.value === currency);
@@ -87,6 +106,9 @@ export const PricesForm = ({ initialConfig }: PricesFormProps) => {
         { key: 'prices.currency', value: currency },
         { key: 'prices.format', value: format },
         { key: 'prices.showPrices', value: showPrices },
+        { key: 'prices.enableTax', value: enableTax },
+        { key: 'prices.taxType', value: taxType },
+        { key: 'prices.taxValue', value: taxValue },
       ]);
 
       if (result.ok) {
@@ -124,6 +146,12 @@ export const PricesForm = ({ initialConfig }: PricesFormProps) => {
           setFormat(DEFAULT_FORMAT);
         } else if (key === 'prices.showPrices') {
           setShowPrices(DEFAULT_SHOW_PRICES);
+        } else if (key === 'prices.enableTax') {
+          setEnableTax(DEFAULT_ENABLE_TAX);
+        } else if (key === 'prices.taxType') {
+          setTaxType(DEFAULT_TAX_TYPE);
+        } else if (key === 'prices.taxValue') {
+          setTaxValue(DEFAULT_TAX_VALUE);
         }
         router.refresh();
       } else {
@@ -281,6 +309,138 @@ export const PricesForm = ({ initialConfig }: PricesFormProps) => {
             </div>
           </label>
         </div>
+      </div>
+
+      {/* Sección: IVA/Impuestos */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <IoReceiptOutline className="text-gray-600" size={20} />
+            <h2 className="text-lg font-semibold text-gray-800">IVA / Impuestos</h2>
+          </div>
+          {(hasEnableTax || hasTaxType || hasTaxValue) && (
+            <button
+              type="button"
+              onClick={() => {
+                handleResetToDefault('prices.enableTax');
+                handleResetToDefault('prices.taxType');
+                handleResetToDefault('prices.taxValue');
+              }}
+              disabled={deletingKey !== null}
+              className="flex items-center gap-1 text-xs text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              title="Restaurar al valor por defecto"
+            >
+              <IoRefreshOutline size={14} />
+              <span>Default</span>
+            </button>
+          )}
+        </div>
+
+        {/* Checkbox para habilitar IVA */}
+        <div className="mb-4">
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={enableTax}
+              onChange={(e) => setEnableTax(e.target.checked)}
+              className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
+            />
+            <div>
+              <span className="text-sm font-medium text-gray-700">
+                Aplicar IVA/Impuestos a las órdenes
+              </span>
+              <p className="text-xs text-gray-500 mt-1">
+                Si está activado, se calculará y sumará el IVA al precio final de cada orden
+              </p>
+            </div>
+          </label>
+        </div>
+
+        {/* Configuración de IVA (solo visible si está habilitado) */}
+        {enableTax && (
+          <div className="space-y-4 pl-8 border-l-2 border-gray-200">
+            {/* Tipo de IVA */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Tipo de IVA
+              </label>
+              <div className="space-y-2">
+                <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-md cursor-pointer hover:bg-gray-50 transition-colors">
+                  <input
+                    type="radio"
+                    name="taxType"
+                    value="percentage"
+                    checked={taxType === 'percentage'}
+                    onChange={(e) => setTaxType(e.target.value as 'percentage' | 'fixed')}
+                    className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm font-medium text-gray-700">Porcentaje</span>
+                </label>
+                <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-md cursor-pointer hover:bg-gray-50 transition-colors">
+                  <input
+                    type="radio"
+                    name="taxType"
+                    value="fixed"
+                    checked={taxType === 'fixed'}
+                    onChange={(e) => setTaxType(e.target.value as 'percentage' | 'fixed')}
+                    className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm font-medium text-gray-700">Valor fijo</span>
+                </label>
+              </div>
+            </div>
+
+            {/* Valor del IVA */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {taxType === 'percentage' ? 'Porcentaje de IVA (%)' : 'Valor fijo de IVA'}
+              </label>
+              <input
+                type="number"
+                min="0"
+                step={taxType === 'percentage' ? '0.01' : '0.01'}
+                value={taxValue}
+                onChange={(e) => setTaxValue(Number(e.target.value))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder={taxType === 'percentage' ? 'Ej: 15' : 'Ej: 50'}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                {taxType === 'percentage' 
+                  ? 'El porcentaje se aplicará sobre el subtotal de cada orden'
+                  : 'Este valor fijo se sumará al subtotal de cada orden'}
+              </p>
+            </div>
+
+            {/* Vista previa del cálculo */}
+            <div className="bg-gray-50 p-4 rounded-md">
+              <p className="text-sm font-medium text-gray-700 mb-2">Vista previa del cálculo:</p>
+              <div className="space-y-1 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Subtotal:</span>
+                  <span className="font-medium">{formatExamplePrice(100, currency, format)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">IVA ({taxType === 'percentage' ? `${taxValue}%` : formatExamplePrice(taxValue, currency, format)}):</span>
+                  <span className="font-medium">
+                    {taxType === 'percentage' 
+                      ? formatExamplePrice(100 * (taxValue / 100), currency, format)
+                      : formatExamplePrice(taxValue, currency, format)
+                    }
+                  </span>
+                </div>
+                <div className="flex justify-between pt-2 border-t border-gray-300">
+                  <span className="font-semibold text-gray-800">Total:</span>
+                  <span className="font-bold text-lg" style={{ color: 'var(--theme-secondary-color)' }}>
+                    {taxType === 'percentage' 
+                      ? formatExamplePrice(100 + (100 * (taxValue / 100)), currency, format)
+                      : formatExamplePrice(100 + taxValue, currency, format)
+                    }
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Botón de guardar */}

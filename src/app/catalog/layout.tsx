@@ -7,6 +7,7 @@ import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { getCurrentCompanyId, getCurrentDomain } from '@/lib/domain';
 import { getCompanyConfigPublic } from '@/actions';
+import { getPriceConfig } from '@/utils';
 import prisma from '@/lib/prisma';
 import LandingPage from '../landing/page';
 
@@ -185,11 +186,7 @@ export default async function ShopLayout({
   const secondaryHover = calculateHoverColor(secondaryColor);
 
   // Configuración de precios
-  const priceConfig = {
-    currency: configsMap['prices.currency'] || 'USD',
-    format: configsMap['prices.format'] || 'symbol-before',
-    showPrices: configsMap['prices.showPrices'] !== undefined ? configsMap['prices.showPrices'] : true,
-  };
+  const priceConfig = getPriceConfig(configsMap);
 
   // Si hay companyId, renderizar el shop normal
   return (

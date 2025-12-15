@@ -48,6 +48,7 @@ interface SeedProduct {
   category: string;
   tags: string[];
   attributes: Record<string, string | number | string[]>; // nombre del atributo -> valor
+  code?: string; // Código opcional, se genera automáticamente si no se proporciona
 }
 
 interface SeedUser {

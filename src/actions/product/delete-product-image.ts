@@ -1,5 +1,6 @@
 'use server';
 
+import { getCurrentDomain } from '@/lib/domain';
 import prisma from '@/lib/prisma';
 import {v2 as cloudinary} from 'cloudinary';
 import { revalidatePath } from 'next/cache';
@@ -20,7 +21,8 @@ export const deleteProductImage = async( imageId: number, imageUrl: string ) => 
     .pop()
     ?.split('.')[0] ?? '';
 
-  const folder = 'teslo-shop/'
+  const domain = await getCurrentDomain();
+  const folder = `products/${domain}/`;
 
   try {
 

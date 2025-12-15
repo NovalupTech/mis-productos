@@ -5,11 +5,26 @@ import { QuantitySelector, AttributeSelector } from '@/components'
 import { Product, ProductInCart } from '@/interfaces'
 import { useCartStore } from '@/store/cart/cart-store'
 
-interface Props {
-    product: Product
+interface StockConfig {
+  showInDetails: boolean;
+  showLowStockMessage: boolean;
+  lowStockThreshold: number;
 }
 
-export const AddToCart = ({product}: Props) => {
+interface Props {
+    product: Product;
+    stockConfig?: StockConfig;
+}
+
+export const AddToCart = ({product, stockConfig}: Props) => {
+  // Valores por defecto para stockConfig
+  const defaultStockConfig: StockConfig = {
+    showInDetails: true,
+    showLowStockMessage: true,
+    lowStockThreshold: 5,
+  };
+  
+  const finalStockConfig = stockConfig || defaultStockConfig;
 
   const addProductToCart = useCartStore(state => state.addProductToCart)
   const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string | number | string[]>>({})
@@ -31,10 +46,10 @@ export const AddToCart = ({product}: Props) => {
     return grouped;
   }, [product.attributes]);
 
-  // Obtener atributos requeridos (select/multiselect que necesitan selección)
+  // Obtener atributos obligatorios
   const requiredAttributes = useMemo(() => {
     return product.attributes?.filter(attr => 
-      attr.attribute.type === 'select' || attr.attribute.type === 'multiselect'
+      attr.attribute.required === true
     ) || [];
   }, [product.attributes]);
 
@@ -151,7 +166,9 @@ export const AddToCart = ({product}: Props) => {
         })}
 
         {/* Mensaje de stock bajo */}
-        {product.inStock <= 5 && product.inStock > 0 && (
+        {finalStockConfig.showLowStockMessage && 
+         product.inStock <= finalStockConfig.lowStockThreshold && 
+         product.inStock > 0 && (
           <p className="text-red-500 font-semibold mb-2">
             Solo quedan {product.inStock} disponibles
           </p>

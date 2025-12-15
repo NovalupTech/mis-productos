@@ -8,6 +8,7 @@ import { Product, ProductInCart } from '@/interfaces'
 import { useCartStore } from '@/store/cart/cart-store'
 import { formatPrice } from '@/utils'
 import { usePriceConfig } from '@/components/providers/PriceConfigProvider'
+import { RequiredAttributesModal } from '@/components'
 
 interface Props {
     product: Product
@@ -21,25 +22,26 @@ const ProductGridItem = ({product, selectedTag, imageSize = 'medium'}: Props) =>
 
   const [image, setImage] = useState(product.images[0]);
   const [isHovered, setIsHovered] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const addProductToCart = useCartStore(state => state.addProductToCart);
   const router = useRouter();
 
-  // Verificar si el producto tiene atributos requeridos (select/multiselect)
+  // Verificar si el producto tiene atributos obligatorios
   const hasRequiredAttributes = product.attributes?.some(attr => 
-    attr.attribute.type === 'select' || attr.attribute.type === 'multiselect'
+    attr.attribute.required === true
   ) || false;
 
   const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
     
-    // Si tiene atributos requeridos, redirigir a la página del producto
+    // Si tiene atributos obligatorios, abrir el modal
     if (hasRequiredAttributes) {
-      router.push(`/catalog/product/${product.slug}`);
+      setIsModalOpen(true);
       return;
     }
 
-    // Si no tiene atributos requeridos, agregar directamente al carrito
+    // Si no tiene atributos obligatorios, agregar directamente al carrito
     const productCart: ProductInCart = {
       id: product.id,
       slug: product.slug,
@@ -191,6 +193,14 @@ const ProductGridItem = ({product, selectedTag, imageSize = 'medium'}: Props) =>
               </Link>
             </div>
         </div>
+
+        {/* Modal de atributos obligatorios */}
+        <RequiredAttributesModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          product={product}
+          onAddToCart={() => {}}
+        />
     </div>
   )
 }

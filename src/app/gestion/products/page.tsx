@@ -7,6 +7,7 @@ import { formatPrice, getPriceConfig } from "@/utils";
 import Link from "next/link";
 import { getCurrentCompanyId } from "@/lib/domain";
 import { PriceConfig } from "@/utils/priceFormat";
+import { ImportProductsButton } from "./ui/ImportProductsButton";
 
 interface Props {
   searchParams: {
@@ -36,7 +37,8 @@ export default async function OrdersPage({ searchParams }: {searchParams: Promis
     <>
       <Title title="Mantenimiento de productos" />
 
-      <div className="flex justify-end mb-5">
+      <div className="flex justify-end gap-3 mb-5">
+        <ImportProductsButton />
         <Link href="/gestion/product/new" className="btn-primary">
           Nuevo producto
         </Link>
@@ -57,6 +59,12 @@ export default async function OrdersPage({ searchParams }: {searchParams: Promis
                 className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
               >
                 Titulo
+              </th>
+              <th
+                scope="col"
+                className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
+              >
+                Código
               </th>
               <th
                 scope="col"
@@ -102,6 +110,9 @@ export default async function OrdersPage({ searchParams }: {searchParams: Promis
                   >
                     {product.title}
                   </Link>
+                </td>
+                <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                  {product.code}
                 </td>
                 <td className="text-sm font-bold  text-gray-900 px-6 py-4 whitespace-nowrap">
                   {formatPrice(product.price, priceConfig) || '-'}

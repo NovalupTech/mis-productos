@@ -22,7 +22,7 @@ export const CartDropdown = ({ isVisible }: Props) => {
   const [loaded, setLoaded] = useState(false)
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
   const [productAttributes, setProductAttributes] = useState<Record<string, ProductAttributeWithDetails[]>>({})
-  const summaryInformation = getSummaryInformation()
+  const summaryInformation = getSummaryInformation(priceConfig)
 
   useEffect(() => {
     setLoaded(true)
@@ -117,7 +117,13 @@ export const CartDropdown = ({ isVisible }: Props) => {
             <span className="font-medium">{formatPrice(Number(summaryInformation.subTotal.toFixed(2)), priceConfig) || '-'}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Impuestos (15%)</span>
+            <span className="text-gray-600">
+              {priceConfig.enableTax && priceConfig.taxValue && priceConfig.taxValue > 0
+                ? priceConfig.taxType === 'percentage'
+                  ? `Impuestos (${priceConfig.taxValue}%)`
+                  : 'Impuestos'
+                : 'Impuestos'}
+            </span>
             <span className="font-medium">{formatPrice(Number(summaryInformation.tax.toFixed(2)), priceConfig) || '-'}</span>
           </div>
           <div className="flex justify-between text-lg font-bold pt-2 border-t border-gray-300">

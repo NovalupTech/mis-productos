@@ -26,6 +26,8 @@ const productSchema = z.object({
     .transform( val => Number(val.toFixed(0)) ),
   categoryId: z.string().uuid(),
   tagIds: z.array(z.string().uuid()).optional().default([]),
+  featured: z.coerce.boolean().optional().default(false),
+  code: z.string().optional().nullable(),
 });
 
 
@@ -68,6 +70,40 @@ export const createUpdateProduct = async( formData: FormData ) => {
 
   const { id, ...rest } = product;
 
+  // Función para generar código automáticamente
+  const generateProductCode = async (tx: any, companyId: string): Promise<string> => {
+    // Buscar todos los productos con código que coincidan con el patrón MP-XXXXX
+    const productsWithCode = await tx.product.findMany({
+      where: {
+        companyId: companyId,
+        code: {
+          startsWith: 'MP-',
+        },
+      },
+      select: {
+        code: true,
+      },
+    });
+
+    // Extraer números de los códigos y encontrar el máximo
+    let maxNumber = 0;
+    for (const product of productsWithCode) {
+      if (product.code) {
+        const match = product.code.match(/^MP-(\d+)$/);
+        if (match) {
+          const number = parseInt(match[1], 10);
+          if (number > maxNumber) {
+            maxNumber = number;
+          }
+        }
+      }
+    }
+
+    // Incrementar y formatear con 6 dígitos
+    const nextNumber = maxNumber + 1;
+    return `MP-${nextNumber.toString().padStart(6, '0')}`;
+  };
+
   try {
     const prismaTx = await prisma.$transaction( async (tx) => {
   
@@ -76,7 +112,7 @@ export const createUpdateProduct = async( formData: FormData ) => {
   
       if ( id ) {
         // Actualizar
-        product = await prisma.product.update({
+        product = await tx.product.update({
           where: { id },
           data: {
             companyId: companyId,
@@ -86,12 +122,19 @@ export const createUpdateProduct = async( formData: FormData ) => {
             price: rest.price,
             inStock: rest.inStock,
             categoryId: rest.categoryId,
+            featured: rest.featured ?? false,
+            code: rest.code || undefined, // Solo actualizar si se proporciona
           }
         });
   
       } else {
-        // Crear
-        product = await prisma.product.create({
+        // Crear - generar código si no se proporciona
+        let productCode = rest.code;
+        if (!productCode || productCode.trim() === '') {
+          productCode = await generateProductCode(tx, companyId);
+        }
+
+        product = await tx.product.create({
           data: {
             companyId: companyId,
             title: rest.title,
@@ -100,6 +143,8 @@ export const createUpdateProduct = async( formData: FormData ) => {
             price: rest.price,
             inStock: rest.inStock,
             categoryId: rest.categoryId,
+            featured: rest.featured ?? false,
+            code: productCode,
           }
         })
       }

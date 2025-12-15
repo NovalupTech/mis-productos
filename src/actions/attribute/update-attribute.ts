@@ -10,6 +10,7 @@ interface UpdateAttributeData {
   attributeId: string;
   name: string;
   type: AttributeType;
+  required?: boolean;
 }
 
 export const updateAttribute = async (data: UpdateAttributeData) => {
@@ -77,6 +78,7 @@ export const updateAttribute = async (data: UpdateAttributeData) => {
       data: {
         name: data.name.trim(),
         type: data.type,
+        ...(data.required !== undefined && { required: data.required }),
       },
       include: {
         values: true

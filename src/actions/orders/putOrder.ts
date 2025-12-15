@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { middleware } from "@/auth.config";
 import { Address } from "@/interfaces/Address";
 import { requireCompanyId } from "@/lib/company-context";
+import { getCompanyConfigPublic } from "@/actions/company-config/get-company-config-public";
 
 interface productsInCart {
 	productId: string;
@@ -33,6 +34,32 @@ export const placeOrder = async (
 		},
 	});
 
+	// Obtener configuraciones de stock e IVA
+	let subtractOnOrder = true; // Valor por defecto
+	let enableTax = false; // Valor por defecto
+	let taxType: 'percentage' | 'fixed' = 'percentage';
+	let taxValue = 0;
+	
+	try {
+		const configResult = await getCompanyConfigPublic(companyId);
+		if (configResult.ok && configResult.configs) {
+			const configs = configResult.configs as Record<string, any>;
+			subtractOnOrder = configs['stock.subtractOnOrder'] !== undefined 
+				? Boolean(configs['stock.subtractOnOrder']) 
+				: true;
+			enableTax = configs['prices.enableTax'] !== undefined 
+				? Boolean(configs['prices.enableTax']) 
+				: false;
+			taxType = configs['prices.taxType'] || 'percentage';
+			taxValue = configs['prices.taxValue'] !== undefined 
+				? Number(configs['prices.taxValue']) 
+				: 0;
+		}
+	} catch (error) {
+		console.error('Error al obtener configuraciones:', error);
+		// Usar valores por defecto si hay error
+	}
+
 	const itemsInOrder = productsInCart.reduce(
 		(count, prod) => prod.quantity + count,
 		0
@@ -45,50 +72,79 @@ export const placeOrder = async (
 
 			if (!product) throw new Error("Producto no encontrado");
 
-			const subTotal = product.price * quantity;
-			const tax = subTotal * 0.15;
-			const total = subTotal + tax;
+			const itemSubTotal = product.price * quantity;
+			let itemTax = 0;
+			
+			// Calcular IVA solo si está habilitado
+			if (enableTax && taxValue > 0) {
+				if (taxType === 'percentage') {
+					itemTax = itemSubTotal * (taxValue / 100);
+				} else {
+					// Valor fijo: se aplica por item (o por orden completa, según lógica de negocio)
+					// Aquí lo aplicamos por item para mantener consistencia
+					itemTax = taxValue * quantity;
+				}
+			}
+			
+			const itemTotal = itemSubTotal + itemTax;
 
 			return {
-				subTotal: totals.subTotal + subTotal,
-				tax: totals.tax + tax,
-				total: totals.total + total,
+				subTotal: totals.subTotal + itemSubTotal,
+				tax: totals.tax + itemTax,
+				total: totals.total + itemTotal,
 			};
 		},
 		{ subTotal: 0, tax: 0, total: 0 }
 	);
 
 	try {
+		// Validar stock disponible antes de crear la orden
+		products.forEach((prod) => {
+			const productQuantity = productsInCart
+				.filter((p) => p.productId === prod.id)
+				.reduce((acc, p) => acc + p.quantity, 0);
+			
+			if (productQuantity === 0) {
+				throw new Error("No se puede comprar un producto con cantidad 0");
+			}
+
+			if (prod.inStock < productQuantity) {
+				throw new Error(`No hay suficiente stock del producto "${prod.title}". Disponible: ${prod.inStock}, Solicitado: ${productQuantity}`);
+			}
+		});
+
 		// transaccion prisma
 		const prismaTx = await prisma.$transaction(async (tx) => {
-			// restar stock de productos
-			const updatedProductsPromises = products.map((prod) => {
-				const productQuantity = productsInCart
-					.filter((p) => p.productId === prod.id)
-					.reduce((acc, p) => acc + p.quantity, 0);
-				if (productQuantity === 0) {
-					throw new Error("No se puede comprar un producto con cantidad 0");
-				}
+			let updatedProducts = products;
 
-				return tx.product.update({
-					where: {
-						id: prod.id,
-					},
-					data: {
-						inStock: {
-							decrement: productQuantity,
+			// Restar stock de productos solo si está configurado
+			if (subtractOnOrder) {
+				const updatedProductsPromises = products.map((prod) => {
+					const productQuantity = productsInCart
+						.filter((p) => p.productId === prod.id)
+						.reduce((acc, p) => acc + p.quantity, 0);
+
+					return tx.product.update({
+						where: {
+							id: prod.id,
 						},
-					},
+						data: {
+							inStock: {
+								decrement: productQuantity,
+							},
+						},
+					});
 				});
-			});
 
-			const updatedProducts = await Promise.all(updatedProductsPromises);
+				updatedProducts = await Promise.all(updatedProductsPromises);
 
-            updatedProducts.forEach((prod) => {
-                if(prod.inStock < 0) {
-                    throw new Error("No hay suficiente stock del producto "+prod.title+" para completar la orden");
-                }
-            })
+				// Validar que el stock no sea negativo después de restar
+				updatedProducts.forEach((prod) => {
+					if(prod.inStock < 0) {
+						throw new Error("No hay suficiente stock del producto "+prod.title+" para completar la orden");
+					}
+				});
+			}
 
 			// insertar orden y productos en orden
 			const order = await tx.order.create({

@@ -26,6 +26,9 @@ export interface PriceConfig {
   currency?: string;
   format?: string;
   showPrices?: boolean;
+  enableTax?: boolean;
+  taxType?: 'percentage' | 'fixed';
+  taxValue?: number;
 }
 
 /**
@@ -75,5 +78,12 @@ export const getPriceConfig = (configs: Record<string, any>): PriceConfig => {
     showPrices: configs['prices.showPrices'] !== undefined 
       ? configs['prices.showPrices'] 
       : DEFAULT_SHOW_PRICES,
+    enableTax: configs['prices.enableTax'] !== undefined 
+      ? configs['prices.enableTax'] 
+      : false,
+    taxType: configs['prices.taxType'] || 'percentage',
+    taxValue: configs['prices.taxValue'] !== undefined 
+      ? Number(configs['prices.taxValue']) 
+      : 0,
   };
 };

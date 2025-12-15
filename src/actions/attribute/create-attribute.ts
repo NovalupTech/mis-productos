@@ -9,6 +9,7 @@ import { AttributeType } from '@prisma/client';
 interface CreateAttributeData {
   name: string;
   type: AttributeType;
+  required?: boolean;
 }
 
 export const createAttribute = async (data: CreateAttributeData) => {
@@ -51,6 +52,7 @@ export const createAttribute = async (data: CreateAttributeData) => {
       data: {
         name: data.name.trim(),
         type: data.type,
+        required: data.required ?? false,
         companyId,
       },
       include: {

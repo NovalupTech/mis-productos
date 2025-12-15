@@ -60,6 +60,7 @@ export const getProductBySlug = async ({ slug, companyId }: Props) => {
                 id: true,
                 name: true,
                 type: true,
+                required: true,
                 companyId: true,
               }
             },

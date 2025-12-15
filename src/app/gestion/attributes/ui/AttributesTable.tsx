@@ -17,6 +17,7 @@ interface Attribute {
   id: string;
   name: string;
   type: AttributeType;
+  required?: boolean;
   companyId: string;
   values: AttributeValue[];
 }
@@ -90,6 +91,9 @@ export const AttributesTable = ({ attributes }: Props) => {
                 Tipo
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Obligatorio
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Valores
               </th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -114,6 +118,19 @@ export const AttributesTable = ({ attributes }: Props) => {
                       <span className="text-sm text-gray-500">
                         {ATTRIBUTE_TYPE_LABELS[attribute.type]}
                       </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {attribute.required ? (
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-green-700 bg-green-100 px-2 py-1 rounded">
+                          <IoCheckmarkCircleOutline size={16} />
+                          Sí
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                          <IoCloseCircleOutline size={16} />
+                          No
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">

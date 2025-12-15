@@ -128,34 +128,39 @@ async function main() {
 
     const tagMap = new Map<string, string>();
     for (const tagName of allTags) {
-      // Buscar o crear el tag (son únicos por compañía)
-      let tag = await prisma.tag.findUnique({ 
-        where: { 
+      // Buscar o crear el tag (son únicos por compañía) usando upsert para evitar errores de concurrencia
+      const tag = await prisma.tag.upsert({
+        where: {
           name_companyId: {
             name: tagName,
             companyId: company.id
           }
-        } 
+        },
+        update: {}, // Si existe, no actualizar nada
+        create: {
+          name: tagName,
+          companyId: company.id
+        }
       });
-      if (!tag) {
-        tag = await prisma.tag.create({ 
-          data: { 
-            name: tagName,
-            companyId: company.id
-          } 
-        });
-      }
       tagMap.set(tagName, tag.id);
     }
 
     // Crear productos
     console.log(`  📦 Creando ${companyData.products.length} productos...`);
+    
+    // Contador para generar códigos automáticos por empresa
+    let productCodeCounter = 1;
+    
     for (const productData of companyData.products) {
       const categoryId = categoryMap.get(productData.category);
       if (!categoryId) {
         console.warn(`⚠️  Categoría "${productData.category}" no encontrada para producto "${productData.title}"`);
         continue;
       }
+
+      // Generar código automático si no se proporciona
+      const productCode = productData.code || `MP-${productCodeCounter.toString().padStart(6, '0')}`;
+      productCodeCounter++;
 
       // Crear el producto
       const product = await prisma.product.create({
@@ -165,6 +170,7 @@ async function main() {
           price: productData.price,
           inStock: productData.inStock,
           slug: productData.slug,
+          code: productCode,
           companyId: company.id,
           categoryId,
         },

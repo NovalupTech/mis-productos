@@ -1,10 +1,9 @@
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider     = "postgresql"
   relationMode = "prisma"
 }
 
@@ -52,32 +51,31 @@ enum SocialType {
   WEBSITE
 }
 
-
 // -------------------------
 // Company (tus clientes)
 // -------------------------
 
 model Company {
-  id          String      @id @default(uuid())
-  name        String
-  email       String?
-  phone       String?
-  logo        String?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id        String   @id @default(uuid())
+  name      String
+  email     String?
+  phone     String?
+  logo      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relaciones
-  products    Product[]
-  categories  Category[]
-  attributes  Attribute[]
-  customers   Customer[]
-  orders      Order[]
-  domains     Domain[]
-  users       User[]
-  pages       Page[]
-  socials     CompanySocial[]
-  configs     CompanyConfig[]
-  tags        Tag[]
+  products   Product[]
+  categories Category[]
+  attributes Attribute[]
+  customers  Customer[]
+  orders     Order[]
+  domains    Domain[]
+  users      User[]
+  pages      Page[]
+  socials    CompanySocial[]
+  configs    CompanyConfig[]
+  tags       Tag[]
 }
 
 // -------------------------
@@ -91,10 +89,12 @@ model Customer {
   phone     String?
   createdAt DateTime @default(now())
 
-  company   Company  @relation(fields: [companyId], references: [id])
+  company   Company @relation(fields: [companyId], references: [id])
   companyId String
 
-  orders    Order[]
+  orders Order[]
+
+  @@index([companyId])
 }
 
 // -------------------------
@@ -102,15 +102,16 @@ model Customer {
 // -------------------------
 
 model Category {
-  id        String   @id @default(uuid())
-  name      String
+  id   String @id @default(uuid())
+  name String
 
-  company   Company  @relation(fields: [companyId], references: [id])
+  company   Company @relation(fields: [companyId], references: [id])
   companyId String
 
-  product   Product[]
+  product Product[]
 
   @@unique([name, companyId])
+  @@index([companyId])
 }
 
 // -------------------------
@@ -118,25 +119,29 @@ model Category {
 // -------------------------
 
 model Product {
-  id          String    @id @default(uuid())
+  id          String  @id @default(uuid())
   title       String
   description String
   inStock     Int
-  price       Float     @default(0)
-  slug        String    @unique
+  price       Float   @default(0)
+  slug        String  @unique
+  featured    Boolean @default(false)
+  code        String?
 
-  company     Company   @relation(fields: [companyId], references: [id])
-  companyId   String
+  company   Company @relation(fields: [companyId], references: [id])
+  companyId String
 
-  category    Category  @relation(fields: [categoryId], references: [id])
-  categoryId  String
+  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId String
 
-  productImage   ProductImage[]
-  OrderItem      OrderItem[]
+  productImage     ProductImage[]
+  OrderItem        OrderItem[]
   ProductAttribute ProductAttribute[]
-  tags            ProductTag[]
+  tags             ProductTag[]
 
+  @@unique([companyId, code])
   @@index([companyId])
+  @@index([categoryId])
 }
 
 // -------------------------
@@ -144,10 +149,12 @@ model Product {
 // -------------------------
 
 model ProductImage {
-  id        Int      @id @default(autoincrement())
+  id        Int     @id @default(autoincrement())
   url       String
-  product   Product  @relation(fields: [productId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
   productId String
+
+  @@index([productId])
 }
 
 // -------------------------
@@ -155,19 +162,21 @@ model ProductImage {
 // -------------------------
 
 model User {
-  id            String       @id @default(uuid())
+  id            String    @id @default(uuid())
   name          String
-  email         String       @unique
+  email         String    @unique
   emailVerified DateTime?
   password      String
-  role          Role         @default(user)
+  role          Role      @default(user)
   image         String?
 
-  company       Company?     @relation(fields: [companyId], references: [id])
-  companyId     String?
+  company   Company? @relation(fields: [companyId], references: [id])
+  companyId String?
 
-  UserAddress   UserAddress?
-  Order         Order[]
+  UserAddress UserAddress?
+  Order       Order[]
+
+  @@index([companyId])
 }
 
 // -------------------------
@@ -195,11 +204,13 @@ model UserAddress {
   city       String
   phone      String
 
-  country    Country @relation(fields: [countryId], references: [id])
-  countryId  String
+  country   Country @relation(fields: [countryId], references: [id])
+  countryId String
 
-  user       User    @relation(fields: [userId], references: [id])
-  userId     String  @unique
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @unique
+
+  @@index([countryId])
 }
 
 // -------------------------
@@ -207,29 +218,33 @@ model UserAddress {
 // -------------------------
 
 model Order {
-  id           String      @id @default(uuid())
-  subTotal     Float
-  tax          Float
-  total        Float
-  itemsInOrder Int
-  isPaid       Boolean     @default(false)
-  paidAt       DateTime?
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  id            String    @id @default(uuid())
+  subTotal      Float
+  tax           Float
+  total         Float
+  itemsInOrder  Int
+  isPaid        Boolean   @default(false)
+  paidAt        DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
   transactionId String?
 
   // Relaciones
-  company      Company     @relation(fields: [companyId], references: [id])
-  companyId    String
+  company   Company @relation(fields: [companyId], references: [id])
+  companyId String
 
-  user         User        @relation(fields: [userId], references: [id])
-  userId       String
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
 
-  customer     Customer?   @relation(fields: [customerId], references: [id])
-  customerId   String?
+  customer   Customer? @relation(fields: [customerId], references: [id])
+  customerId String?
 
   OrderItem    OrderItem[]
   OrderAddress OrderAddress?
+
+  @@index([companyId])
+  @@index([userId])
+  @@index([customerId])
 }
 
 // -------------------------
@@ -237,15 +252,18 @@ model Order {
 // -------------------------
 
 model OrderItem {
-  id        String   @id @default(uuid())
-  quantity  Int
-  price     Float
+  id       String @id @default(uuid())
+  quantity Int
+  price    Float
 
-  order     Order    @relation(fields: [orderId], references: [id])
-  orderId   String
+  order   Order  @relation(fields: [orderId], references: [id])
+  orderId String
 
-  product   Product  @relation(fields: [productId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
   productId String
+
+  @@index([orderId])
+  @@index([productId])
 }
 
 // -------------------------
@@ -262,11 +280,13 @@ model OrderAddress {
   city       String
   phone      String
 
-  country    Country @relation(fields: [countryId], references: [id])
-  countryId  String
+  country   Country @relation(fields: [countryId], references: [id])
+  countryId String
 
-  Order      Order   @relation(fields: [orderId], references: [id])
-  orderId    String  @unique
+  Order   Order  @relation(fields: [orderId], references: [id])
+  orderId String @unique
+
+  @@index([countryId])
 }
 
 // -------------------------
@@ -274,17 +294,19 @@ model OrderAddress {
 // -------------------------
 
 model Attribute {
-  id        String        @id @default(uuid())
-  name      String
-  type      AttributeType
+  id       String        @id @default(uuid())
+  name     String
+  type     AttributeType
+  required Boolean       @default(false)
 
-  company   Company       @relation(fields: [companyId], references: [id])
+  company   Company @relation(fields: [companyId], references: [id])
   companyId String
 
-  values    AttributeValue[]
-  products  ProductAttribute[]
+  values   AttributeValue[]
+  products ProductAttribute[]
 
   @@unique([name, companyId])
+  @@index([companyId])
 }
 
 // -------------------------
@@ -292,13 +314,15 @@ model Attribute {
 // -------------------------
 
 model AttributeValue {
-  id          String       @id @default(uuid())
-  value       String
+  id    String @id @default(uuid())
+  value String
 
-  attribute   Attribute    @relation(fields: [attributeId], references: [id])
+  attribute   Attribute @relation(fields: [attributeId], references: [id])
   attributeId String
 
-  products    ProductAttribute[]
+  products ProductAttribute[]
+
+  @@index([attributeId])
 }
 
 // -------------------------
@@ -306,20 +330,24 @@ model AttributeValue {
 // -------------------------
 
 model ProductAttribute {
-  id              String          @id @default(uuid())
+  id String @id @default(uuid())
 
-  product         Product         @relation(fields: [productId], references: [id])
-  productId       String
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
 
-  attribute       Attribute       @relation(fields: [attributeId], references: [id])
-  attributeId     String
+  attribute   Attribute @relation(fields: [attributeId], references: [id])
+  attributeId String
 
-  attributeValue  AttributeValue? @relation(fields: [attributeValueId], references: [id])
+  attributeValue   AttributeValue? @relation(fields: [attributeValueId], references: [id])
   attributeValueId String?
 
   // Para atributos libres
   valueText   String?
   valueNumber Float?
+
+  @@index([productId])
+  @@index([attributeId])
+  @@index([attributeValueId])
 }
 
 // -------------------------
@@ -327,14 +355,14 @@ model ProductAttribute {
 // -------------------------
 
 model Tag {
-  id        String       @id @default(uuid())
+  id        String   @id @default(uuid())
   name      String
-  createdAt DateTime     @default(now())
+  createdAt DateTime @default(now())
 
-  company   Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
   companyId String
 
-  products  ProductTag[]
+  products ProductTag[]
 
   @@unique([name, companyId])
   @@index([companyId])
@@ -345,13 +373,13 @@ model Tag {
 // -------------------------
 
 model ProductTag {
-  id        String   @id @default(uuid())
-  
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  id String @id @default(uuid())
+
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId String
 
-  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
-  tagId     String
+  tag   Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  tagId String
 
   @@unique([productId, tagId])
   @@index([productId])
@@ -368,7 +396,7 @@ model Domain {
   isPrimary Boolean  @default(true)
   createdAt DateTime @default(now())
 
-  company   Company  @relation(fields: [companyId], references: [id])
+  company   Company @relation(fields: [companyId], references: [id])
   companyId String
 
   @@index([companyId])
@@ -376,69 +404,71 @@ model Domain {
 }
 
 model PageSection {
-  id        String        @id @default(uuid())
-  pageId   String
-  page     Page          @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  id     String @id @default(uuid())
+  pageId String
+  page   Page   @relation(fields: [pageId], references: [id], onDelete: Cascade)
 
-  type      SectionType
-  position  Int
-  content   Json
-  enabled   Boolean       @default(true)
+  type     SectionType
+  position Int
+  content  Json
+  enabled  Boolean     @default(true)
 
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([pageId, position])
 }
 
 model Page {
-  id          String      @id @default(uuid())
-  companyId   String
-  company     Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  id        String  @id @default(uuid())
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
-  type        PageType
-  slug        String
-  title       String
-  enabled     Boolean     @default(true)
-  isLanding   Boolean     @default(false)
+  type      PageType
+  slug      String
+  title     String
+  enabled   Boolean  @default(true)
+  isLanding Boolean  @default(false)
 
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  sections    PageSection[]
+  sections PageSection[]
 
   @@unique([companyId, type])
   @@unique([companyId, slug])
+  @@index([companyId])
 }
 
 model CompanySocial {
-  id        String   @id @default(uuid())
+  id        String  @id @default(uuid())
   companyId String
-  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
-  type      SocialType
-  url       String
-  label     String?
-  enabled   Boolean  @default(true)
-  order     Int      @default(0)
+  type    SocialType
+  url     String
+  label   String?
+  enabled Boolean    @default(true)
+  order   Int        @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@unique([companyId, type])
+  @@index([companyId])
 }
 
 model CompanyConfig {
-  id        String   @id @default(cuid())
+  id        String @id @default(cuid())
   companyId String
 
-  key       String
-  value     Json
+  key   String
+  value Json
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@unique([companyId, key])
   @@index([companyId])

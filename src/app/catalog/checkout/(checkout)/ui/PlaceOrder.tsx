@@ -14,9 +14,9 @@ export const PlaceOrder = () => {
 	const [errorMessage, setErrorMessage] = useState('')
     const address = useAddressStore(state => state.address);
     const cart = useCartStore(store => store.cart);
-    const summaryInformation = useCartStore(store => store.getSummaryInformation());
-    const clearCart = useCartStore(store => store.clearCart);
     const priceConfig = usePriceConfig();
+    const summaryInformation = useCartStore(store => store.getSummaryInformation(priceConfig));
+    const clearCart = useCartStore(store => store.clearCart);
 
 	useEffect(() => {
 		setLoaded(true);
@@ -73,7 +73,13 @@ export const PlaceOrder = () => {
                 {formatPrice(summaryInformation.subTotal, priceConfig) || '-'}
             </span>
 
-			<span>Inpuestos (15%)</span>
+			<span>
+				{priceConfig.enableTax && priceConfig.taxValue && priceConfig.taxValue > 0
+					? priceConfig.taxType === 'percentage'
+						? `Impuestos (${priceConfig.taxValue}%)`
+						: 'Impuestos'
+					: 'Impuestos'}
+			</span>
 			<span className="text-right">
                 {formatPrice(summaryInformation.tax, priceConfig) || '-'}
             </span>

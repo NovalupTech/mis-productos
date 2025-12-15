@@ -30,6 +30,9 @@ export const usePriceConfig = (): PriceConfig => {
       currency: 'USD',
       format: 'symbol-before',
       showPrices: true,
+      enableTax: false,
+      taxType: 'percentage',
+      taxValue: 0,
     };
   }
   return context.priceConfig;

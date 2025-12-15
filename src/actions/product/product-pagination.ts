@@ -112,6 +112,25 @@ export const getPaginatedProductsWithImages = async ({
               }
             }
           }
+        },
+        ProductAttribute: {
+          include: {
+            attribute: {
+              select: {
+                id: true,
+                name: true,
+                type: true,
+                required: true,
+                companyId: true,
+              }
+            },
+            attributeValue: {
+              select: {
+                id: true,
+                value: true,
+              }
+            }
+          }
         }
       },
       orderBy: {
@@ -134,6 +153,16 @@ export const getPaginatedProductsWithImages = async ({
         ...product,
         images: product.productImage.map((image: { url: string }) => image.url),
         tags: product.tags.map((pt: { tag: { id: string; name: string } }) => pt.tag),
+        attributes: product.ProductAttribute.map((pa: any) => ({
+          id: pa.id,
+          productId: pa.productId,
+          attributeId: pa.attributeId,
+          attributeValueId: pa.attributeValueId,
+          valueText: pa.valueText,
+          valueNumber: pa.valueNumber,
+          attribute: pa.attribute,
+          attributeValue: pa.attributeValue,
+        })),
       }))
     }
   } catch (error) {

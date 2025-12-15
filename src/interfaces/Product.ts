@@ -6,6 +6,8 @@ export interface Product {
   price: number;
   slug: string;
   title: string;
+  featured: boolean;
+  code?: string | null;
   companyId: string;
   categoryId: string;
   category?: Category;
@@ -59,6 +61,7 @@ export interface ProductAttributeWithDetails {
     id: string;
     name: string;
     type: 'text' | 'number' | 'select' | 'multiselect';
+    required: boolean;
     companyId: string;
   };
   attributeValue?: {

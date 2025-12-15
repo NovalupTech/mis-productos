@@ -59,6 +59,11 @@ export const updateCompanyConfig = async (configs: UpdateConfigData[]) => {
       revalidatePath('/gestion/prices');
       revalidatePath('/catalog');
     }
+    if (keys.some(k => k.startsWith('stock.'))) {
+      revalidatePath('/gestion/stock');
+      revalidatePath('/catalog');
+      revalidatePath('/catalog/product');
+    }
 
     return {
       ok: true,

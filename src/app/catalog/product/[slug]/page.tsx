@@ -46,13 +46,32 @@ export default async function ProductPage({params}: {params: Promise<{slug: stri
   if(!product)
     notFound();
 
-  // Obtener configuración de precios
+  // Obtener configuración de precios y stock
   const companyId = await getCurrentCompanyId();
   let priceConfig: PriceConfig = { currency: 'USD', format: 'symbol-before', showPrices: true };
+  let stockConfig = {
+    showInDetails: true,
+    showLowStockMessage: true,
+    lowStockThreshold: 5,
+  };
+  
   if (companyId) {
     const { configs } = await getCompanyConfigPublic(companyId);
     if (configs && typeof configs === 'object' && !Array.isArray(configs)) {  
       priceConfig = getPriceConfig(configs as unknown as Record<string, any>) as PriceConfig;
+      
+      // Obtener configuraciones de stock con valores por defecto
+      stockConfig = {
+        showInDetails: configs['stock.showInDetails'] !== undefined 
+          ? configs['stock.showInDetails'] 
+          : true,
+        showLowStockMessage: configs['stock.showLowStockMessage'] !== undefined 
+          ? configs['stock.showLowStockMessage'] 
+          : true,
+        lowStockThreshold: configs['stock.lowStockThreshold'] !== undefined 
+          ? configs['stock.lowStockThreshold'] 
+          : 5,
+      };
     }
   }
   const formattedPrice = formatPrice(product.price, priceConfig);
@@ -68,7 +87,7 @@ export default async function ProductPage({params}: {params: Promise<{slug: stri
       {/* Product Details */}
       <div className="flex-1 md:w-[55%] px-0 md:pl-6">
 
-        <StockLabel slug={slug} />
+        {stockConfig.showInDetails && <StockLabel slug={slug} />}
 
         <h1 className={`${titleFont.className} antialiased font-bold text-xl`}>
           {product.title}
@@ -82,7 +101,10 @@ export default async function ProductPage({params}: {params: Promise<{slug: stri
           </p>
         )}
 
-        <AddToCart product={product} />
+        <AddToCart 
+          product={product} 
+          stockConfig={stockConfig}
+        />
 
         {/* Descripción */}
         <h3 className="font-bold text-sm">Descripcion</h3>

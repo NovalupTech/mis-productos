@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import type { ProductInCart } from "@/interfaces";
 import { useToastStore } from "../toast/toast-store";
 import { useCompanyStore } from "../company/company-store";
+import type { PriceConfig } from "@/utils/priceFormat";
 
 interface State {
 	cart: ProductInCart[];
@@ -11,7 +12,7 @@ interface State {
 	updateProductQuantity: (product: ProductInCart, quantity: number) => void;
 	updateProductAttributes: (product: ProductInCart, newAttributes: Record<string, string | number>) => void;
 	removeProduct: (product: ProductInCart) => void;
-	getSummaryInformation: () => {
+	getSummaryInformation: (priceConfig?: PriceConfig) => {
 		totalItems: number;
 		subTotal: number;
 		tax: number;
@@ -94,11 +95,22 @@ export const useCartStore = create<State>()(
 				const { cart } = get();
 				return cart.reduce((acc, p) => acc + p.quantity, 0);
 			},
-			getSummaryInformation: () => {
+			getSummaryInformation: (priceConfig?: PriceConfig) => {
 				const { cart } = get();
 				const totalItems = cart.reduce((acc, p) => acc + p.quantity, 0);
 				const subTotal = cart.reduce((acc, p) => acc + p.price * p.quantity, 0);
-				const tax = subTotal * 0.15;
+				
+				// Calcular IVA según la configuración
+				let tax = 0;
+				if (priceConfig?.enableTax && priceConfig.taxValue && priceConfig.taxValue > 0) {
+					if (priceConfig.taxType === 'percentage') {
+						tax = subTotal * (priceConfig.taxValue / 100);
+					} else {
+						// Valor fijo: se aplica por item
+						tax = priceConfig.taxValue * totalItems;
+					}
+				}
+				
 				const total = subTotal + tax;
 				return { totalItems, subTotal, tax, total };
 			},

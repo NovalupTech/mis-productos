@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { createAttribute, updateAttribute } from '@/actions';
 import { IoCloseOutline } from 'react-icons/io5';
 import { AttributeType } from '@prisma/client';
@@ -9,6 +9,7 @@ interface Attribute {
   id: string;
   name: string;
   type: AttributeType;
+  required?: boolean;
   companyId: string;
   values: Array<{ id: string; value: string }>;
 }
@@ -30,10 +31,24 @@ const ATTRIBUTE_TYPES: { value: AttributeType; label: string; description: strin
 export const CreateAttributeModal = ({ isOpen, onClose, onSuccess, attribute }: CreateAttributeModalProps) => {
   const [name, setName] = useState(attribute?.name || '');
   const [type, setType] = useState<AttributeType>(attribute?.type || 'text');
+  const [required, setRequired] = useState(attribute?.required ?? false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const isEditing = !!attribute;
+
+  // Actualizar estado cuando cambia el atributo (al abrir modal de edición)
+  useEffect(() => {
+    if (attribute) {
+      setName(attribute.name);
+      setType(attribute.type);
+      setRequired(attribute.required ?? false);
+    } else {
+      setName('');
+      setType('text');
+      setRequired(false);
+    }
+  }, [attribute]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,17 +63,20 @@ export const CreateAttributeModal = ({ isOpen, onClose, onSuccess, attribute }: 
           attributeId: attribute.id,
           name: name.trim(),
           type,
+          required,
         });
       } else {
         result = await createAttribute({
           name: name.trim(),
           type,
+          required,
         });
       }
 
       if (result.ok) {
         setName('');
         setType('text');
+        setRequired(false);
         onSuccess();
         onClose();
       } else {
@@ -74,6 +92,7 @@ export const CreateAttributeModal = ({ isOpen, onClose, onSuccess, attribute }: 
   const handleClose = () => {
     setName(attribute?.name || '');
     setType(attribute?.type || 'text');
+    setRequired(attribute?.required ?? false);
     setError(null);
     onClose();
   };
@@ -150,6 +169,23 @@ export const CreateAttributeModal = ({ isOpen, onClose, onSuccess, attribute }: 
                 💡 Los atributos de tipo Select o Multiselect requieren valores. Podrás agregarlos después de crear el atributo.
               </p>
             )}
+          </div>
+
+          <div className="mb-4">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={required}
+                onChange={(e) => setRequired(e.target.checked)}
+                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <span className="text-sm font-medium text-gray-700">
+                Atributo obligatorio
+              </span>
+            </label>
+            <p className="mt-1 text-xs text-gray-500 ml-6">
+              Si está marcado, los clientes deberán seleccionar un valor para este atributo antes de agregar el producto al carrito.
+            </p>
           </div>
 
           {/* Footer */}

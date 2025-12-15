@@ -75,7 +75,7 @@ export default async function OrderPage({ params }: {params: Promise<{id: string
             <span>Subtotal</span>
             <span className="text-right">{formatCurrency(order.subTotal)}</span>
 
-            <span>Inpuestos (15%)</span>
+            <span>Impuestos</span>
             <span className="text-right">{formatCurrency(order.tax)}</span>
 
             <span className="mt-5 text-2xl">Total:</span>

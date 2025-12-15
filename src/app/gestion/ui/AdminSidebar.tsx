@@ -16,6 +16,7 @@ import {
   IoPricetagOutline,
   IoBookmarkOutline,
   IoBagOutline,
+  IoStatsChartOutline,
 } from "react-icons/io5";
 import clsx from "clsx";
 import { logout } from "@/actions/auth/logout";
@@ -68,6 +69,11 @@ const navItems: NavItem[] = [
     href: "/gestion/attributes",
     label: "Atributos",
     icon: IoBagOutline,
+  },
+  {
+    href: "/gestion/stock",
+    label: "Stock",
+    icon: IoStatsChartOutline,
   },
   {
     href: "/gestion/orders",
