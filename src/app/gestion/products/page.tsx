@@ -44,7 +44,13 @@ export default async function OrdersPage({ searchParams }: {searchParams: Promis
         </Link>
       </div>
 
-      <div className="mb-10">
+      {
+        products.length === 0 ? 
+        <div className="flex justify-center items-center h-full mt-10">
+          <p className="text-gray-500">No hay productos cargados</p>
+        </div>
+        :
+        <div className="mb-10">
         <table className="min-w-full">
           <thead className="bg-gray-200 border-b">
             <tr>
@@ -132,6 +138,7 @@ export default async function OrdersPage({ searchParams }: {searchParams: Promis
 
         <Pagination totalPages={totalPages} />
       </div>
+      }
     </>
   );
 }

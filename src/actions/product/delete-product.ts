@@ -127,7 +127,21 @@ export const deleteProduct = async (productId: string) => {
 
     await Promise.all(deleteImagePromises);
 
-    // Eliminar el producto (ahora que las imágenes ya fueron eliminadas)
+    // Eliminar ProductAttribute antes de eliminar el producto
+    await prisma.productAttribute.deleteMany({
+      where: {
+        productId: productId,
+      },
+    });
+
+    // Eliminar ProductTag antes de eliminar el producto
+    await prisma.productTag.deleteMany({
+      where: {
+        productId: productId,
+      },
+    });
+
+    // Eliminar el producto (ahora que las relaciones dependientes ya fueron eliminadas)
     await prisma.product.delete({
       where: {
         id: productId,

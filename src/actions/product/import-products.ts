@@ -123,6 +123,71 @@ export const downloadExcelTemplate = async () => {
 };
 
 /**
+ * Genera y descarga el Excel modelo de atributos
+ */
+export const downloadAttributesTemplate = async () => {
+  const session = await middleware();
+  
+  if (!session?.user || (session.user.role !== 'admin' && session.user.role !== 'companyAdmin')) {
+    return {
+      ok: false,
+      message: 'No tienes permisos para realizar esta acción',
+    };
+  }
+
+  try {
+    // Crear workbook
+    const workbook = XLSX.utils.book_new();
+    
+    // Crear hoja de atributos
+    const attributesData = [
+      {
+        code: 12345, // Código del producto (debe coincidir con el código en el Excel de productos)
+        attribute: 'Color', // Nombre del atributo (debe existir previamente en la sección de atributos)
+        value: 'Rojo', // Valor del atributo según el tipo: text (texto libre), number (número), select/multiselect (nombre del valor o valores separados por coma)
+      },
+      {
+        code: 12345,
+        attribute: 'Talla',
+        value: 'M',
+      },
+      {
+        code: 12345,
+        attribute: 'Material',
+        value: 'Algodón 100%',
+      },
+      {
+        code: 12345,
+        attribute: 'Peso',
+        value: 250, // Para atributos tipo number
+      },
+      {
+        code: 12346, // Otro producto
+        attribute: 'Color',
+        value: 'Azul,Verde', // Para atributos multiselect, valores separados por coma
+      },
+    ];
+    
+    const attributesSheet = XLSX.utils.json_to_sheet(attributesData);
+    XLSX.utils.book_append_sheet(workbook, attributesSheet, 'Atributos');
+    
+    // Generar buffer
+    const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+    
+    return {
+      ok: true,
+      blob: new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }),
+    };
+  } catch (error) {
+    console.error('Error al generar template de atributos:', error);
+    return {
+      ok: false,
+      message: 'Error al generar el template de atributos',
+    };
+  }
+};
+
+/**
  * Procesa el Excel de productos y retorna los datos parseados
  */
 const processProductsExcel = async (file: File) => {
@@ -370,6 +435,17 @@ export const importProducts = async (formData: FormData) => {
     if (imagesZip) {
       const processedImages = await processImagesZip(imagesZip, companyId);
       Object.assign(imageMap, processedImages);
+    }
+
+    // Procesar Excel de atributos si existe
+    let attributesData: any[] = [];
+    if (attributesFile) {
+      try {
+        attributesData = await processAttributesExcel(attributesFile);
+      } catch (error) {
+        console.error('Error al procesar Excel de atributos:', error);
+        // Continuar sin atributos si hay error
+      }
     }
 
     // Obtener datos necesarios
@@ -760,12 +836,187 @@ export const importProducts = async (formData: FormData) => {
               });
             }
           }
-
         } catch (error) {
           if (error instanceof z.ZodError) {
             errors.push(`Fila ${rowNumber}: ${error.errors.map(e => e.message).join(', ')}`);
           } else {
             errors.push(`Fila ${rowNumber}: Error al importar producto`);
+          }
+        }
+      }
+
+      // Procesar atributos después de crear/actualizar todos los productos
+      if (attributesData.length > 0) {
+        // Crear un mapa de productos por código para acceso rápido
+        const productCodeMap = new Map<string, string>();
+        for (const prod of [...importedProducts, ...updatedProducts]) {
+          if (prod.code) {
+            productCodeMap.set(prod.code, prod.id);
+          }
+        }
+
+        // Obtener todos los atributos existentes de la compañía
+        const existingAttributes = await tx.attribute.findMany({
+          where: { companyId },
+          include: { values: true },
+        });
+        const attributeMap = new Map<string, any>();
+        for (const attr of existingAttributes) {
+          attributeMap.set(attr.name.toLowerCase(), attr);
+        }
+
+        // Procesar cada fila de atributos
+        for (const attrRow of attributesData) {
+          try {
+            const productCode = String(attrRow.code || '').trim();
+            const attributeName = String(attrRow.attribute || '').trim();
+            const attributeValue = attrRow.value;
+
+            if (!productCode || !attributeName || attributeValue === undefined || attributeValue === null) {
+              continue; // Saltar filas incompletas
+            }
+
+            // Buscar el producto por código
+            let productId = productCodeMap.get(productCode);
+            if (!productId) {
+              // Si no está en el mapa, buscar en la BD (por si se actualizó)
+              const product = await tx.product.findFirst({
+                where: {
+                  companyId,
+                  code: productCode,
+                },
+              });
+              if (!product) {
+                continue; // Producto no encontrado, saltar
+              }
+              productId = product.id;
+              productCodeMap.set(productCode, productId);
+            }
+
+            // Obtener o crear el atributo
+            let attribute = attributeMap.get(attributeName.toLowerCase());
+            if (!attribute) {
+              // Crear atributo como tipo "text" por defecto si no existe
+              attribute = await tx.attribute.create({
+                data: {
+                  name: attributeName,
+                  type: 'text',
+                  required: false,
+                  companyId,
+                },
+                include: { values: true },
+              });
+              attributeMap.set(attributeName.toLowerCase(), attribute);
+            }
+
+            // Procesar el valor según el tipo de atributo
+            if (attribute.type === 'select' || attribute.type === 'multiselect') {
+              // Para select/multiselect, buscar o crear AttributeValue
+              const valueStr = String(attributeValue).trim();
+              const values = attribute.type === 'multiselect' 
+                ? valueStr.split(',').map(v => v.trim()).filter(v => v)
+                : [valueStr];
+
+              for (const val of values) {
+                if (!val) continue;
+
+                // Buscar AttributeValue existente
+                let attributeValueRecord = attribute.values.find((v: { value: string }) => v.value.toLowerCase() === val.toLowerCase());
+                
+                if (!attributeValueRecord) {
+                  // Crear nuevo AttributeValue
+                  attributeValueRecord = await tx.attributeValue.create({
+                    data: {
+                      value: val,
+                      attributeId: attribute.id,
+                    },
+                  });
+                  // Actualizar la lista de values del atributo en memoria
+                  attribute.values.push(attributeValueRecord);
+                }
+
+                // Verificar si ya existe el ProductAttribute para evitar duplicados
+                const existingProductAttribute = await tx.productAttribute.findFirst({
+                  where: {
+                    productId,
+                    attributeId: attribute.id,
+                    attributeValueId: attributeValueRecord.id,
+                  },
+                });
+
+                if (!existingProductAttribute) {
+                  // Crear ProductAttribute
+                  await tx.productAttribute.create({
+                    data: {
+                      productId,
+                      attributeId: attribute.id,
+                      attributeValueId: attributeValueRecord.id,
+                    },
+                  });
+                }
+              }
+            } else if (attribute.type === 'text') {
+              // Para text, usar valueText
+              // Verificar si ya existe
+              const existingProductAttribute = await tx.productAttribute.findFirst({
+                where: {
+                  productId,
+                  attributeId: attribute.id,
+                },
+              });
+
+              if (existingProductAttribute) {
+                await tx.productAttribute.update({
+                  where: { id: existingProductAttribute.id },
+                  data: {
+                    valueText: String(attributeValue),
+                  },
+                });
+              } else {
+                await tx.productAttribute.create({
+                  data: {
+                    productId,
+                    attributeId: attribute.id,
+                    valueText: String(attributeValue),
+                  },
+                });
+              }
+            } else if (attribute.type === 'number') {
+              // Para number, usar valueNumber
+              const numValue = typeof attributeValue === 'number' 
+                ? attributeValue 
+                : parseFloat(String(attributeValue));
+              
+              if (!isNaN(numValue)) {
+                // Verificar si ya existe
+                const existingProductAttribute = await tx.productAttribute.findFirst({
+                  where: {
+                    productId,
+                    attributeId: attribute.id,
+                  },
+                });
+
+                if (existingProductAttribute) {
+                  await tx.productAttribute.update({
+                    where: { id: existingProductAttribute.id },
+                    data: {
+                      valueNumber: numValue,
+                    },
+                  });
+                } else {
+                  await tx.productAttribute.create({
+                    data: {
+                      productId,
+                      attributeId: attribute.id,
+                      valueNumber: numValue,
+                    },
+                  });
+                }
+              }
+            }
+          } catch (error) {
+            console.error(`Error al procesar atributo para producto ${attrRow.code}:`, error);
+            // Continuar con el siguiente atributo
           }
         }
       }

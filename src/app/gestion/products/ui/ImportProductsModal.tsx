@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { IoCloseOutline, IoCheckmarkCircleOutline, IoDownloadOutline, IoCloudUploadOutline, IoDocumentTextOutline, IoImageOutline, IoEyeOutline, IoRocketOutline } from 'react-icons/io5';
-import { downloadExcelTemplate, validateProductsImport, importProducts } from '@/actions/product/import-products';
+import { downloadExcelTemplate, downloadAttributesTemplate, validateProductsImport, importProducts } from '@/actions/product/import-products';
 import { useRouter } from 'next/navigation';
 
 interface Props {
@@ -69,6 +69,30 @@ export const ImportProductsModal = ({ isOpen, onClose }: Props) => {
       }
     } catch (err) {
       setError('Error al descargar el template');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDownloadAttributesTemplate = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const result = await downloadAttributesTemplate();
+      if (result.ok && result.blob) {
+        const url = window.URL.createObjectURL(result.blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'modelo-atributos.xlsx';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      } else {
+        setError(result.message || 'Error al descargar el template de atributos');
+      }
+    } catch (err) {
+      setError('Error al descargar el template de atributos');
     } finally {
       setLoading(false);
     }
@@ -361,6 +385,19 @@ export const ImportProductsModal = ({ isOpen, onClose }: Props) => {
                 Si tus productos tienen atributos, puedes subir un Excel adicional con esta información.
                 Si no tienes atributos, puedes omitir este paso.
               </p>
+              
+              {/* Botón para descargar template */}
+              <div className="mb-6">
+                <button
+                  onClick={handleDownloadAttributesTemplate}
+                  disabled={loading}
+                  className="btn-secondary flex items-center gap-2 mx-auto"
+                >
+                  <IoDownloadOutline size={20} />
+                  {loading ? 'Descargando...' : 'Descargar modelo de atributos'}
+                </button>
+              </div>
+
               <div className="max-w-md mx-auto">
                 <label className="block mb-2 text-sm font-medium text-gray-700">
                   Archivo Excel (.xlsx) - Opcional
