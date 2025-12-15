@@ -58,18 +58,19 @@ export default async function ProductPage({params}: {params: Promise<{slug: stri
   if (companyId) {
     const { configs } = await getCompanyConfigPublic(companyId);
     if (configs && typeof configs === 'object' && !Array.isArray(configs)) {  
-      priceConfig = getPriceConfig(configs as unknown as Record<string, any>) as PriceConfig;
+      const configsRecord: Record<string, any> = configs as Record<string, any>;
+      priceConfig = getPriceConfig(configsRecord) as PriceConfig;
       
       // Obtener configuraciones de stock con valores por defecto
       stockConfig = {
-        showInDetails: configs['stock.showInDetails'] !== undefined 
-          ? configs['stock.showInDetails'] 
+        showInDetails: configsRecord['stock.showInDetails'] !== undefined 
+          ? Boolean(configsRecord['stock.showInDetails']) 
           : true,
-        showLowStockMessage: configs['stock.showLowStockMessage'] !== undefined 
-          ? configs['stock.showLowStockMessage'] 
+        showLowStockMessage: configsRecord['stock.showLowStockMessage'] !== undefined 
+          ? Boolean(configsRecord['stock.showLowStockMessage']) 
           : true,
-        lowStockThreshold: configs['stock.lowStockThreshold'] !== undefined 
-          ? configs['stock.lowStockThreshold'] 
+        lowStockThreshold: configsRecord['stock.lowStockThreshold'] !== undefined 
+          ? Number(configsRecord['stock.lowStockThreshold']) 
           : 5,
       };
     }

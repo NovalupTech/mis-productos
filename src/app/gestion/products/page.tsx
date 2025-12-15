@@ -44,101 +44,100 @@ export default async function OrdersPage({ searchParams }: {searchParams: Promis
         </Link>
       </div>
 
-      {
-        products.length === 0 ? 
+      {products.length === 0 ? (
         <div className="flex justify-center items-center h-full mt-10">
           <p className="text-gray-500">No hay productos cargados</p>
         </div>
-        :
+      ) : (
         <div className="mb-10">
-        <table className="min-w-full">
-          <thead className="bg-gray-200 border-b">
-            <tr>
-              <th
-                scope="col"
-                className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
-              >
-                Imagen
-              </th>
-              <th
-                scope="col"
-                className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
-              >
-                Titulo
-              </th>
-              <th
-                scope="col"
-                className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
-              >
-                Código
-              </th>
-              <th
-                scope="col"
-                className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
-              >
-                Precio
-              </th>
-              <th
-                scope="col"
-                className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
-              >
-                Categoría
-              </th>
-              <th
-                scope="col"
-                className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
-              >
-                Stock
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.map((product) => (
-              <tr
-                key={product.id}
-                className="bg-white border-b transition duration-300 ease-in-out hover:bg-gray-100"
-              >
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  <Link href={`/gestion/product/${product.slug}`}>
-                    <ProductImage
-                      src={ product.productImage[0].url}
-                      width={80}
-                      height={80}
-                      alt={product.title}
-                      className="w-20 h-20 object-cover rounded"
-                    />
-                  </Link>
-                </td>
-                <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
-                  <Link
-                    href={`/gestion/product/${product.slug}`}
-                    className="hover:underline"
-                  >
-                    {product.title}
-                  </Link>
-                </td>
-                <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
-                  {product.code}
-                </td>
-                <td className="text-sm font-bold  text-gray-900 px-6 py-4 whitespace-nowrap">
-                  {formatPrice(product.price, priceConfig) || '-'}
-                </td>
-
-                <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
-                  {product.category?.name}
-                </td>
-
-                <td className="text-sm text-gray-900 font-bold px-6 py-4 whitespace-nowrap">
-                  {product.inStock}
-                </td>
+          <table className="min-w-full">
+            <thead className="bg-gray-200 border-b">
+              <tr>
+                <th
+                  scope="col"
+                  className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
+                >
+                  Imagen
+                </th>
+                <th
+                  scope="col"
+                  className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
+                >
+                  Titulo
+                </th>
+                <th
+                  scope="col"
+                  className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
+                >
+                  Código
+                </th>
+                <th
+                  scope="col"
+                  className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
+                >
+                  Precio
+                </th>
+                <th
+                  scope="col"
+                  className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
+                >
+                  Categoría
+                </th>
+                <th
+                  scope="col"
+                  className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
+                >
+                  Stock
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {products.map((product) => (
+                <tr
+                  key={product.id}
+                  className="bg-white border-b transition duration-300 ease-in-out hover:bg-gray-100"
+                >
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <Link href={`/gestion/product/${product.slug}`}>
+                      <ProductImage
+                        src={product.productImage[0].url}
+                        width={80}
+                        height={80}
+                        alt={product.title}
+                        className="w-20 h-20 object-cover rounded"
+                      />
+                    </Link>
+                  </td>
+                  <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                    <Link
+                      href={`/gestion/product/${product.slug}`}
+                      className="hover:underline"
+                    >
+                      {product.title}
+                    </Link>
+                  </td>
+                  <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                    {product.code}
+                  </td>
+                  <td className="text-sm font-bold  text-gray-900 px-6 py-4 whitespace-nowrap">
+                    {formatPrice(product.price, priceConfig) || '-'}
+                  </td>
 
-        <Pagination totalPages={totalPages} />
-      </div>
-      }
+                  <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                    {product.category?.name}
+                  </td>
+
+                  <td className="text-sm text-gray-900 font-bold px-6 py-4 whitespace-nowrap">
+                    {product.inStock}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <Pagination totalPages={totalPages} />
+        </div>
+      )}
     </>
   );
 }
