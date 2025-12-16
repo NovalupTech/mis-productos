@@ -1,6 +1,7 @@
 'use server'
 
 import { PaypalOrderResponse } from "@/interfaces";
+import { getCurrentDomain } from "@/lib/domain";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
@@ -45,8 +46,10 @@ export const paypalCheckPaymnent = async (paypalTransactionId: string) => {
     })
 
     // Enviar emails al vendedor y cliente (no bloqueante)
+    const domain = await getCurrentDomain();
+
     try {
-        const emailResponse = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/orders/send-order-emails`, {
+        const emailResponse = await fetch(`${process.env.ENV === 'dev' ? 'http://localhost:3000' : `https://${domain}`}/api/orders/send-order-emails`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
