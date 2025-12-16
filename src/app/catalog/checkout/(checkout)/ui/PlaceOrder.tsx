@@ -110,7 +110,7 @@ export const PlaceOrder = () => {
 			<div className="mt-5 mb-2 w-full">
 				<p>
 					<span className="text-xs">
-						Al hacer clic en &apos;colocar orden&apos; aceptas nuestros{" "}
+						Al hacer clic en &apos;Ir a pagar&apos; aceptas nuestros{" "}
 						<a href="#" className="underline">
 							Terminos y condiciones
 						</a>
@@ -121,7 +121,7 @@ export const PlaceOrder = () => {
                         'btn-primary': !OrderPlaced,
                         'btn-disabled': OrderPlaced
                     })
-                }>Colocar orden</button>
+                }>Ir a pagar</button>
 			</div>
 		</div>
 	);

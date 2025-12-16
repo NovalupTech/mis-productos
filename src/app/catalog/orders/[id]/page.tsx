@@ -2,7 +2,8 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { MercadoPagoButton, PaypalButtons, Title } from "@/components";
 import { getOrderById } from "@/actions/orders/get-order-by-id";
-import { formatCurrency } from '@/utils/currencyFormat';
+import { formatPrice, getPriceConfig, type PriceConfig } from '@/utils/priceFormat';
+import { getCompanyConfigPublic } from '@/actions/company-config/get-company-config-public';
 import { OrderStatus } from "../ui/OrderStatus";
 
 export default async function OrderPage({ params }: {params: Promise<{id: string}>}) {
@@ -14,11 +15,20 @@ export default async function OrderPage({ params }: {params: Promise<{id: string
     notFound();
   }
 
+  // Obtener configuración de precios de la compañía
+  let priceConfig: PriceConfig = { currency: 'USD', format: 'symbol-before', showPrices: true };
+  if (order.companyId) {
+    const { configs } = await getCompanyConfigPublic(order.companyId);
+    if (configs && typeof configs === 'object' && !Array.isArray(configs)) {
+      priceConfig = getPriceConfig(configs as Record<string, any>);
+    }
+  }
+
   return (
     <div className="flex justify-center items-center mb-72 px-10 sm:px-0">
       <div className="flex flex-col w-[1000px]">
 
-        <Title title={`Orden: #${id.split("-").at(-1)}`} />
+        <Title title={"Tu orden"} />
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-10">
           { /* Carrito */ }
@@ -41,8 +51,8 @@ export default async function OrderPage({ params }: {params: Promise<{id: string
                   />
                   <div>
                     <p>{product.product.title}</p>
-                    <p>${product.price} x {product.quantity}</p>
-                    <p>Subtotal: ${product.price * product.quantity}</p>
+                    <p>{formatPrice(product.price, priceConfig)} x {product.quantity}</p>
+                    <p>Subtotal: {formatPrice(product.price * product.quantity, priceConfig)}</p>
                   </div>
                 </div>
             ))
@@ -70,16 +80,16 @@ export default async function OrderPage({ params }: {params: Promise<{id: string
           <h2 className="text-2xl mb-2">Resumen de orden</h2>
           <div className="grid grid-cols-2">
             <span>Nº de productos</span>
-            <span className="text-right">{formatCurrency(order.itemsInOrder)} </span>
+            <span className="text-right">{order.itemsInOrder}</span>
 
             <span>Subtotal</span>
-            <span className="text-right">{formatCurrency(order.subTotal)}</span>
+            <span className="text-right">{formatPrice(order.subTotal, priceConfig)}</span>
 
             <span>Impuestos</span>
-            <span className="text-right">{formatCurrency(order.tax)}</span>
+            <span className="text-right">{formatPrice(order.tax, priceConfig)}</span>
 
             <span className="mt-5 text-2xl">Total:</span>
-            <span className="mt-5 text-2xl text-right">{formatCurrency(order?.total)}</span>
+            <span className="mt-5 text-2xl text-right">{formatPrice(order?.total, priceConfig)}</span>
           </div>
 
           <div className="mt-5 mb-2 w-full">
@@ -89,7 +99,22 @@ export default async function OrderPage({ params }: {params: Promise<{id: string
                   <MercadoPagoButton amount={order!.total} orderId={order!.id} />
                   <PaypalButtons amount={order!.total} orderId={order!.id} />
                 </> :
-                <OrderStatus isPaid={order.isPaid} />
+                <>
+                  <OrderStatus isPaid={order.isPaid} />
+                  <div className="mt-6 p-6 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex flex-col gap-2">
+                      <h3 className="text-lg font-semibold text-green-800">
+                        ¡Pago confirmado!
+                      </h3>
+                      <p className="text-sm text-green-700">
+                        Se ha enviado un email con los detalles de tu compra a tu dirección de correo electrónico.
+                      </p>
+                      <p className="text-sm text-green-700">
+                        El vendedor se pondrá en contacto contigo pronto para coordinar la entrega de tu pedido.
+                      </p>
+                    </div>
+                  </div>
+                </>
             }
           </div>
 

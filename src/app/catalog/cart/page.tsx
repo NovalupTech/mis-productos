@@ -14,7 +14,6 @@ export default async function CartPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-10">
           { /* Carrito */ }
           <div className="flex flex-col mt-5">
-            <span className="text-xl">Agregar mas items</span>
             <Link href={'/'} className="underline mb-5">
               Continuá comprando
             </Link>

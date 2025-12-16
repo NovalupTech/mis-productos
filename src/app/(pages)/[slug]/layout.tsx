@@ -2,6 +2,7 @@ import { TopMenu, Sidebar, Footer } from "@/components";
 import { CompanyProvider } from "@/components/providers/CompanyProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { PriceConfigProvider } from "@/components/providers/PriceConfigProvider";
+import { PayPalProvider } from "@/components/providers/PayPalProvider";
 import { Toast } from "@/components/ui/toast/Toast";
 import { Metadata } from 'next';
 import { getCurrentCompanyId } from '@/lib/domain';
@@ -200,15 +201,17 @@ export default async function DynamicPageLayout({
       <CompanyProvider company={company} />
       <ThemeProvider primaryColor={primaryColor} secondaryColor={secondaryColor}>
         <PriceConfigProvider priceConfig={priceConfig}>
-          <TopMenu />
-          <Sidebar/>
-          <Toast />
+          <PayPalProvider>
+            <TopMenu />
+            <Sidebar/>
+            <Toast />
 
-        <div className="mx-0 sm:mx-10">
-          {children}
-        </div>
+          <div className="mx-0 sm:mx-10">
+            {children}
+          </div>
 
-        <Footer />
+          <Footer />
+          </PayPalProvider>
         </PriceConfigProvider>
       </ThemeProvider>
     </main>

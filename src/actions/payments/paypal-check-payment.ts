@@ -44,6 +44,24 @@ export const paypalCheckPaymnent = async (paypalTransactionId: string) => {
         }
     })
 
+    // Enviar emails al vendedor y cliente (no bloqueante)
+    try {
+        const emailResponse = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/orders/send-order-emails`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ orderId }),
+        });
+        
+        if (!emailResponse.ok) {
+            console.error('Error al enviar emails:', await emailResponse.text());
+        }
+    } catch (error) {
+        // No fallar el pago si hay error en el email
+        console.error('Error al enviar emails de orden:', error);
+    }
+
     revalidatePath(`/catalog/orders/${orderId}`);
 
     return {

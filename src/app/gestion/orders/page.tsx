@@ -1,8 +1,10 @@
 export const revalidate = 0;
 
 // https://tailwindcomponents.com/component/hoverable-table
-import {  getPaginatedOrders } from "@/actions";
+import {  getCompanyConfig, getCompanyConfigPublic, getPaginatedOrders } from "@/actions";
 import { Pagination, Title } from "@/components";
+import { getCurrentCompanyId } from "@/lib/domain";
+import { formatPrice, getPriceConfig, PriceConfig } from "@/utils";
 
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -11,6 +13,15 @@ import { IoCardOutline } from "react-icons/io5";
 export default async function OrdersPage() {
 
   const { ok, orders = [] } = await getPaginatedOrders();
+  const companyId = await getCurrentCompanyId();
+
+  let priceConfig: PriceConfig = { currency: 'USD', format: 'symbol-before', showPrices: true };
+  if (companyId) {
+    const { configs } = await getCompanyConfigPublic(companyId);
+    if (configs && typeof configs === 'object' && !Array.isArray(configs)) {
+      priceConfig = getPriceConfig(configs as Record<string, any>);
+    }
+  }
 
   if (!ok) {
     redirect("/gestion");
@@ -48,6 +59,12 @@ export default async function OrdersPage() {
                   scope="col"
                   className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
                 >
+                  Monto
+                </th>
+                <th
+                  scope="col"
+                  className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
+                >
                   Opciones
                 </th>
               </tr>
@@ -76,6 +93,9 @@ export default async function OrdersPage() {
                         <span className="mx-2 text-red-800">No Pagada</span>
                       </>
                     )}
+                  </td>
+                  <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                    {formatPrice(order.total, priceConfig)}
                   </td>
                   <td className="text-sm text-gray-900 font-light px-6 ">
                     <Link href={`/catalog/orders/${ order.id }`} className="hover:underline">
