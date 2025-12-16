@@ -93,7 +93,7 @@ export const SocialsManager = ({ initialSocials }: Props) => {
   };
 
   const handleDelete = async (socialId: string) => {
-    if (!confirm('ยฟEstรกs seguro de que deseas eliminar esta red social?')) {
+    if (!confirm('¿Estás seguro de que deseas eliminar esta red social?')) {
       return;
     }
 
@@ -133,7 +133,7 @@ export const SocialsManager = ({ initialSocials }: Props) => {
     router.refresh();
   };
 
-  // Cargar configuraciรณn del botรณn flotante
+  // Cargar configuración del botón flotante
   useEffect(() => {
     const loadFloatingConfig = async () => {
       const result = await getCompanyConfig();
@@ -160,10 +160,10 @@ export const SocialsManager = ({ initialSocials }: Props) => {
         setFloatingConfig(newConfig);
         router.refresh();
       } else {
-        alert(result.message || 'Error al actualizar la configuraciรณn');
+        alert(result.message || 'Error al actualizar la configuración');
       }
     } catch (error) {
-      alert('Error al actualizar la configuraciรณn');
+      alert('Error al actualizar la configuración');
     } finally {
       setLoadingConfig(false);
     }
@@ -305,13 +305,13 @@ export const SocialsManager = ({ initialSocials }: Props) => {
         editingSocial={editingSocial}
       />
 
-      {/* Configuraciรณn del botรณn flotante */}
+      {/* Configuración del botón flotante */}
       <div className="mt-8 pt-8 border-t border-gray-200">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Botรณn Flotante de Red Social
+          Botón Flotante de Red Social
         </h3>
         <p className="text-sm text-gray-600 mb-4">
-          Configura una red social para que aparezca como botรณn flotante en tu sitio
+          Configura una red social para que aparezca como botón flotante en tu sitio
         </p>
 
         <div className="bg-gray-50 rounded-lg p-4 space-y-4">
@@ -331,7 +331,7 @@ export const SocialsManager = ({ initialSocials }: Props) => {
               className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
             />
             <label htmlFor="floatingEnabled" className="text-sm font-medium text-gray-700 cursor-pointer">
-              Habilitar botรณn flotante
+              Habilitar botón flotante
             </label>
           </div>
 
@@ -369,10 +369,10 @@ export const SocialsManager = ({ initialSocials }: Props) => {
                 )}
               </div>
 
-              {/* Posiciรณn */}
+              {/* Posición */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Posiciรณn
+                  Posición
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   {(['bottom-right', 'bottom-left', 'top-right', 'top-left'] as const).map((pos) => (

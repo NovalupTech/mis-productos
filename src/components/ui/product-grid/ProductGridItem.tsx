@@ -222,12 +222,12 @@ const ProductGridItem = ({product, selectedTag, imageSize = 'medium'}: Props) =>
               >
                 Agregar
               </button>
-              <Link
+              {/* <Link
                 href={`/catalog/product/${product.slug}`}
                 className='text-center text-gray-700 px-4 py-2 rounded-md text-sm font-semibold transition-colors w-full border border-gray-300 hover:bg-gray-50'
               >
                 Ver detalles
-              </Link>
+              </Link> */}
             </div>
         </div>
 

@@ -160,7 +160,7 @@ export const AdminSidebar = () => {
       )}
       <aside
         className={clsx(
-          "fixed left-0 top-0 h-screen bg-white border-r border-gray-200 transition-all duration-300 z-30",
+          "fixed left-0 top-0 h-screen bg-white border-r border-gray-200 transition-all duration-300 z-30 flex flex-col",
           {
             "w-64": sidebarVisible,
             "w-20": !sidebarVisible && !isMobile,
@@ -171,7 +171,7 @@ export const AdminSidebar = () => {
         )}
       >
       {/* Header con logo y botón de menú */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
+      <div className="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0">
         {sidebarVisible && (
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
@@ -194,8 +194,8 @@ export const AdminSidebar = () => {
         </button>
       </div>
 
-      {/* Navegación */}
-      <nav className="flex flex-col p-4 space-y-2 mt-4">
+      {/* Navegación - Scrollable */}
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-2">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
@@ -232,36 +232,39 @@ export const AdminSidebar = () => {
         })}
       </nav>
 
-      {/* Botón para volver al sistema */}
-      <div className="mt-auto px-4 pb-4">
-        <Link
-          href="/"
-          className={clsx(
-            "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-gray-700 hover:bg-gray-100",
-            {
-              "justify-center": !sidebarVisible,
-            }
-          )}
-        >
-          <IoArrowBackOutline size={22} className="text-gray-500" />
-          {sidebarVisible && <span className="font-medium">Ir a mi tienda</span>}
-        </Link>
-      </div>
+      {/* Footer con botones - Siempre visible */}
+      <div className="flex-shrink-0 border-t border-gray-200 bg-white">
+        {/* Botón para volver al sistema */}
+        <div className="p-4 pb-2">
+          <Link
+            href="/"
+            className={clsx(
+              "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-gray-700 hover:bg-gray-100",
+              {
+                "justify-center": !sidebarVisible,
+              }
+            )}
+          >
+            <IoArrowBackOutline size={22} className="text-gray-500" />
+            {sidebarVisible && <span className="font-medium">Ir a mi tienda</span>}
+          </Link>
+        </div>
 
-      {/* Logout al final */}
-      <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
-        <button
-          onClick={handleLogout}
-          className={clsx(
-            "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 w-full text-red-600 hover:bg-red-50",
-            {
-              "justify-center": !sidebarVisible,
-            }
-          )}
-        >
-          <IoLogOutOutline size={22} />
-          {sidebarVisible && <span className="font-medium">Salir</span>}
-        </button>
+        {/* Logout */}
+        <div className="px-4 pb-4">
+          <button
+            onClick={handleLogout}
+            className={clsx(
+              "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 w-full text-red-600 hover:bg-red-50",
+              {
+                "justify-center": !sidebarVisible,
+              }
+            )}
+          >
+            <IoLogOutOutline size={22} />
+            {sidebarVisible && <span className="font-medium">Salir</span>}
+          </button>
+        </div>
       </div>
     </aside>
     </>

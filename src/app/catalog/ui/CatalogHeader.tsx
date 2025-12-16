@@ -28,7 +28,7 @@ export const CatalogHeader = ({ tag, search, viewMode, onViewChange }: CatalogHe
         </div>
 
         {/* Selector de vista */}
-        <div className="flex items-center">
+        <div className="items-center hidden md:flex">
           <ViewToggle value={viewMode} onViewChange={onViewChange} />
         </div>
       </div>

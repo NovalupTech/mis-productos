@@ -32,7 +32,7 @@ export function AdminLayoutContent({ children }: { children: React.ReactNode }) 
         {isMobile && isCollapsed && (
           <button
             onClick={toggleSidebar}
-            className="fixed top-4 left-4 z-40 p-2 bg-white border border-gray-200 rounded-md shadow-md hover:bg-gray-50 md:hidden"
+            className="fixed top-1 left-4 z-40 p-1 bg-white border border-gray-200 rounded-md shadow-md hover:bg-gray-50 md:hidden"
             aria-label="Abrir menú"
           >
             <IoMenuOutline size={24} className="text-gray-600" />
