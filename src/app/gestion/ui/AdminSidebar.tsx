@@ -19,10 +19,10 @@ import {
   IoStatsChartOutline,
 } from "react-icons/io5";
 import clsx from "clsx";
-import { logout } from "@/actions/auth/logout";
 import { useSidebar } from "../providers/SidebarProvider";
 import Image from "next/image";
 import { useEffect, useState, useRef } from "react";
+import { logout } from "@/actions/auth/logout";
 
 interface NavItem {
   href: string;
@@ -130,13 +130,14 @@ export const AdminSidebar = () => {
 
   const handleLogout = async () => {
     try {
-      // Primero redirigir a la raíz para evitar que el layout de gestión se ejecute
-      // Luego hacer el logout en la nueva página
-      window.location.href = '/api/auth/signout?callbackUrl=/';
+      // Ejecutar el logout primero
+      await logout();
+      // Luego redirigir a la página de signout usando window.location para forzar recarga completa
+      window.location.href = '/auth/signout';
     } catch (error) {
       console.error('Error al hacer logout:', error);
       // Si hay error, redirigir de todas formas
-      window.location.href = '/';
+      window.location.href = '/auth/signout';
     }
   };
 

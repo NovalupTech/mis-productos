@@ -14,6 +14,7 @@ const url_denied = [
 export const authConfig = {
   pages: {
     signIn: '/auth/login',
+    signOut: '/auth/signout',
     newUser: '/auth/new-account',
   },
   callbacks: {
