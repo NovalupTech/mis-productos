@@ -122,6 +122,7 @@ export const RequiredAttributesModal = ({
       quantity: selectedCount,
       image: product.images[0],
       selectedAttributes: selectedAttributes as Record<string, string | number>,
+      categoryId: product.categoryId,
     };
 
     addProductToCart(productCart);
