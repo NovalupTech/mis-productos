@@ -157,7 +157,7 @@ export const PagesTable = ({ pages }: Props) => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4 flex-1">
                   {isEditing ? (
-                    <div className="flex items-center gap-4 flex-1">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 flex-1">
                       <div className="flex-1">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Título
@@ -204,18 +204,18 @@ export const PagesTable = ({ pages }: Props) => {
                           </p>
                         )}
                       </div>
-                      <div className="flex items-center gap-2 mt-6">
+                      <div className="flex items-center gap-2 sm:mt-6">
                         <button
                           onClick={() => handleSave(page.id)}
                           disabled={isLoading}
-                          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                          className="flex-1 sm:flex-none px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
                         >
                           Guardar
                         </button>
                         <button
                           onClick={handleCancel}
                           disabled={isLoading}
-                          className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 disabled:opacity-50"
+                          className="flex-1 sm:flex-none px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 disabled:opacity-50"
                         >
                           Cancelar
                         </button>
@@ -252,7 +252,7 @@ export const PagesTable = ({ pages }: Props) => {
               </div>
 
               {!isEditing && (
-                <div className="mt-4 flex items-center gap-6 pt-4 border-t border-gray-200">
+                <div className="mt-4 flex flex-wrap items-center gap-3 sm:gap-6 pt-4 border-t border-gray-200">
                   <button
                     onClick={() => handleToggleEnabled(page.id, page.enabled)}
                     disabled={isLoading}

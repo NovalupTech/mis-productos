@@ -174,7 +174,7 @@ export const PricesForm = ({ initialConfig }: PricesFormProps) => {
   return (
     <form onSubmit={handleSubmit} className="max-w-4xl">
       {/* Sección: Moneda */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-4 sm:p-6 mb-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <IoPricetagOutline className="text-gray-600" size={20} />
@@ -218,7 +218,7 @@ export const PricesForm = ({ initialConfig }: PricesFormProps) => {
       </div>
 
       {/* Sección: Formato */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-4 sm:p-6 mb-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <IoPricetagOutline className="text-gray-600" size={20} />
@@ -268,7 +268,7 @@ export const PricesForm = ({ initialConfig }: PricesFormProps) => {
       </div>
 
       {/* Sección: Mostrar precios */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             {showPrices ? (
@@ -312,7 +312,7 @@ export const PricesForm = ({ initialConfig }: PricesFormProps) => {
       </div>
 
       {/* Sección: IVA/Impuestos */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <IoReceiptOutline className="text-gray-600" size={20} />

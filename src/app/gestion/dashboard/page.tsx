@@ -20,8 +20,8 @@ export default async function AdminDashboardPage() {
   const { ok, stats } = await getDashboardStats();
 
   return (
-    <div className="flex flex-col min-h-screen p-8">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div className="flex flex-col min-h-screen p-4 sm:p-6 lg:p-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
         {/* Columna principal: Tareas */}
         <div className="lg:col-span-2">
           <DashboardTasks />

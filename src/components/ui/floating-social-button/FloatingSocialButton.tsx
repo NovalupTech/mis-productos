@@ -63,8 +63,8 @@ export const FloatingSocialButton = () => {
         }
 
         const result = await getCompanyConfigPublic(company.id);
-        if (result.ok && result.configs) {
-          const floatingConfig = result.configs['ui.floatingSocial'];
+        if (result.ok && result.configs && typeof result.configs === 'object' && 'ui.floatingSocial' in result.configs) {
+          const floatingConfig = result.configs['ui.floatingSocial'] as FloatingSocialConfig;
           if (floatingConfig && floatingConfig.enabled) {
             setConfig(floatingConfig);
           }

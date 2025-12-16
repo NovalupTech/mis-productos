@@ -129,7 +129,7 @@ export const StockForm = ({ initialConfig }: StockFormProps) => {
   return (
     <form onSubmit={handleSubmit} className="max-w-4xl">
       {/* Sección: Mostrar stock en detalles */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             {showInDetails ? (
@@ -173,7 +173,7 @@ export const StockForm = ({ initialConfig }: StockFormProps) => {
       </div>
 
       {/* Sección: Mensaje de stock bajo */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <IoWarningOutline className="text-gray-600" size={20} />
@@ -213,7 +213,7 @@ export const StockForm = ({ initialConfig }: StockFormProps) => {
       </div>
 
       {/* Sección: Umbral de stock bajo */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <IoCubeOutline className="text-gray-600" size={20} />
@@ -262,7 +262,7 @@ export const StockForm = ({ initialConfig }: StockFormProps) => {
       </div>
 
       {/* Sección: Restar stock al hacer pedido */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <IoRemoveOutline className="text-gray-600" size={20} />

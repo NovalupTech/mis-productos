@@ -93,7 +93,7 @@ export const SocialsManager = ({ initialSocials }: Props) => {
   };
 
   const handleDelete = async (socialId: string) => {
-    if (!confirm('¿Estás seguro de que deseas eliminar esta red social?')) {
+    if (!confirm('ยฟEstรกs seguro de que deseas eliminar esta red social?')) {
       return;
     }
 
@@ -133,7 +133,7 @@ export const SocialsManager = ({ initialSocials }: Props) => {
     router.refresh();
   };
 
-  // Cargar configuración del botón flotante
+  // Cargar configuraciรณn del botรณn flotante
   useEffect(() => {
     const loadFloatingConfig = async () => {
       const result = await getCompanyConfig();
@@ -160,10 +160,10 @@ export const SocialsManager = ({ initialSocials }: Props) => {
         setFloatingConfig(newConfig);
         router.refresh();
       } else {
-        alert(result.message || 'Error al actualizar la configuración');
+        alert(result.message || 'Error al actualizar la configuraciรณn');
       }
     } catch (error) {
-      alert('Error al actualizar la configuración');
+      alert('Error al actualizar la configuraciรณn');
     } finally {
       setLoadingConfig(false);
     }
@@ -174,13 +174,13 @@ export const SocialsManager = ({ initialSocials }: Props) => {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-4">
         <p className="text-sm text-gray-600">
           Gestiona las redes sociales de tu empresa
         </p>
         <button
           onClick={handleCreate}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors w-full sm:w-auto"
         >
           <IoAddOutline size={18} />
           <span>Agregar Red Social</span>
@@ -200,9 +200,9 @@ export const SocialsManager = ({ initialSocials }: Props) => {
             return (
               <div
                 key={social.id}
-                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
+                className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors gap-3 sm:gap-0"
               >
-                <div className="flex items-center gap-4 flex-1">
+                <div className="flex items-center gap-3 sm:gap-4 flex-1 w-full sm:w-auto">
                   {/* Icono de la red social */}
                   <div className={clsx(
                     'flex-shrink-0 w-12 h-12 rounded-lg flex items-center justify-center',
@@ -253,7 +253,7 @@ export const SocialsManager = ({ initialSocials }: Props) => {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 w-full sm:w-auto justify-end sm:justify-start">
                   <button
                     onClick={() => handleEdit(social)}
                     disabled={isLoading}
@@ -305,13 +305,13 @@ export const SocialsManager = ({ initialSocials }: Props) => {
         editingSocial={editingSocial}
       />
 
-      {/* Configuración del botón flotante */}
+      {/* Configuraciรณn del botรณn flotante */}
       <div className="mt-8 pt-8 border-t border-gray-200">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Botón Flotante de Red Social
+          Botรณn Flotante de Red Social
         </h3>
         <p className="text-sm text-gray-600 mb-4">
-          Configura una red social para que aparezca como botón flotante en tu sitio
+          Configura una red social para que aparezca como botรณn flotante en tu sitio
         </p>
 
         <div className="bg-gray-50 rounded-lg p-4 space-y-4">
@@ -331,7 +331,7 @@ export const SocialsManager = ({ initialSocials }: Props) => {
               className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
             />
             <label htmlFor="floatingEnabled" className="text-sm font-medium text-gray-700 cursor-pointer">
-              Habilitar botón flotante
+              Habilitar botรณn flotante
             </label>
           </div>
 
@@ -369,13 +369,13 @@ export const SocialsManager = ({ initialSocials }: Props) => {
                 )}
               </div>
 
-              {/* Posición */}
+              {/* Posiciรณn */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Posición
+                  Posiciรณn
                 </label>
                 <div className="grid grid-cols-2 gap-2">
-                  {(['top-left', 'top-right', 'bottom-left', 'bottom-right' , ] as const).map((pos) => (
+                  {(['bottom-right', 'bottom-left', 'top-right', 'top-left'] as const).map((pos) => (
                     <button
                       key={pos}
                       type="button"

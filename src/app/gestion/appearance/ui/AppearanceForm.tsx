@@ -115,13 +115,13 @@ export const AppearanceForm = ({ initialConfig }: AppearanceFormProps) => {
   return (
     <form onSubmit={handleSubmit} className="max-w-4xl">
       {/* Sección de colores */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-6">
         <div className="flex items-center gap-2 mb-4">
           <IoColorPaletteOutline size={24} className="text-blue-600" />
           <h2 className="text-xl font-semibold text-gray-800">Colores del tema</h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:p-6">
           {/* Color primario */}
           <div>
             <div className="flex items-center justify-between mb-2">
@@ -213,13 +213,13 @@ export const AppearanceForm = ({ initialConfig }: AppearanceFormProps) => {
       </div>
 
       {/* Sección del catálogo */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-6">
         <div className="flex items-center gap-2 mb-4">
           <IoGridOutline size={24} className="text-blue-600" />
           <h2 className="text-xl font-semibold text-gray-800">Diseño del catálogo</h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:p-6">
           {/* Columnas */}
           <div>
             <div className="flex items-center justify-between mb-2">

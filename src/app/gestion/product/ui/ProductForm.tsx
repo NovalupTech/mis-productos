@@ -163,7 +163,7 @@ export const ProductForm = ({ product, categories }: Props) => {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="grid px-5 mb-16 grid-cols-1 sm:px-0 sm:grid-cols-2 gap-3"
+      className="grid px-4 sm:px-5 mb-16 grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4"
     >
       {/* Textos */}
       <div className="w-full">

@@ -23,21 +23,21 @@ export default async function CompanyPage() {
   const socials = socialsResult.ok ? socialsResult.socials : [];
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <Title title="Mi Empresa" />
       
-      <div className="mt-8 space-y-8">
+      <div className="mt-4 sm:mt-6 lg:mt-8 space-y-4 sm:space-y-6 lg:space-y-8">
         {/* Formulario de datos de la compañía */}
-        <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+        <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-4 sm:p-6">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">
             Información de la Empresa
           </h2>
           <CompanyForm company={companyResult.company} />
         </div>
 
         {/* Gestión de redes sociales */}
-        <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+        <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-4 sm:p-6">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">
             Redes Sociales
           </h2>
           <SocialsManager initialSocials={socials || []} />

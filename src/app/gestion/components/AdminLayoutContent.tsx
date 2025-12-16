@@ -2,9 +2,22 @@
 
 import { AdminSidebar } from "../ui/AdminSidebar";
 import { useSidebar } from "../providers/SidebarProvider";
+import { useEffect, useState } from "react";
+import { IoMenuOutline } from "react-icons/io5";
 
 export function AdminLayoutContent({ children }: { children: React.ReactNode }) {
-  const { isCollapsed } = useSidebar();
+  const { isCollapsed, toggleSidebar } = useSidebar();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -12,10 +25,20 @@ export function AdminLayoutContent({ children }: { children: React.ReactNode }) 
       <main
         className="flex-1 overflow-y-auto transition-all duration-300"
         style={{
-          marginLeft: isCollapsed ? "80px" : "256px",
+          marginLeft: isMobile ? "0px" : (isCollapsed ? "80px" : "256px"),
         }}
       >
-        <div className="p-6">
+        {/* Botón para abrir sidebar en mobile */}
+        {isMobile && isCollapsed && (
+          <button
+            onClick={toggleSidebar}
+            className="fixed top-4 left-4 z-40 p-2 bg-white border border-gray-200 rounded-md shadow-md hover:bg-gray-50 md:hidden"
+            aria-label="Abrir menú"
+          >
+            <IoMenuOutline size={24} className="text-gray-600" />
+          </button>
+        )}
+        <div className="p-4 sm:p-6">
           {children}
         </div>
       </main>

@@ -18,7 +18,7 @@ export default async function PagesPage() {
 
   return (
     <>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-4">
         <Title title="Gestión de Páginas" />
         <CreatePageButton />
       </div>

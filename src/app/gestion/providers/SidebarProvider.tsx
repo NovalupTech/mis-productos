@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode, useCallback, useEffect } from "react";
 
 interface SidebarContextType {
   isCollapsed: boolean;
@@ -10,11 +10,23 @@ interface SidebarContextType {
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 
 export function SidebarProvider({ children }: { children: ReactNode }) {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  // Inicializar como true (cerrado) para mobile, se ajustará en el primer render
+  const [isCollapsed, setIsCollapsed] = useState(true);
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  const toggleSidebar = () => {
+  // Inicializar el estado basándose en el tamaño de la ventana
+  useEffect(() => {
+    if (isInitialized) return;
+    
+    const isMobile = window.innerWidth < 768;
+    // En mobile, queremos que esté cerrado (true), en desktop abierto (false)
+    setIsCollapsed(isMobile);
+    setIsInitialized(true);
+  }, [isInitialized]);
+
+  const toggleSidebar = useCallback(() => {
     setIsCollapsed((prev) => !prev);
-  };
+  }, []);
 
   return (
     <SidebarContext.Provider value={{ isCollapsed, toggleSidebar }}>

@@ -22,10 +22,10 @@ export default async function PricesPage() {
   }
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Precios</h1>
-        <p className="text-gray-600 mt-1">
+    <div className="p-4 sm:p-6">
+      <div className="mb-4 sm:mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Precios</h1>
+        <p className="text-sm sm:text-base text-gray-600 mt-1">
           Configura la moneda, formato y visibilidad de los precios en tu tienda
         </p>
       </div>
