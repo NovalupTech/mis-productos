@@ -8,6 +8,7 @@ export { ProductImage } from './product/product-image/ProductImage';
 export { ProductGrid } from './ui/product-grid/ProductGrid'
 export { ProductList } from './ui/product-list/ProductList'
 export { ViewToggle } from './ui/view-toggle/ViewToggle';
+export { SortToggle } from './ui/sort-toggle/SortToggle';
 export { ProductGridItem } from './ui/product-grid/ProductGridItem';
 export { Sidebar } from './ui/sidebar/Sidebar';
 export { TopMenu } from './ui/top-menu/TopMenu';

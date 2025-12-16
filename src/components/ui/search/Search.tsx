@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import { useCompanyStore } from "@/store/company/company-store";
 import { IoCloseOutline } from "react-icons/io5";
+import { SortToggle } from "@/components/ui/sort-toggle/SortToggle";
+import { useCatalogSortStore } from "@/store/catalog/catalog-sort-store";
 
 interface SearchProps {
   onClose: () => void;
@@ -22,6 +24,7 @@ export const Search = ({ onClose }: SearchProps) => {
   
   const [search, setSearch] = useState(searchParams.get('search') || '');
   const [filters, setFilters] = useState<Record<string, string>>({});
+  const { sortMode, setSortMode } = useCatalogSortStore();
 
   // Inicializar filtros desde los search params
   useEffect(() => {
@@ -207,6 +210,16 @@ export const Search = ({ onClose }: SearchProps) => {
           >
             <IoCloseOutline className="w-5 h-5" />
           </button>
+        </div>
+
+        {/* Ordenamiento */}
+        <div className="flex flex-col gap-2">
+          <label className="block text-xs font-medium text-gray-700">
+            Ordenar por precio
+          </label>
+          <div className="flex items-center">
+            <SortToggle value={sortMode} onSortChange={setSortMode} />
+          </div>
         </div>
 
         {/* Filtros por atributos - Horizontal */}

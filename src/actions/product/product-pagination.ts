@@ -133,9 +133,10 @@ export const getPaginatedProductsWithImages = async ({
           }
         }
       },
-      orderBy: {
-        title: 'asc'
-      }
+      orderBy: [
+        { featured: 'desc' },
+        { title: 'asc' }
+      ]
     });
 
     const totalProductsPromise = prisma.product.count({

@@ -37,7 +37,7 @@ export const ViewToggle = ({ onViewChange, value }: Props) => {
   }
 
   return (
-    <div className="flex items-center gap-1 border border-gray-300 rounded-md overflow-hidden">
+    <div className="hidden md:flex items-center gap-1 border border-gray-300 rounded-md overflow-hidden">
       <button
         onClick={() => handleViewChange('grid')}
         className="p-2 transition-colors"

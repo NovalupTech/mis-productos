@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Product } from '@/interfaces'
 import { ProductGrid } from '../product-grid/ProductGrid'
@@ -8,6 +8,8 @@ import { ProductList } from '../product-list/ProductList'
 import { ViewToggle, ViewMode } from '../view-toggle/ViewToggle'
 import { getPaginatedProductsWithImages } from '@/actions'
 import { useCatalogViewStore } from '@/store/catalog/catalog-view-store'
+import { useCatalogSortStore } from '@/store/catalog/catalog-sort-store'
+import type { SortMode } from '@/store/catalog/catalog-sort-store'
 
 interface InfiniteScrollProductsProps {
   initialProducts: Product[]
@@ -43,12 +45,38 @@ export const InfiniteScrollProducts = ({
   const searchParams = useSearchParams()
   const prevFiltersRef = useRef<string>('')
   const { viewMode: storeViewMode } = useCatalogViewStore()
+  const { sortMode } = useCatalogSortStore()
 
   // Usar viewMode externo si está disponible, sino usar el store
   const viewMode = externalViewMode ?? storeViewMode
 
   // Crear una clave única para detectar cambios en los filtros
   const filtersKey = JSON.stringify({ search, tag, attributeFilters })
+
+  // Función para ordenar productos según el modo de ordenamiento
+  const sortProducts = useCallback((productsToSort: Product[], sort: SortMode): Product[] => {
+    // Si el modo es 'none', retornar los productos sin modificar (orden original del servidor)
+    if (sort === 'none' || !sort) {
+      return productsToSort
+    }
+
+    const sorted = [...productsToSort]
+    
+    if (sort === 'price-desc') {
+      // Mayor precio primero
+      return sorted.sort((a, b) => b.price - a.price)
+    } else if (sort === 'price-asc') {
+      // Menor precio primero
+      return sorted.sort((a, b) => a.price - b.price)
+    }
+
+    return sorted
+  }, [])
+
+  // Productos ordenados según el modo de ordenamiento
+  const sortedProducts = useMemo(() => {
+    return sortProducts(products, sortMode)
+  }, [products, sortMode, sortProducts])
 
   // Resetear productos cuando cambian los filtros o búsqueda
   useEffect(() => {
@@ -118,12 +146,12 @@ export const InfiniteScrollProducts = ({
     <>
       {/* Vista de productos según el modo seleccionado */}
       {viewMode === 'grid' ? (
-        <ProductGrid products={products} selectedTag={tag} columns={catalogColumns} imageSize={catalogImageSize} />
+        <ProductGrid products={sortedProducts} selectedTag={tag} columns={catalogColumns} imageSize={catalogImageSize} />
       ) : (
-        <ProductList products={products} selectedTag={tag} />
+        <ProductList products={sortedProducts} selectedTag={tag} />
       )}
       
-      {products.length === 0 && (
+      {sortedProducts.length === 0 && (
         <p className="text-center mt-10 mb-20">No se encontraron productos</p>
       )}
 
@@ -139,7 +167,7 @@ export const InfiniteScrollProducts = ({
         </div>
       )}
 
-      {!hasMore && products.length > 0 && (
+      {!hasMore && sortedProducts.length > 0 && (
         <p className="text-center mt-10 mb-20 text-gray-500">
           No hay más productos para mostrar
         </p>
