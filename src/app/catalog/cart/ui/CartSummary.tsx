@@ -39,6 +39,15 @@ export const CartSummary = () => {
                 {formatPrice(summaryInformation.subTotal, priceConfig) || '-'}
             </span>
 
+			{summaryInformation.discountTotal > 0 && (
+				<>
+					<span className="text-red-600">Descuentos</span>
+					<span className="text-right text-red-600">
+						-{formatPrice(summaryInformation.discountTotal, priceConfig) || '-'}
+					</span>
+				</>
+			)}
+
 			<span>{getTaxLabel()}</span>
 			<span className="text-right">
                 {formatPrice(summaryInformation.tax, priceConfig) || '-'}

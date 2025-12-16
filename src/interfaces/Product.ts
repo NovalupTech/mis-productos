@@ -23,8 +23,18 @@ export interface ProductInCart {
   price: number;
   quantity: number;
   image: string;
+  categoryId: string; // Necesario para calcular descuentos
+  tags?: Tag[]; // Necesario para calcular descuentos
   // Los atributos seleccionados (ej: tamaño, color) se manejan como atributos
   selectedAttributes?: Record<string, string | number>;
+  // Información de descuento aplicado
+  discount?: {
+    id: string;
+    name: string;
+    discountAmount: number;
+    finalPrice: number;
+    badgeText: string;
+  };
 }
 
 export interface ProductInOrder {

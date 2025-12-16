@@ -8,7 +8,9 @@ import { Product, ProductInCart } from '@/interfaces'
 import { useCartStore } from '@/store/cart/cart-store'
 import { formatPrice } from '@/utils'
 import { usePriceConfig } from '@/components/providers/PriceConfigProvider'
-import { RequiredAttributesModal } from '@/components'
+import { useDiscounts } from '@/components/providers/DiscountProvider'
+import { RequiredAttributesModal, DiscountBadge } from '@/components'
+import { getBestDiscount } from '@/utils/discounts'
 
 interface Props {
     product: Product
@@ -21,7 +23,18 @@ export const ProductListItem = ({product, selectedTag}: Props) => {
   const addProductToCart = useCartStore(state => state.addProductToCart);
   const router = useRouter();
   const priceConfig = usePriceConfig();
-  const formattedPrice = formatPrice(product.price, priceConfig);
+  const { discounts } = useDiscounts();
+
+  // Calcular descuento aplicable (no verificar condiciones para mostrar badges de BUY_X_GET_Y)
+  const appliedDiscount = getBestDiscount(discounts, product, 1, 0, false);
+  // Para BUY_X_GET_Y, mostrar precio normal si no cumple cantidad mínima, pero mostrar badge
+  const displayPrice = appliedDiscount && appliedDiscount.discountAmount > 0 
+    ? appliedDiscount.finalPrice 
+    : product.price;
+  const formattedPrice = formatPrice(displayPrice, priceConfig);
+  const originalPrice = appliedDiscount && appliedDiscount.discountAmount > 0 
+    ? formatPrice(product.price, priceConfig) 
+    : null;
 
   // Verificar si el producto tiene atributos obligatorios
   const hasRequiredAttributes = product.attributes?.some(attr => 
@@ -39,6 +52,9 @@ export const ProductListItem = ({product, selectedTag}: Props) => {
     }
 
     // Si no tiene atributos obligatorios, agregar directamente al carrito
+    // Recalcular descuento con cantidad 1 y verificando condiciones para aplicar correctamente
+    const discountForCart = getBestDiscount(discounts, product, 1, 0, true);
+    
     const productCart: ProductInCart = {
       id: product.id,
       slug: product.slug,
@@ -46,7 +62,16 @@ export const ProductListItem = ({product, selectedTag}: Props) => {
       price: product.price,
       quantity: 1,
       image: product.images[0],
-      selectedAttributes: undefined
+      categoryId: product.categoryId,
+      tags: product.tags,
+      selectedAttributes: undefined,
+      discount: discountForCart && discountForCart.discountAmount > 0 ? {
+        id: discountForCart.discount.id,
+        name: discountForCart.discount.name,
+        discountAmount: discountForCart.discountAmount,
+        finalPrice: discountForCart.finalPrice,
+        badgeText: discountForCart.badgeText
+      } : undefined
     };
 
     addProductToCart(productCart);
@@ -60,7 +85,7 @@ export const ProductListItem = ({product, selectedTag}: Props) => {
       }}
     >
       {/* Imagen a la izquierda */}
-      <Link 
+      <a 
         href={`/catalog/product/${product.slug}`} 
         className="relative w-24 h-24 sm:w-32 sm:h-32 flex-shrink-0 overflow-hidden rounded-md"
       >
@@ -72,7 +97,13 @@ export const ProductListItem = ({product, selectedTag}: Props) => {
           className="w-full h-full object-cover"
           style={{ viewTransitionName: `product-image-${product.slug}` }}
         />
-      </Link>
+        {/* Badge de descuento */}
+        {appliedDiscount && (
+          <div className="absolute top-1 left-1 z-10">
+            <DiscountBadge text={appliedDiscount.badgeText} />
+          </div>
+        )}
+      </a>
       
       {/* Detalles del producto */}
       <div className="flex-1 min-w-0">
@@ -97,6 +128,11 @@ export const ProductListItem = ({product, selectedTag}: Props) => {
                 }}
               >
                 {formattedPrice}
+              </span>
+            )}
+            {originalPrice && (
+              <span className="text-sm text-gray-500 line-through">
+                {originalPrice}
               </span>
             )}
             

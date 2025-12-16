@@ -73,6 +73,15 @@ export const PlaceOrder = () => {
                 {formatPrice(summaryInformation.subTotal, priceConfig) || '-'}
             </span>
 
+			{summaryInformation.discountTotal > 0 && (
+				<>
+					<span className="text-red-600">Descuentos</span>
+					<span className="text-right text-red-600">
+						-{formatPrice(summaryInformation.discountTotal, priceConfig) || '-'}
+					</span>
+				</>
+			)}
+
 			<span>
 				{priceConfig.enableTax && priceConfig.taxValue && priceConfig.taxValue > 0
 					? priceConfig.taxType === 'percentage'

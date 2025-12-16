@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { IoGridOutline, IoListOutline } from 'react-icons/io5'
 import clsx from 'clsx'
+import { useCatalogViewStore } from '@/store/catalog/catalog-view-store'
 
 export type ViewMode = 'grid' | 'list'
 
@@ -12,34 +13,26 @@ interface Props {
 }
 
 export const ViewToggle = ({ onViewChange, value }: Props) => {
+  const { viewMode: storeViewMode, setViewMode: setStoreViewMode } = useCatalogViewStore()
   const [internalViewMode, setInternalViewMode] = useState<ViewMode>('grid')
 
-  // Si hay un value externo, usarlo; sino usar el estado interno
-  const viewMode = value ?? internalViewMode
+  // Si hay un value externo, usarlo; sino usar el store; sino usar el estado interno
+  const viewMode = value ?? storeViewMode ?? internalViewMode
 
-  // Cargar preferencia del localStorage al montar (solo si no hay value externo)
+  // Sincronizar estado interno con el store cuando no hay value externo
   useEffect(() => {
-    if (!value && typeof window !== 'undefined') {
-      const savedView = localStorage.getItem('product-view-mode') as ViewMode | null
-      if (savedView === 'grid' || savedView === 'list') {
-        setInternalViewMode(savedView)
-        onViewChange?.(savedView)
-      }
+    if (!value) {
+      setInternalViewMode(storeViewMode)
     }
-  }, [value, onViewChange])
-
-  // Guardar preferencia en localStorage cuando cambia
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('product-view-mode', viewMode)
-      onViewChange?.(viewMode)
-    }
-  }, [viewMode, onViewChange])
+  }, [storeViewMode, value])
 
   const handleViewChange = (newView: ViewMode) => {
     if (!value) {
+      // Si no hay control externo, actualizar el store y el estado interno
+      setStoreViewMode(newView)
       setInternalViewMode(newView)
     }
+    // Siempre llamar al callback si existe
     onViewChange?.(newView)
   }
 

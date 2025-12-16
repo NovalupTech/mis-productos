@@ -6,10 +6,12 @@ import Link from 'next/link'
 import { useCartStore } from '@/store/cart/cart-store'
 import { formatPrice } from '@/utils'
 import { usePriceConfig } from '@/components/providers/PriceConfigProvider'
+import { useDiscounts } from '@/components/providers/DiscountProvider'
 import { ProductAttributeWithDetails, ProductInCart } from '@/interfaces'
 import { getProductBySlug } from '@/actions/product/get-product-by-slug'
 import { IoCloseOutline, IoTrashOutline } from 'react-icons/io5'
 import { QuantitySelector } from '@/components'
+import { recalculateCartItemDiscount, getCartItemTotalPrice } from '@/utils/cart-discounts'
 import clsx from 'clsx'
 
 interface Props {
@@ -18,11 +20,13 @@ interface Props {
 
 export const CartDropdown = ({ isVisible }: Props) => {
   const priceConfig = usePriceConfig();
-  const { cart, getSummaryInformation, removeProduct, updateProductQuantity, clearCart } = useCartStore(state => state)
+  const { discounts } = useDiscounts();
+  const { cart, getSummaryInformation, removeProduct, updateProductQuantity, clearCart, getCartTotal } = useCartStore(state => state)
   const [loaded, setLoaded] = useState(false)
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
   const [productAttributes, setProductAttributes] = useState<Record<string, ProductAttributeWithDetails[]>>({})
   const summaryInformation = getSummaryInformation(priceConfig)
+  const cartTotal = getCartTotal();
 
   useEffect(() => {
     setLoaded(true)
@@ -88,12 +92,49 @@ export const CartDropdown = ({ isVisible }: Props) => {
                     <p className="text-xs text-gray-500 mb-1">Cantidad:</p>
                     <QuantitySelector 
                       quantity={product.quantity} 
-                      onQuantityChanged={(quantity) => updateProductQuantity(product, quantity)} 
+                      onQuantityChanged={(quantity) => {
+                        // Actualizar cantidad y recalcular descuento
+                        const updatedProduct = { ...product, quantity };
+                        const updatedWithDiscount = recalculateCartItemDiscount(updatedProduct, discounts, cartTotal);
+                        updateProductQuantity(updatedWithDiscount, quantity);
+                      }} 
                     />
                   </div>
 
                   <div className="flex items-center justify-between mt-2">
-                    <span className="text-sm font-semibold">{formatPrice(product.price * product.quantity, priceConfig) || '-'}</span>
+                    <div className="flex flex-col">
+                      {(() => {
+                        // Recalcular descuento con la cantidad actual
+                        const cartItemWithDiscount = recalculateCartItemDiscount(product, discounts, cartTotal);
+                        const appliedDiscount = cartItemWithDiscount.discount;
+                        const totalPrice = getCartItemTotalPrice(cartItemWithDiscount);
+                        const totalOriginalPrice = product.price * product.quantity;
+                        const hasDiscount = appliedDiscount !== null && totalOriginalPrice > totalPrice;
+
+                        return (
+                          <>
+                            {hasDiscount && (
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm text-gray-500 line-through">
+                                  {formatPrice(totalOriginalPrice, priceConfig)}
+                                </span>
+                                <span className="text-xs text-red-600 font-semibold">
+                                  -{formatPrice(totalOriginalPrice - totalPrice, priceConfig)}
+                                </span>
+                              </div>
+                            )}
+                            <span className={`text-sm font-semibold ${hasDiscount ? 'text-green-600' : ''}`}>
+                              {formatPrice(totalPrice, priceConfig) || '-'}
+                            </span>
+                            {appliedDiscount && (
+                              <span className="text-xs text-blue-600 mt-0.5">
+                                {appliedDiscount.name}
+                              </span>
+                            )}
+                          </>
+                        );
+                      })()}
+                    </div>
                     <button
                       onClick={() => removeProduct(product)}
                       className="text-red-500 hover:text-red-700 transition-colors p-1 rounded hover:bg-red-50"
@@ -116,6 +157,12 @@ export const CartDropdown = ({ isVisible }: Props) => {
             <span className="text-gray-600">Subtotal</span>
             <span className="font-medium">{formatPrice(Number(summaryInformation.subTotal.toFixed(2)), priceConfig) || '-'}</span>
           </div>
+          {summaryInformation.discountTotal > 0 && (
+            <div className="flex justify-between text-sm">
+              <span className="text-red-600">Descuentos</span>
+              <span className="font-medium text-red-600">-{formatPrice(Number(summaryInformation.discountTotal.toFixed(2)), priceConfig) || '-'}</span>
+            </div>
+          )}
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">
               {priceConfig.enableTax && priceConfig.taxValue && priceConfig.taxValue > 0

@@ -8,7 +8,9 @@ import { Product, ProductInCart } from '@/interfaces'
 import { useCartStore } from '@/store/cart/cart-store'
 import { formatPrice } from '@/utils'
 import { usePriceConfig } from '@/components/providers/PriceConfigProvider'
-import { RequiredAttributesModal } from '@/components'
+import { useDiscounts } from '@/components/providers/DiscountProvider'
+import { RequiredAttributesModal, DiscountBadge } from '@/components'
+import { getBestDiscount, formatDiscountBadge } from '@/utils/discounts'
 
 interface Props {
     product: Product
@@ -18,13 +20,23 @@ interface Props {
 
 const ProductGridItem = ({product, selectedTag, imageSize = 'medium'}: Props) => {
   const priceConfig = usePriceConfig();
-  const formattedPrice = formatPrice(product.price, priceConfig);
-
+  const { discounts } = useDiscounts();
   const [image, setImage] = useState(product.images[0]);
   const [isHovered, setIsHovered] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const addProductToCart = useCartStore(state => state.addProductToCart);
   const router = useRouter();
+
+  // Calcular descuento aplicable (no verificar condiciones para mostrar badges de BUY_X_GET_Y)
+  const appliedDiscount = getBestDiscount(discounts, product, 1, 0, false);
+  // Para BUY_X_GET_Y, mostrar precio normal si no cumple cantidad mínima, pero mostrar badge
+  const displayPrice = appliedDiscount && appliedDiscount.discountAmount > 0 
+    ? appliedDiscount.finalPrice 
+    : product.price;
+  const formattedPrice = formatPrice(displayPrice, priceConfig);
+  const originalPrice = appliedDiscount && appliedDiscount.discountAmount > 0 
+    ? formatPrice(product.price, priceConfig) 
+    : null;
 
   // Verificar si el producto tiene atributos obligatorios
   const hasRequiredAttributes = product.attributes?.some(attr => 
@@ -42,6 +54,9 @@ const ProductGridItem = ({product, selectedTag, imageSize = 'medium'}: Props) =>
     }
 
     // Si no tiene atributos obligatorios, agregar directamente al carrito
+    // Recalcular descuento con cantidad 1 y verificando condiciones para aplicar correctamente
+    const discountForCart = getBestDiscount(discounts, product, 1, 0, true);
+    
     const productCart: ProductInCart = {
       id: product.id,
       slug: product.slug,
@@ -49,7 +64,16 @@ const ProductGridItem = ({product, selectedTag, imageSize = 'medium'}: Props) =>
       price: product.price,
       quantity: 1,
       image: product.images[0],
-      selectedAttributes: undefined
+      categoryId: product.categoryId,
+      tags: product.tags,
+      selectedAttributes: undefined,
+      discount: discountForCart && discountForCart.discountAmount > 0 ? {
+        id: discountForCart.discount.id,
+        name: discountForCart.discount.name,
+        discountAmount: discountForCart.discountAmount,
+        finalPrice: discountForCart.finalPrice,
+        badgeText: discountForCart.badgeText
+      } : undefined
     };
 
     addProductToCart(productCart);
@@ -77,7 +101,7 @@ const ProductGridItem = ({product, selectedTag, imageSize = 'medium'}: Props) =>
         <div className={`w-32 sm:w-full flex-shrink-0 ${
           imageSize === 'small' ? 'sm:flex sm:justify-center sm:items-start' : ''
         }`}>
-          <Link 
+          <a 
             href={`/catalog/product/${product.slug}`} 
             className={`block relative overflow-hidden aspect-square ${
               imageSize === 'small' 
@@ -95,6 +119,12 @@ const ProductGridItem = ({product, selectedTag, imageSize = 'medium'}: Props) =>
                 className='w-full h-full object-cover rounded sm:rounded transition-transform duration-300 group-hover:scale-105'
                 style={{ viewTransitionName: `product-image-${product.slug}` }}
             />
+            {/* Badge de descuento */}
+            {appliedDiscount && (
+              <div className="absolute top-2 left-2 z-10">
+                <DiscountBadge text={appliedDiscount.badgeText} />
+              </div>
+            )}
             {/* Overlay con botones - Solo visible en desktop */}
             <div className={`hidden sm:flex absolute inset-0 bg-black/20 items-center justify-center transition-opacity duration-300 ${
               isHovered ? 'opacity-100' : 'opacity-0'
@@ -115,15 +145,15 @@ const ProductGridItem = ({product, selectedTag, imageSize = 'medium'}: Props) =>
                 >
                   Agregar
                 </button>
-                <button
+                {/* <button
                   onClick={handleViewDetails}
                   className='text-white px-6 py-3 rounded-md font-semibold transition-colors duration-200 w-full bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30'
                 >
                   Ver detalles
-                </button>
+                </button> */}
               </div>
             </div>
-          </Link>
+          </a>
         </div>
         
         {/* Contenido - En mobile se expande, en desktop ocupa el espacio restante */}
@@ -131,16 +161,23 @@ const ProductGridItem = ({product, selectedTag, imageSize = 'medium'}: Props) =>
             <Link className='hover:text-blue-600 line-clamp-2 mb-1 text-sm sm:text-base' href={`/catalog/product/${product.slug}`}>
                 {product.title}
             </Link>
-            {formattedPrice && (
-              <span 
-                className='font-bold text-base sm:text-lg'
-                style={{
-                  color: 'var(--theme-secondary-color)',
-                }}
-              >
-                {formattedPrice}
-              </span>
-            )}
+            <div className="flex items-center gap-2 flex-wrap">
+              {formattedPrice && (
+                <span 
+                  className='font-bold text-base sm:text-lg'
+                  style={{
+                    color: 'var(--theme-secondary-color)',
+                  }}
+                >
+                  {formattedPrice}
+                </span>
+              )}
+              {originalPrice && (
+                <span className='text-sm text-gray-500 line-through'>
+                  {originalPrice}
+                </span>
+              )}
+            </div>
             {product.tags && product.tags.length > 0 && (
               <div className='flex flex-wrap gap-1 mt-2'>
                 {product.tags.slice(0, 3).map(tag => {

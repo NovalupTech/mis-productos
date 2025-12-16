@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { ViewMode } from '@/components/ui/view-toggle/ViewToggle';
 import { CatalogHeader } from './CatalogHeader';
 import { InfiniteScrollProducts } from '@/components/ui/infinite-scroll/InfiniteScrollProducts';
 import { Product } from '@/interfaces';
+import { useCatalogViewStore } from '@/store/catalog/catalog-view-store';
 
 interface CatalogHeaderWrapperProps {
   tag?: string;
@@ -27,24 +27,10 @@ export const CatalogHeaderWrapper = ({
   catalogColumns,
   catalogImageSize,
 }: CatalogHeaderWrapperProps) => {
-  const [viewMode, setViewMode] = useState<ViewMode>('grid');
-
-  // Cargar preferencia del localStorage al montar
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedView = localStorage.getItem('product-view-mode') as ViewMode | null;
-      if (savedView === 'grid' || savedView === 'list') {
-        setViewMode(savedView);
-      }
-    }
-  }, []);
-
+  const { viewMode, setViewMode } = useCatalogViewStore();
 
   const handleViewChange = (view: ViewMode) => {
     setViewMode(view);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('product-view-mode', view);
-    }
   };
 
   return (

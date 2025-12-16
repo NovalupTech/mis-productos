@@ -2,6 +2,7 @@ import { TopMenu, Sidebar, Footer, FloatingSocialButton } from "@/components";
 import { CompanyProvider } from "@/components/providers/CompanyProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { PriceConfigProvider } from "@/components/providers/PriceConfigProvider";
+import { DiscountProvider } from "@/components/providers/DiscountProvider";
 import { Toast } from "@/components/ui/toast/Toast";
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
@@ -203,9 +204,10 @@ export default async function ShopLayout({
       <CompanyProvider company={company} />
       <ThemeProvider primaryColor={primaryColor} secondaryColor={secondaryColor}>
         <PriceConfigProvider priceConfig={priceConfig}>
-          <TopMenu />
-          <Sidebar/>
-          <Toast />
+          <DiscountProvider>
+            <TopMenu />
+            <Sidebar/>
+            <Toast />
 
         <div className="mx-0 sm:mx-10">
           { children }
@@ -213,6 +215,7 @@ export default async function ShopLayout({
 
         <Footer />
         <FloatingSocialButton />
+          </DiscountProvider>
         </PriceConfigProvider>
       </ThemeProvider>
     </main>

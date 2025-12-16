@@ -152,30 +152,48 @@ export const AttributeSelector = ({
   }
 
   if (attribute.type === 'text') {
+    // Asegurar que el valor sea siempre un string para evitar problemas de hidratación
+    const textValue = selectedValue !== undefined && selectedValue !== null 
+      ? String(selectedValue) 
+      : '';
+    
     return (
       <div className="my-5">
         <label className="block font-bold mb-2">{attribute.name}</label>
         <input
           type="text"
-          value={selectedValue as string || ''}
+          value={textValue}
           onChange={(e) => onValueChanged(e.target.value)}
           className="w-full px-4 py-2 border border-gray-300 rounded-md"
           placeholder={`Ingrese ${attribute.name.toLowerCase()}`}
+          suppressHydrationWarning
         />
       </div>
     );
   }
 
   if (attribute.type === 'number') {
+    // Asegurar que el valor sea siempre un string para evitar problemas de hidratación
+    // En el servidor y cliente, siempre renderizamos un string vacío cuando no hay valor
+    const numberValue = selectedValue !== undefined && selectedValue !== null && selectedValue !== '' 
+      ? String(selectedValue) 
+      : '';
+    
     return (
       <div className="my-5">
         <label className="block font-bold mb-2">{attribute.name}</label>
         <input
           type="number"
-          value={selectedValue as number || ''}
-          onChange={(e) => onValueChanged(Number(e.target.value))}
+          value={numberValue}
+          onChange={(e) => {
+            const inputValue = e.target.value;
+            // Si el input está vacío, pasar string vacío; si tiene valor, convertir a número
+            const numValue = inputValue === '' ? '' : Number(inputValue);
+            onValueChanged(numValue);
+          }}
           className="w-full px-4 py-2 border border-gray-300 rounded-md"
           placeholder={`Ingrese ${attribute.name.toLowerCase()}`}
+          suppressHydrationWarning
         />
       </div>
     );

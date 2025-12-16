@@ -5,7 +5,7 @@ import prisma from '@/lib/prisma';
 import { getCompanyIdFromContext } from '@/lib/company-context';
 import { revalidatePath } from 'next/cache';
 
-export const deleteAttributeValue = async (attributeValueId: string) => {
+export const deleteDiscount = async (discountId: string) => {
   const session = await middleware();
 
   if (session?.user.role !== 'admin' && session?.user.role !== 'companyAdmin') {
@@ -25,44 +25,38 @@ export const deleteAttributeValue = async (attributeValueId: string) => {
       };
     }
 
-    // Verificar que el valor existe y pertenece a un atributo de la compañía
-    const attributeValue = await prisma.attributeValue.findUnique({
+    // Verificar que el descuento existe
+    const existingDiscount = await prisma.discount.findFirst({
       where: {
-        id: attributeValueId,
-      },
-      include: {
-        attribute: true,
+        id: discountId,
       },
     });
 
-    if (!attributeValue || attributeValue.attribute.companyId !== companyId) {
+    if (!existingDiscount) {
       return {
         ok: false,
-        message: 'Valor no encontrado'
+        message: 'Descuento no encontrado'
       };
     }
 
-    // Eliminar el valor
-    await prisma.attributeValue.delete({
+    // Eliminar el descuento (los targets y conditions se eliminarán automáticamente por cascade)
+    await prisma.discount.delete({
       where: {
-        id: attributeValueId,
+        id: discountId,
       },
     });
 
-    revalidatePath('/gestion/attributes');
+    revalidatePath('/gestion/descuentos');
 
     return {
       ok: true,
-      message: 'Valor eliminado correctamente',
+      message: 'Descuento eliminado correctamente',
     };
   } catch (error) {
     console.log(error);
     return {
       ok: false,
-      message: 'No se pudo eliminar el valor'
+      message: 'No se pudo eliminar el descuento'
     };
   }
 };
-
-
-

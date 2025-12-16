@@ -4,6 +4,8 @@ import { useState, useMemo, useEffect } from 'react'
 import { QuantitySelector, AttributeSelector } from '@/components'
 import { Product, ProductInCart } from '@/interfaces'
 import { useCartStore } from '@/store/cart/cart-store'
+import { useDiscounts } from '@/components/providers/DiscountProvider'
+import { getBestDiscount } from '@/utils/discounts'
 
 interface StockConfig {
   showInDetails: boolean;
@@ -27,9 +29,13 @@ export const AddToCart = ({product, stockConfig}: Props) => {
   const finalStockConfig = stockConfig || defaultStockConfig;
 
   const addProductToCart = useCartStore(state => state.addProductToCart)
+  const { discounts } = useDiscounts()
   const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string | number | string[]>>({})
   const [selectedCount, setSelectedCount] = useState<number>(1)
   const [post, setPost] = useState(false)
+
+  // Calcular descuento aplicable
+  const appliedDiscount = getBestDiscount(discounts, product, selectedCount, 0)
 
   // Agrupar atributos por attributeId para el selector
   const attributesByType = useMemo(() => {
@@ -74,7 +80,16 @@ export const AddToCart = ({product, stockConfig}: Props) => {
         price: product.price,
         quantity: selectedCount,
         image: product.images[0],
-        selectedAttributes: selectedAttributes as Record<string, string | number>
+        categoryId: product.categoryId,
+        tags: product.tags,
+        selectedAttributes: selectedAttributes as Record<string, string | number>,
+        discount: appliedDiscount && appliedDiscount.discountAmount > 0 ? {
+          id: appliedDiscount.discount.id,
+          name: appliedDiscount.discount.name,
+          discountAmount: appliedDiscount.discountAmount,
+          finalPrice: appliedDiscount.finalPrice,
+          badgeText: appliedDiscount.badgeText
+        } : undefined
     }
 
     addProductToCart(productCart)

@@ -19,3 +19,4 @@ export { PaypalButtons } from './ui/paypal/PaypalButtons';
 export { MercadoPagoButton } from './ui/mercado-pago/MercadoPagoButtons';
 export { RequiredAttributesModal } from './ui/required-attributes-modal/RequiredAttributesModal';
 export { FloatingSocialButton } from './ui/floating-social-button/FloatingSocialButton';
+export { DiscountBadge } from './ui/discount-badge/DiscountBadge';

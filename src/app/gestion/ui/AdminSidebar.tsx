@@ -77,6 +77,11 @@ const navItems: NavItem[] = [
     icon: IoStatsChartOutline,
   },
   {
+    href: "/gestion/descuentos",
+    label: "Descuentos",
+    icon: IoPricetagOutline,
+  },
+  {
     href: "/gestion/orders",
     label: "Pedidos",
     icon: IoTicketOutline,

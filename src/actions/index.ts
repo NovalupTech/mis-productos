@@ -66,3 +66,10 @@ export * from './attribute/delete-attribute';
 export * from './attribute-value/create-attribute-value';
 export * from './attribute-value/update-attribute-value';
 export * from './attribute-value/delete-attribute-value';
+
+export * from './discount/get-all-discounts';
+export * from './discount/create-discount';
+export * from './discount/update-discount';
+export * from './discount/delete-discount';
+export * from './discount/get-discount-options';
+export * from './discount/get-product-discounts';

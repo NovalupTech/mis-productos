@@ -7,6 +7,7 @@ import { ProductGrid } from '../product-grid/ProductGrid'
 import { ProductList } from '../product-list/ProductList'
 import { ViewToggle, ViewMode } from '../view-toggle/ViewToggle'
 import { getPaginatedProductsWithImages } from '@/actions'
+import { useCatalogViewStore } from '@/store/catalog/catalog-view-store'
 
 interface InfiniteScrollProductsProps {
   initialProducts: Product[]
@@ -38,23 +39,13 @@ export const InfiniteScrollProducts = ({
   const [totalPages, setTotalPages] = useState(initialTotalPages)
   const [isLoading, setIsLoading] = useState(false)
   const [hasMore, setHasMore] = useState(initialPage < initialTotalPages)
-  const [internalViewMode, setInternalViewMode] = useState<ViewMode>('grid')
   const observerTarget = useRef<HTMLDivElement>(null)
   const searchParams = useSearchParams()
   const prevFiltersRef = useRef<string>('')
+  const { viewMode: storeViewMode } = useCatalogViewStore()
 
-  // Usar viewMode externo si está disponible, sino usar el interno
-  const viewMode = externalViewMode ?? internalViewMode
-
-  // Sincronizar viewMode interno con localStorage si no hay viewMode externo
-  useEffect(() => {
-    if (!externalViewMode && typeof window !== 'undefined') {
-      const savedView = localStorage.getItem('product-view-mode') as ViewMode | null
-      if (savedView === 'grid' || savedView === 'list') {
-        setInternalViewMode(savedView)
-      }
-    }
-  }, [externalViewMode])
+  // Usar viewMode externo si está disponible, sino usar el store
+  const viewMode = externalViewMode ?? storeViewMode
 
   // Crear una clave única para detectar cambios en los filtros
   const filtersKey = JSON.stringify({ search, tag, attributeFilters })

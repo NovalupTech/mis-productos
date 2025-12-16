@@ -43,6 +43,11 @@ export const formatPrice = (value: number, config?: PriceConfig): string | null 
     return null;
   }
 
+  // Redondear el valor a 2 decimales
+  const roundedValue = Math.round(value * 100) / 100;
+  // Formatear a 2 decimales siempre
+  const formattedValue = roundedValue.toFixed(2);
+
   // Usar valores por defecto si no hay configuración
   const currency = config?.currency || DEFAULT_CURRENCY;
   const format = config?.format || DEFAULT_FORMAT;
@@ -54,15 +59,15 @@ export const formatPrice = (value: number, config?: PriceConfig): string | null 
   // Formatear según el formato seleccionado
   switch (format) {
     case 'symbol-before':
-      return `${symbol}${value}`;
+      return `${symbol}${formattedValue}`;
     case 'symbol-after':
-      return `${value}${symbol}`;
+      return `${formattedValue}${symbol}`;
     case 'code-before':
-      return `${currency} ${value}`;
+      return `${currency} ${formattedValue}`;
     case 'code-after':
-      return `${value} ${currency}`;
+      return `${formattedValue} ${currency}`;
     default:
-      return `${symbol}${value}`;
+      return `${symbol}${formattedValue}`;
   }
 };
 

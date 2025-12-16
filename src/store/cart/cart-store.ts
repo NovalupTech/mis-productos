@@ -9,12 +9,14 @@ interface State {
 	cart: ProductInCart[];
 	addProductToCart: (product: ProductInCart) => void;
 	getTotalItems: () => number;
+	getCartTotal: () => number;
 	updateProductQuantity: (product: ProductInCart, quantity: number) => void;
 	updateProductAttributes: (product: ProductInCart, newAttributes: Record<string, string | number>) => void;
 	removeProduct: (product: ProductInCart) => void;
 	getSummaryInformation: (priceConfig?: PriceConfig) => {
 		totalItems: number;
 		subTotal: number;
+		discountTotal: number;
 		tax: number;
 		total: number;
 	};
@@ -95,12 +97,30 @@ export const useCartStore = create<State>()(
 				const { cart } = get();
 				return cart.reduce((acc, p) => acc + p.quantity, 0);
 			},
+			getCartTotal: () => {
+				const { cart } = get();
+				return cart.reduce((acc, p) => {
+					const price = p.discount ? p.discount.finalPrice : p.price;
+					return acc + (price * p.quantity);
+				}, 0);
+			},
 			getSummaryInformation: (priceConfig?: PriceConfig) => {
 				const { cart } = get();
 				const totalItems = cart.reduce((acc, p) => acc + p.quantity, 0);
-				const subTotal = cart.reduce((acc, p) => acc + p.price * p.quantity, 0);
 				
-				// Calcular IVA según la configuración
+				// Calcular subtotal original (sin descuentos)
+				const originalSubTotal = cart.reduce((acc, p) => acc + p.price * p.quantity, 0);
+				
+				// Calcular subtotal con descuentos aplicados
+				const subTotal = cart.reduce((acc, p) => {
+					const price = p.discount ? p.discount.finalPrice : p.price;
+					return acc + (price * p.quantity);
+				}, 0);
+				
+				// Total de descuentos aplicados
+				const discountTotal = originalSubTotal - subTotal;
+				
+				// Calcular IVA según la configuración (sobre el subtotal con descuentos)
 				let tax = 0;
 				if (priceConfig?.enableTax && priceConfig.taxValue && priceConfig.taxValue > 0) {
 					if (priceConfig.taxType === 'percentage') {
@@ -112,7 +132,7 @@ export const useCartStore = create<State>()(
 				}
 				
 				const total = subTotal + tax;
-				return { totalItems, subTotal, tax, total };
+				return { totalItems, subTotal, discountTotal, tax, total };
 			},
 			addProductToCart: (product) => {
 				const { cart } = get();
@@ -151,7 +171,13 @@ export const useCartStore = create<State>()(
 				
 				const updatedCart = cart.map((p) => {
 					if (getProductKey(p) === productKey) {
-						return { ...p, quantity };
+						// Si el producto tiene información de descuento actualizada, usarla
+						// De lo contrario, solo actualizar la cantidad y mantener el descuento existente
+						const updatedItem = { ...p, quantity };
+						if (product.discount !== undefined) {
+							updatedItem.discount = product.discount;
+						}
+						return updatedItem;
 					}
 					return p;
 				});

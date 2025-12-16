@@ -473,3 +473,61 @@ model CompanyConfig {
   @@unique([companyId, key])
   @@index([companyId])
 }
+
+model Discount {
+  id          String       @id @default(uuid())
+  name        String
+  description String?
+  type        DiscountType
+  value       Json?
+  isActive    Boolean      @default(true)
+  combinable  Boolean      @default(false)
+  priority    Int          @default(0)
+  startsAt    DateTime?
+  endsAt      DateTime?
+
+  targets    DiscountTarget[]
+  conditions DiscountCondition[]
+
+  createdAt DateTime @default(now())
+}
+
+model DiscountTarget {
+  id         String             @id @default(uuid())
+  discountId String
+  targetType DiscountTargetType
+  targetId   String?
+
+  discount Discount @relation(fields: [discountId], references: [id])
+
+  @@index([discountId])
+}
+
+model DiscountCondition {
+  id            String                @id @default(uuid())
+  discountId    String
+  conditionType DiscountConditionType
+  value         Float
+
+  discount Discount @relation(fields: [discountId], references: [id])
+
+  @@index([discountId])
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED_AMOUNT
+  BUY_X_GET_Y
+}
+
+enum DiscountTargetType {
+  PRODUCT
+  CATEGORY
+  TAG
+  ALL
+}
+
+enum DiscountConditionType {
+  MIN_QUANTITY
+  MIN_AMOUNT
+}
