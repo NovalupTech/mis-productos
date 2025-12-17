@@ -32,7 +32,7 @@ const SOCIAL_TYPE_COLORS: Record<SocialType, string> = {
   X: 'bg-gray-900 hover:bg-gray-800',
   LINKEDIN: 'bg-blue-700 hover:bg-blue-800',
   YOUTUBE: 'bg-red-600 hover:bg-red-700',
-  WHATSAPP: 'bg-green-600 hover:bg-green-700',
+  WHATSAPP: 'bg-[#25D366] hover:bg-[#20BA5A]',
   WEBSITE: 'bg-gray-600 hover:bg-gray-700',
 };
 
@@ -107,7 +107,8 @@ export const FloatingSocialButton = () => {
       target="_blank"
       rel="noopener noreferrer"
       className={clsx(
-        'fixed z-50 flex items-center justify-center w-14 h-14 text-white shadow-lg transition-all hover:scale-110',
+        'fixed z-50 flex items-center justify-center w-16 h-16 text-white shadow-2xl transition-all hover:scale-110',
+        'drop-shadow-[0_4px_12px_rgba(0,0,0,0.3)]',
         positionClass,
         styleClass,
         colorClass
@@ -115,7 +116,7 @@ export const FloatingSocialButton = () => {
       aria-label={social.label || `Ir a ${config.socialType}`}
       title={social.label || `Ir a ${config.socialType}`}
     >
-      <Icon size={24} />
+      <Icon size={28} className="text-white" />
     </a>
   );
 };

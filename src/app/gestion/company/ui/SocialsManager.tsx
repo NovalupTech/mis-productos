@@ -375,7 +375,7 @@ export const SocialsManager = ({ initialSocials }: Props) => {
                   Posición
                 </label>
                 <div className="grid grid-cols-2 gap-2">
-                  {(['bottom-right', 'bottom-left', 'top-right', 'top-left'] as const).map((pos) => (
+                  {(['top-left', 'top-right', 'bottom-left', 'bottom-right'] as const).map((pos) => (
                     <button
                       key={pos}
                       type="button"
@@ -393,10 +393,10 @@ export const SocialsManager = ({ initialSocials }: Props) => {
                           : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
                       )}
                     >
-                      {pos === 'bottom-right' && 'Abajo Derecha'}
-                      {pos === 'bottom-left' && 'Abajo Izquierda'}
-                      {pos === 'top-right' && 'Arriba Derecha'}
                       {pos === 'top-left' && 'Arriba Izquierda'}
+                      {pos === 'top-right' && 'Arriba Derecha'}
+                      {pos === 'bottom-left' && 'Abajo Izquierda'}
+                      {pos === 'bottom-right' && 'Abajo Derecha'}
                     </button>
                   ))}
                 </div>
