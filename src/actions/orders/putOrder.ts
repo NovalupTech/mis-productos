@@ -5,6 +5,7 @@ import { middleware } from "@/auth.config";
 import { Address } from "@/interfaces/Address";
 import { requireCompanyId } from "@/lib/company-context";
 import { getCompanyConfigPublic } from "@/actions/company-config/get-company-config-public";
+import { getCurrentDomain } from "@/lib/domain";
 
 interface productsInCart {
 	productId: string;
@@ -13,7 +14,7 @@ interface productsInCart {
 
 export const placeOrder = async (
 	productsInCart: productsInCart[],
-	address: Address
+	address?: Address
 ) => {
 	const session = await middleware();
 	const user = session?.user.id;
@@ -168,20 +169,22 @@ export const placeOrder = async (
 				},
 			});
 
-			// insertar direccion de la orden
-			await tx.orderAddress.create({
-				data: {
-					orderId: order.id,
-					firstName: address.firstName,
-					lastName: address.lastName,
-					address: address.address,
-					address2: address.address2,
-					city: address.city,
-					countryId: address.country,
-					postalCode: address.postalCode,
-					phone: address.phone,
-				},
-			});
+			// insertar direccion de la orden solo si se proporciona
+			if (address) {
+				await tx.orderAddress.create({
+					data: {
+						orderId: order.id,
+						firstName: address.firstName,
+						lastName: address.lastName,
+						address: address.address,
+						address2: address.address2,
+						city: address.city,
+						countryId: address.country,
+						postalCode: address.postalCode,
+						phone: address.phone,
+					},
+				});
+			}
 
 			return {
 				ok: true,
@@ -189,6 +192,25 @@ export const placeOrder = async (
 				updatedProducts,
 			};
 		});
+
+		// Enviar email al vendedor sobre la nueva orden creada
+		// No esperamos la respuesta para no bloquear la creación de la orden
+		if (prismaTx.orden) {
+			// Construir URL base para la llamada API
+			const domain = await getCurrentDomain();
+			const baseUrl = process.env.ENV === 'dev' ? 'http://localhost:3000' : `https://${domain}`;
+			
+			fetch(`${baseUrl}/api/orders/send-order-created-email`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ orderId: prismaTx.orden.id }),
+			}).catch((error) => {
+				console.error('Error al enviar email de orden creada:', error);
+				// No fallar la creación de la orden si el email falla
+			});
+		}
 
         return {
             ok: true,

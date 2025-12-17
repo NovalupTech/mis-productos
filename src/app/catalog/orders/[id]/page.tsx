@@ -31,14 +31,18 @@ export default async function OrderPage({ params }: {params: Promise<{id: string
   // Obtener métodos de pago habilitados
   const { paymentMethods = [] } = await getPaymentMethodsPublic(order.companyId);
   
+  // Si los precios no se muestran, solo mostrar "coordinar con el vendedor"
+  const hidePrices = priceConfig.showPrices === false;
+  
   // Si no hay métodos configurados, mostrar PayPal por defecto
   const hasConfiguredMethods = paymentMethods.length > 0;
   
   // Determinar qué métodos mostrar
-  // PayPal: mostrar si no hay métodos configurados O si está específicamente habilitado
-  const showPayPal = !hasConfiguredMethods || paymentMethods.some(pm => pm.type === 'PAYPAL');
-  const showMercadoPago = paymentMethods.some(pm => pm.type === 'MERCADOPAGO');
-  const bankTransferMethod = paymentMethods.find(pm => pm.type === 'BANK_TRANSFER');
+  // Si los precios están ocultos, solo mostrar "coordinar con el vendedor"
+  // PayPal: mostrar si no hay métodos configurados O si está específicamente habilitado (solo si se muestran precios)
+  const showPayPal = !hidePrices && (!hasConfiguredMethods || paymentMethods.some(pm => pm.type === 'PAYPAL'));
+  const showMercadoPago = !hidePrices && paymentMethods.some(pm => pm.type === 'MERCADOPAGO');
+  const bankTransferMethod = !hidePrices ? paymentMethods.find(pm => pm.type === 'BANK_TRANSFER') : null;
   const coordinateWithSellerMethod = paymentMethods.find(pm => pm.type === ('COORDINATE_WITH_SELLER' as PaymentMethodType));
 
   return (
@@ -80,69 +84,109 @@ export default async function OrderPage({ params }: {params: Promise<{id: string
         { /* Checkout - Resumen de orden */ }
         <div className="bg-white rounded-xl shadow-xl p-7">
 
-          <h2 className="text-2xl font-bold mb-2">Direccion de entrega</h2>
-          <div className="mb-10">
-            <p>{address?.firstName}</p>
-            <p>{address?.lastName}</p>
-            <p>{address?.address}</p>
-            <p>{address?.address2}</p>
-            <p>{address?.city}</p>
-            <p>{address?.country.id +", "+ address?.country.name}</p>
-            <p>{address?.postalCode}</p>
-            <p>{address?.phone}</p>
-          </div>
+          {address && (
+            <>
+              <h2 className="text-2xl font-bold mb-2">Direccion de entrega</h2>
+              <div className="mb-10">
+                <p>{address.firstName}</p>
+                <p>{address.lastName}</p>
+                <p>{address.address}</p>
+                <p>{address.address2}</p>
+                <p>{address.city}</p>
+                <p>{address.country.id +", "+ address.country.name}</p>
+                <p>{address.postalCode}</p>
+                <p>{address.phone}</p>
+              </div>
 
-          <div className="w-full h-0.5 rounded bg-gray-200 mb-10" />
+              <div className="w-full h-0.5 rounded bg-gray-200 mb-10" />
+            </>
+          )}
 
           <h2 className="text-2xl mb-2">Resumen de orden</h2>
           <div className="grid grid-cols-2">
             <span>Nº de productos</span>
             <span className="text-right">{order.itemsInOrder}</span>
 
-            <span>Subtotal</span>
-            <span className="text-right">{formatPrice(order.subTotal, priceConfig)}</span>
+            {priceConfig.showPrices !== false && (
+              <>
+                <span>Subtotal</span>
+                <span className="text-right">{formatPrice(order.subTotal, priceConfig)}</span>
 
-            <span>Impuestos</span>
-            <span className="text-right">{formatPrice(order.tax, priceConfig)}</span>
+                <span>Impuestos</span>
+                <span className="text-right">{formatPrice(order.tax, priceConfig)}</span>
 
-            <span className="mt-5 text-2xl">Total:</span>
-            <span className="mt-5 text-2xl text-right">{formatPrice(order?.total, priceConfig)}</span>
+                <span className="mt-5 text-2xl">Total:</span>
+                <span className="mt-5 text-2xl text-right">{formatPrice(order?.total, priceConfig)}</span>
+              </>
+            )}
           </div>
 
           <div className="mt-5 mb-2 w-full">
             {
               !order.isPaid ?
                 <>
-                  {showPayPal && (
-                    <PaypalButtons amount={order!.total} orderId={order!.id} />
-                  )}
-                  {showMercadoPago && (
-                    <MercadoPagoButton amount={order!.total} orderId={order!.id} />
-                  )}
-                  {bankTransferMethod && bankTransferMethod.config && (
-                    <BankTransferButton 
-                      amount={order!.total} 
-                      orderId={order!.id}
-                      config={bankTransferMethod.config as {
-                        bankName: string;
-                        accountHolder: string;
-                        cbu: string;
-                        alias?: string;
-                        dni?: string;
-                        notes?: string;
-                      }}
-                    />
-                  )}
-                  {coordinateWithSellerMethod && coordinateWithSellerMethod.config && (
-                    <CoordinateWithSellerButton 
-                      amount={order!.total} 
-                      orderId={order!.id}
-                      config={coordinateWithSellerMethod.config as {
-                        contactType: 'whatsapp' | 'email';
-                        whatsappNumber?: string;
-                        email?: string;
-                      }}
-                    />
+                  {hidePrices ? (
+                    // Si los precios están ocultos, solo mostrar "coordinar con el vendedor"
+                    coordinateWithSellerMethod && coordinateWithSellerMethod.config ? (
+                      <CoordinateWithSellerButton 
+                        amount={order!.total} 
+                        orderId={order!.id}
+                        config={coordinateWithSellerMethod.config as {
+                          contactType: 'whatsapp' | 'email';
+                          whatsappNumber?: string;
+                          email?: string;
+                        }}
+                      />
+                    ) : (
+                      <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <p className="text-sm text-yellow-800">
+                          Por favor, contacta al vendedor para coordinar el pago de tu pedido.
+                        </p>
+                      </div>
+                    )
+                  ) : (
+                    // Si los precios se muestran, mostrar todos los métodos configurados
+                    <>
+                      {showPayPal && (
+                        <PaypalButtons amount={order!.total} orderId={order!.id} />
+                      )}
+                      {showMercadoPago && (
+                        <MercadoPagoButton amount={order!.total} orderId={order!.id} />
+                      )}
+                      {bankTransferMethod && bankTransferMethod.config && (
+                        <BankTransferButton 
+                          amount={order!.total} 
+                          orderId={order!.id}
+                          config={bankTransferMethod.config as {
+                            bankName: string;
+                            accountHolder: string;
+                            cbu: string;
+                            alias?: string;
+                            dni?: string;
+                            notes?: string;
+                            receiptContactType?: 'email' | 'whatsapp';
+                            receiptEmail?: string;
+                            receiptWhatsApp?: string;
+                          }}
+                          coordinateWithSellerConfig={coordinateWithSellerMethod?.config as {
+                            contactType: 'whatsapp' | 'email';
+                            whatsappNumber?: string;
+                            email?: string;
+                          } | undefined}
+                        />
+                      )}
+                      {coordinateWithSellerMethod && coordinateWithSellerMethod.config && (
+                        <CoordinateWithSellerButton 
+                          amount={order!.total} 
+                          orderId={order!.id}
+                          config={coordinateWithSellerMethod.config as {
+                            contactType: 'whatsapp' | 'email';
+                            whatsappNumber?: string;
+                            email?: string;
+                          }}
+                        />
+                      )}
+                    </>
                   )}
                 </> :
                 <>

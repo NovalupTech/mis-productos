@@ -10,6 +10,7 @@ import { createUpdateProduct } from "@/actions/product/create-update-product";
 import { deleteProductImage } from "@/actions/product/delete-product-image";
 import { deleteProduct } from "@/actions/product/delete-product";
 import { TagsModal } from './TagsModal';
+import { CategoriesModal } from './CategoriesModal';
 import { AttributesManager } from './AttributesManager';
 import { useState } from 'react';
 import { ProductAttributeWithDetails } from '@/interfaces';
@@ -38,8 +39,10 @@ export const ProductForm = ({ product, categories }: Props) => {
 
   const router = useRouter();
   const [isTagsModalOpen, setIsTagsModalOpen] = useState(false);
+  const [isCategoriesModalOpen, setIsCategoriesModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [categoriesList, setCategoriesList] = useState<Category[]>(categories);
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>(
     product.tags?.map(tag => tag.id) || []
   );
@@ -246,17 +249,26 @@ export const ProductForm = ({ product, categories }: Props) => {
 
         <div className="flex flex-col mb-2">
           <span>Categoria</span>
-          <select
-            className="p-2 border rounded-md bg-gray-200"
-            {...register("categoryId", { required: true })}
-          >
-            <option value="">[Seleccione]</option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
+          <div className="flex gap-2">
+            <select
+              className="p-2 border rounded-md bg-gray-200 flex-1"
+              {...register("categoryId", { required: true })}
+            >
+              <option value="">[Seleccione]</option>
+              {categoriesList.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              onClick={() => setIsCategoriesModalOpen(true)}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            >
+              Gestionar Categorías
+            </button>
+          </div>
         </div>
 
         <button className="btn-primary w-full">Guardar</button>
@@ -345,6 +357,16 @@ export const ProductForm = ({ product, categories }: Props) => {
         onClose={() => setIsTagsModalOpen(false)}
         selectedTagIds={selectedTagIds}
         onTagsChange={handleTagsChange}
+        companyId={product.companyId || product.company?.id}
+      />
+
+      {/* Modal de Categorías */}
+      <CategoriesModal
+        isOpen={isCategoriesModalOpen}
+        onClose={() => setIsCategoriesModalOpen(false)}
+        onCategoriesChange={(updatedCategories: Category[]) => {
+          setCategoriesList(updatedCategories);
+        }}
         companyId={product.companyId || product.company?.id}
       />
     </form>

@@ -34,29 +34,33 @@ export const CartSummary = () => {
                 {summaryInformation.totalItems === 1 ? "1 producto" : `${summaryInformation.totalItems} productos`}
             </span>
 
-			<span>Subtotal</span>
-			<span className="text-right">
-                {formatPrice(summaryInformation.subTotal, priceConfig) || '-'}
-            </span>
-
-			{summaryInformation.discountTotal > 0 && (
+			{priceConfig.showPrices !== false && (
 				<>
-					<span className="text-red-600">Descuentos</span>
-					<span className="text-right text-red-600">
-						-{formatPrice(summaryInformation.discountTotal, priceConfig) || '-'}
+					<span>Subtotal</span>
+					<span className="text-right">
+						{formatPrice(summaryInformation.subTotal, priceConfig) || '-'}
+					</span>
+
+					{summaryInformation.discountTotal > 0 && (
+						<>
+							<span className="text-red-600">Descuentos</span>
+							<span className="text-right text-red-600">
+								-{formatPrice(summaryInformation.discountTotal, priceConfig) || '-'}
+							</span>
+						</>
+					)}
+
+					<span>{getTaxLabel()}</span>
+					<span className="text-right">
+						{formatPrice(summaryInformation.tax, priceConfig) || '-'}
+					</span>
+
+					<span className="mt-5 text-2xl">Total:</span>
+					<span className="mt-5 text-2xl text-right">
+						{formatPrice(summaryInformation.total, priceConfig) || '-'}
 					</span>
 				</>
 			)}
-
-			<span>{getTaxLabel()}</span>
-			<span className="text-right">
-                {formatPrice(summaryInformation.tax, priceConfig) || '-'}
-            </span>
-
-			<span className="mt-5 text-2xl">Total:</span>
-			<span className="mt-5 text-2xl text-right">
-                {formatPrice(summaryInformation.total, priceConfig) || '-'}
-            </span>
 		</div>
 	);
 };

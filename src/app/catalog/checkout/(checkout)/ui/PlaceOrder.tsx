@@ -8,7 +8,11 @@ import { usePriceConfig } from "@/components/providers/PriceConfigProvider";
 import clsx from "clsx";
 import { placeOrder } from "@/actions/orders/putOrder";
 
-export const PlaceOrder = () => {
+interface PlaceOrderProps {
+	handlesShipping: boolean;
+}
+
+export const PlaceOrder = ({ handlesShipping }: PlaceOrderProps) => {
 	const [loaded, setLoaded] = useState(false);
     const [OrderPlaced, setOrderPlaced] = useState(false)
 	const [errorMessage, setErrorMessage] = useState('')
@@ -34,7 +38,8 @@ export const PlaceOrder = () => {
             }
         })
 
-		const result = await placeOrder(productsToOrder, address);
+		// Solo pasar la dirección si se manejan envíos
+		const result = await placeOrder(productsToOrder, handlesShipping ? address : undefined);
 		if(!result.ok){
 			setErrorMessage(result?.message ?? '')
 			setOrderPlaced(false)
@@ -47,19 +52,23 @@ export const PlaceOrder = () => {
 
 	return (
 		<div className="bg-white rounded-xl shadow-xl p-7">
-			<h2 className="text-2xl font-bold mb-2">Direccion de entrega</h2>
-			<div className="mb-10">
-				<p>{address.firstName}</p>
-				<p>{address.lastName}</p>
-				<p>{address.address}</p>
-				<p>{address.address2}</p>
-				<p>{address.postalCode}</p>
-				<p>{address.city}</p>
-				<p>{address.country}</p>
-				<p>{address.phone}</p>
-			</div>
+			{handlesShipping && (
+				<>
+					<h2 className="text-2xl font-bold mb-2">Direccion de entrega</h2>
+					<div className="mb-10">
+						<p>{address.firstName}</p>
+						<p>{address.lastName}</p>
+						<p>{address.address}</p>
+						<p>{address.address2}</p>
+						<p>{address.postalCode}</p>
+						<p>{address.city}</p>
+						<p>{address.country}</p>
+						<p>{address.phone}</p>
+					</div>
 
-			<div className="w-full h-0.5 rounded bg-gray-200 mb-10" />
+					<div className="w-full h-0.5 rounded bg-gray-200 mb-10" />
+				</>
+			)}
 
 			<h2 className="text-2xl mb-2">Resumen de orden</h2>
 			<div className="grid grid-cols-2">
@@ -68,35 +77,39 @@ export const PlaceOrder = () => {
                 {summaryInformation.totalItems === 1 ? "1 producto" : `${summaryInformation.totalItems} productos`}
             </span>
 
-			<span>Subtotal</span>
-			<span className="text-right">
-                {formatPrice(summaryInformation.subTotal, priceConfig) || '-'}
-            </span>
-
-			{summaryInformation.discountTotal > 0 && (
+			{priceConfig.showPrices !== false && (
 				<>
-					<span className="text-red-600">Descuentos</span>
-					<span className="text-right text-red-600">
-						-{formatPrice(summaryInformation.discountTotal, priceConfig) || '-'}
+					<span>Subtotal</span>
+					<span className="text-right">
+						{formatPrice(summaryInformation.subTotal, priceConfig) || '-'}
+					</span>
+
+					{summaryInformation.discountTotal > 0 && (
+						<>
+							<span className="text-red-600">Descuentos</span>
+							<span className="text-right text-red-600">
+								-{formatPrice(summaryInformation.discountTotal, priceConfig) || '-'}
+							</span>
+						</>
+					)}
+
+					<span>
+						{priceConfig.enableTax && priceConfig.taxValue && priceConfig.taxValue > 0
+							? priceConfig.taxType === 'percentage'
+								? `Impuestos (${priceConfig.taxValue}%)`
+								: 'Impuestos'
+							: 'Impuestos'}
+					</span>
+					<span className="text-right">
+						{formatPrice(summaryInformation.tax, priceConfig) || '-'}
+					</span>
+
+					<span className="mt-5 text-2xl">Total:</span>
+					<span className="mt-5 text-2xl text-right">
+						{formatPrice(summaryInformation.total, priceConfig) || '-'}
 					</span>
 				</>
 			)}
-
-			<span>
-				{priceConfig.enableTax && priceConfig.taxValue && priceConfig.taxValue > 0
-					? priceConfig.taxType === 'percentage'
-						? `Impuestos (${priceConfig.taxValue}%)`
-						: 'Impuestos'
-					: 'Impuestos'}
-			</span>
-			<span className="text-right">
-                {formatPrice(summaryInformation.tax, priceConfig) || '-'}
-            </span>
-
-			<span className="mt-5 text-2xl">Total:</span>
-			<span className="mt-5 text-2xl text-right">
-                {formatPrice(summaryInformation.total, priceConfig) || '-'}
-            </span>
 		</div>
 
 			{
@@ -108,20 +121,24 @@ export const PlaceOrder = () => {
 			}
 
 			<div className="mt-5 mb-2 w-full">
-				<p>
-					<span className="text-xs">
-						Al hacer clic en &apos;Ir a pagar&apos; aceptas nuestros{" "}
-						<a href="#" className="underline">
-							Terminos y condiciones
-						</a>
-					</span>
-				</p>
+				{priceConfig.showPrices !== false && (
+					<p>
+						<span className="text-xs">
+							Al hacer clic en &apos;Ir a pagar&apos; aceptas nuestros{" "}
+							<a href="#" className="underline">
+								Terminos y condiciones
+							</a>
+						</span>
+					</p>
+				)}
 				<button disabled={OrderPlaced} onClick={onPlaceOrder} className={
                     clsx("flex justify-center", {
                         'btn-primary': !OrderPlaced,
                         'btn-disabled': OrderPlaced
                     })
-                }>Ir a pagar</button>
+                }>
+					{priceConfig.showPrices === false ? 'Coordinar pago' : 'Ir a pagar'}
+				</button>
 			</div>
 		</div>
 	);

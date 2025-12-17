@@ -2,7 +2,14 @@
 
 import Link from 'next/link';
 
-export const CheckoutButton = () => {
+interface CheckoutButtonProps {
+  handlesShipping: boolean;
+}
+
+export const CheckoutButton = ({ handlesShipping }: CheckoutButtonProps) => {
+  // Si no se manejan envíos, redirigir directamente a checkout
+  const checkoutUrl = handlesShipping ? '/catalog/checkout/address' : '/catalog/checkout';
+
   return (
     <Link 
       className="flex justify-center mt-5 mb-2 w-full text-white py-2 px-4 rounded transition-all font-medium"
@@ -15,7 +22,7 @@ export const CheckoutButton = () => {
       onMouseLeave={(e) => {
         e.currentTarget.style.backgroundColor = 'var(--theme-secondary-color)';
       }}
-      href={'/catalog/checkout/address'}
+      href={checkoutUrl}
     >
       Checkout
     </Link>

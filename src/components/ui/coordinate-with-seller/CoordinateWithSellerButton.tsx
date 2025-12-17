@@ -28,11 +28,12 @@ export const CoordinateWithSellerButton = ({ orderId, amount, config }: Props) =
       }
       // Construir URL completa de la orden
       const orderUrl = `${window.location.origin}/catalog/orders/${orderId}`;
-      const message = encodeURIComponent(`Hola, quiero coordinar el pago de mi pedido #${orderId}\n\nPuedes ver los detalles aquí: ${orderUrl}`);
+      const message = encodeURIComponent(`Hola, quiero coordinar el pago de mi pedido ${orderId} \n\nPuedes ver los detalles aquí: ${orderUrl}`);
       window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
     } else if (config.email) {
+      const orderUrl = `${window.location.origin}/catalog/orders/${orderId}`;
       const subject = encodeURIComponent(`Coordinación de pago - Pedido #${orderId}`);
-      const body = encodeURIComponent(`Hola,\n\nQuiero coordinar el pago de mi pedido #${orderId}.\n\nGracias.`);
+      const body = encodeURIComponent(`Hola,\n\nQuiero coordinar el pago de mi pedido ${orderUrl}.\n\nGracias.`);
       window.open(`mailto:${config.email}?subject=${subject}&body=${body}`, '_blank');
     }
   };

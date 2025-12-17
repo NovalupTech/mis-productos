@@ -34,6 +34,9 @@ interface BankTransferConfig {
   alias?: string;
   dni?: string;
   notes?: string;
+  receiptContactType: 'email' | 'whatsapp';
+  receiptEmail?: string;
+  receiptWhatsApp?: string;
 }
 
 interface CoordinateWithSellerConfig {
@@ -57,6 +60,9 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
     alias: '',
     dni: '',
     notes: '',
+    receiptContactType: 'email',
+    receiptEmail: '',
+    receiptWhatsApp: '',
   });
 
   // Estados para formulario de coordinar con vendedor
@@ -77,6 +83,9 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
         alias: (bankTransfer.config.alias as string) || '',
         dni: (bankTransfer.config.dni as string) || '',
         notes: (bankTransfer.config.notes as string) || '',
+        receiptContactType: (bankTransfer.config.receiptContactType as 'email' | 'whatsapp') || 'email',
+        receiptEmail: (bankTransfer.config.receiptEmail as string) || '',
+        receiptWhatsApp: (bankTransfer.config.receiptWhatsApp as string) || '',
       });
     }
   }, [paymentMethods]);
@@ -131,6 +140,14 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
   const handleSaveBankTransfer = async () => {
     if (!bankTransferConfig.bankName || !bankTransferConfig.accountHolder || !bankTransferConfig.cbu) {
       alert('Por favor completa los campos requeridos');
+      return;
+    }
+    if (bankTransferConfig.receiptContactType === 'email' && !bankTransferConfig.receiptEmail) {
+      alert('Por favor ingresa el email para recibir comprobantes');
+      return;
+    }
+    if (bankTransferConfig.receiptContactType === 'whatsapp' && !bankTransferConfig.receiptWhatsApp) {
+      alert('Por favor ingresa el número de WhatsApp para recibir comprobantes');
       return;
     }
 
@@ -405,6 +422,80 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
                   rows={3}
                   placeholder="Ej: Enviar comprobante por WhatsApp"
                 />
+              </div>
+            </div>
+
+            <div className="mt-6 pt-6 border-t border-gray-200">
+              <h4 className="text-md font-semibold text-gray-800 mb-4">Recibir Comprobante</h4>
+              <p className="text-sm text-gray-600 mb-4">
+                Configura cómo quieres recibir los comprobantes de transferencia
+              </p>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Tipo de Contacto <span className="text-red-500">*</span>
+                  </label>
+                  <div className="flex gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="receiptContactType"
+                        value="email"
+                        checked={bankTransferConfig.receiptContactType === 'email'}
+                        onChange={(e) => setBankTransferConfig(prev => ({ ...prev, receiptContactType: 'email' as const }))}
+                        className="w-4 h-4 text-blue-600"
+                      />
+                      <IoMailOutline size={20} className="text-blue-600" />
+                      <span className="text-sm text-gray-700">Email</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="receiptContactType"
+                        value="whatsapp"
+                        checked={bankTransferConfig.receiptContactType === 'whatsapp'}
+                        onChange={(e) => setBankTransferConfig(prev => ({ ...prev, receiptContactType: 'whatsapp' as const }))}
+                        className="w-4 h-4 text-blue-600"
+                      />
+                      <IoChatbubbleOutline size={20} className="text-green-600" />
+                      <span className="text-sm text-gray-700">WhatsApp</span>
+                    </label>
+                  </div>
+                </div>
+
+                {bankTransferConfig.receiptContactType === 'email' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Email para recibir comprobantes <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="email"
+                      value={bankTransferConfig.receiptEmail || ''}
+                      onChange={(e) => setBankTransferConfig(prev => ({ ...prev, receiptEmail: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Ej: ventas@tienda.com"
+                    />
+                  </div>
+                )}
+
+                {bankTransferConfig.receiptContactType === 'whatsapp' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Número de WhatsApp para recibir comprobantes <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="tel"
+                      value={bankTransferConfig.receiptWhatsApp || ''}
+                      onChange={(e) => setBankTransferConfig(prev => ({ ...prev, receiptWhatsApp: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Ej: +5491123456789"
+                    />
+                    <p className="mt-1 text-xs text-gray-500">
+                      Incluye el código de país (ej: +54 para Argentina)
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 

@@ -152,32 +152,34 @@ export const CartDropdown = ({ isVisible }: Props) => {
 
       {/* Resumen */}
       <div className="p-4 border-t border-gray-200 bg-gray-50">
-        <div className="space-y-2 mb-4">
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Subtotal</span>
-            <span className="font-medium">{formatPrice(Number(summaryInformation.subTotal.toFixed(2)), priceConfig) || '-'}</span>
-          </div>
-          {summaryInformation.discountTotal > 0 && (
+        {priceConfig.showPrices !== false && (
+          <div className="space-y-2 mb-4">
             <div className="flex justify-between text-sm">
-              <span className="text-red-600">Descuentos</span>
-              <span className="font-medium text-red-600">-{formatPrice(Number(summaryInformation.discountTotal.toFixed(2)), priceConfig) || '-'}</span>
+              <span className="text-gray-600">Subtotal</span>
+              <span className="font-medium">{formatPrice(Number(summaryInformation.subTotal.toFixed(2)), priceConfig) || '-'}</span>
             </div>
-          )}
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600">
-              {priceConfig.enableTax && priceConfig.taxValue && priceConfig.taxValue > 0
-                ? priceConfig.taxType === 'percentage'
-                  ? `Impuestos (${priceConfig.taxValue}%)`
-                  : 'Impuestos'
-                : 'Impuestos'}
-            </span>
-            <span className="font-medium">{formatPrice(Number(summaryInformation.tax.toFixed(2)), priceConfig) || '-'}</span>
+            {summaryInformation.discountTotal > 0 && (
+              <div className="flex justify-between text-sm">
+                <span className="text-red-600">Descuentos</span>
+                <span className="font-medium text-red-600">-{formatPrice(Number(summaryInformation.discountTotal.toFixed(2)), priceConfig) || '-'}</span>
+              </div>
+            )}
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-600">
+                {priceConfig.enableTax && priceConfig.taxValue && priceConfig.taxValue > 0
+                  ? priceConfig.taxType === 'percentage'
+                    ? `Impuestos (${priceConfig.taxValue}%)`
+                    : 'Impuestos'
+                  : 'Impuestos'}
+              </span>
+              <span className="font-medium">{formatPrice(Number(summaryInformation.tax.toFixed(2)), priceConfig) || '-'}</span>
+            </div>
+            <div className="flex justify-between text-lg font-bold pt-2 border-t border-gray-300">
+              <span>Total</span>
+              <span>{formatPrice(Number(summaryInformation.total.toFixed(2)), priceConfig) || '-'}</span>
+            </div>
           </div>
-          <div className="flex justify-between text-lg font-bold pt-2 border-t border-gray-300">
-            <span>Total</span>
-            <span>{formatPrice(Number(summaryInformation.total.toFixed(2)), priceConfig) || '-'}</span>
-          </div>
-        </div>
+        )}
         <Link 
           href="/catalog/cart"
           className="block w-full text-center text-white py-2 px-4 rounded-md transition-colors font-medium"

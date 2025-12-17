@@ -3,7 +3,19 @@ import { Title } from "@/components";
 import { ProductsInCart } from "./ui/ProductsInCart";
 import { CartSummary } from "./ui/CartSummary";
 import { CheckoutButton } from "./ui/CheckoutButton";
+import { getCurrentCompanyId } from "@/lib/domain";
+import { getShippingConfigPublic } from "@/actions/shipping/get-shipping-config-public";
+
 export default async function CartPage() {
+  const companyId = await getCurrentCompanyId();
+  let handlesShipping = true; // Por defecto true
+
+  if (companyId) {
+    const shippingConfig = await getShippingConfigPublic(companyId);
+    if (shippingConfig.ok && shippingConfig.config) {
+      handlesShipping = shippingConfig.config.handlesShipping;
+    }
+  }
 
   return (
     <div className="flex justify-center items-center mb-72 px-10 sm:px-0">
@@ -29,7 +41,7 @@ export default async function CartPage() {
           <CartSummary/>
 
           <div>
-            <CheckoutButton />
+            <CheckoutButton handlesShipping={handlesShipping} />
           </div>
 
         </div>

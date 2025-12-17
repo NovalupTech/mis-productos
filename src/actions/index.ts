@@ -10,6 +10,9 @@ export * from './auth/logout';
 export * from './auth/register';
 
 export * from './category/get-categories';
+export * from './category/create-category';
+export * from './category/update-category';
+export * from './category/delete-category';
 
 export * from './country/getCountries';
 
@@ -20,6 +23,9 @@ export * from './orders/get-orders-by-user';
 
 export * from './payments/update-order-transactionId';
 export * from './payments/paypal-check-payment';
+
+export * from './shipping/get-shipping-config';
+export * from './shipping/update-shipping-config';
 
 
 //export * from './product/delete-product-image';
@@ -77,3 +83,7 @@ export * from './discount/get-product-discounts';
 export * from './payment-methods/get-payment-methods';
 export * from './payment-methods/upsert-payment-method';
 export * from './payment-methods/get-payment-methods-public';
+
+export * from './shipping/get-shipping-config';
+export * from './shipping/update-shipping-config';
+export * from './shipping/get-shipping-config-public';

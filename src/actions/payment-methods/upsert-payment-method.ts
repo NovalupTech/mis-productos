@@ -14,6 +14,21 @@ const bankTransferConfigSchema = z.object({
   alias: z.string().optional(),
   dni: z.string().optional(),
   notes: z.string().optional(),
+  receiptContactType: z.enum(['email', 'whatsapp'], {
+    required_error: 'El tipo de contacto para recibir comprobante es requerido',
+  }),
+  receiptEmail: z.string().email('Email inválido').optional(),
+  receiptWhatsApp: z.string().optional(),
+}).refine((data) => {
+  if (data.receiptContactType === 'email' && !data.receiptEmail) {
+    return false;
+  }
+  if (data.receiptContactType === 'whatsapp' && !data.receiptWhatsApp) {
+    return false;
+  }
+  return true;
+}, {
+  message: 'Debe proporcionar el email o número de WhatsApp según el tipo de contacto seleccionado para recibir comprobante',
 });
 
 const coordinateWithSellerConfigSchema = z.object({

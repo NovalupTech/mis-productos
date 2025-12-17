@@ -2,8 +2,20 @@ import Link from "next/link";
 import { Title } from "@/components";
 import { ProductsInCart } from "./ui/ProductsInCart";
 import { PlaceOrder } from "./ui/PlaceOrder";
+import { getCurrentCompanyId } from "@/lib/domain";
+import { getShippingConfigPublic } from "@/actions/shipping/get-shipping-config-public";
 
-export default function CheckoutPage() {
+export default async function CheckoutPage() {
+  const companyId = await getCurrentCompanyId();
+  let handlesShipping = true; // Por defecto true
+
+  if (companyId) {
+    const shippingConfig = await getShippingConfigPublic(companyId);
+    if (shippingConfig.ok && shippingConfig.config) {
+      handlesShipping = shippingConfig.config.handlesShipping;
+    }
+  }
+
   return (
     <div className="flex justify-center items-center mb-72 px-10 sm:px-0">
       <div className="flex flex-col w-[1000px]">
@@ -23,7 +35,7 @@ export default function CheckoutPage() {
         </div>
 
         { /* Checkout - Resumen de orden */ }
-        <PlaceOrder/>
+        <PlaceOrder handlesShipping={handlesShipping} />
 
 
         </div>
