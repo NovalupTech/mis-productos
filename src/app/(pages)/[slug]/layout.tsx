@@ -6,7 +6,7 @@ import { PayPalProvider } from "@/components/providers/PayPalProvider";
 import { Toast } from "@/components/ui/toast/Toast";
 import { Metadata } from 'next';
 import { getCurrentCompanyId } from '@/lib/domain';
-import { getCompanyConfigPublic } from '@/actions';
+import { getCompanyConfigPublic, getPaymentMethodsPublic } from '@/actions';
 import { getPriceConfig } from '@/utils';
 import prisma from '@/lib/prisma';
 
@@ -122,6 +122,7 @@ export default async function DynamicPageLayout({
       name: true,
       email: true,
       phone: true,
+      address: true,
       logo: true,
       attributes: {
         select: {
@@ -186,6 +187,9 @@ export default async function DynamicPageLayout({
   // Configuración de precios
   const priceConfig = getPriceConfig(configsMap);
 
+  // Obtener métodos de pago habilitados
+  const { paymentMethods = [] } = await getPaymentMethodsPublic(companyId);
+
   // Renderizar el layout con la información de la compañía
   return (
     <main className="min-h-screen">
@@ -210,7 +214,7 @@ export default async function DynamicPageLayout({
             {children}
           </div>
 
-          <Footer />
+          <Footer paymentMethods={paymentMethods} />
           </PayPalProvider>
         </PriceConfigProvider>
       </ThemeProvider>

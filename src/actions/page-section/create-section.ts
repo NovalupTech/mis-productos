@@ -8,7 +8,7 @@ import { InputJsonValue } from '@prisma/client/runtime/client';
 
 interface CreateSectionData {
   pageId: string;
-  type: 'HERO' | 'BANNER' | 'TEXT' | 'IMAGE' | 'FEATURES' | 'GALLERY' | 'CTA';
+  type: 'HERO' | 'BANNER' | 'TEXT' | 'IMAGE' | 'FEATURES' | 'GALLERY' | 'CTA' | 'MAP';
   position: number;
   content: Record<string, unknown>;
   enabled?: boolean;

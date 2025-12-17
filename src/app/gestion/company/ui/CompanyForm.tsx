@@ -11,6 +11,7 @@ interface Company {
   name: string;
   email: string | null;
   phone: string | null;
+  address: string | null;
   logo: string | null;
 }
 
@@ -25,6 +26,7 @@ export const CompanyForm = ({ company }: Props) => {
     name: company.name,
     email: company.email || '',
     phone: company.phone || '',
+    address: company.address || '',
     logo: company.logo || '',
   });
   const [loading, setLoading] = useState(false);
@@ -151,6 +153,23 @@ export const CompanyForm = ({ company }: Props) => {
           disabled={loading}
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
         />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Dirección (Tienda Física)
+        </label>
+        <textarea
+          value={formData.address}
+          onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+          disabled={loading}
+          rows={3}
+          placeholder="Ej: Av. Corrientes 1234, CABA, Buenos Aires"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 resize-none"
+        />
+        <p className="mt-1 text-xs text-gray-500">
+          Dirección física de tu tienda (opcional)
+        </p>
       </div>
 
       <div>

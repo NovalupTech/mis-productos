@@ -6,7 +6,7 @@ import { IoCloseOutline } from 'react-icons/io5';
 
 interface PageSection {
   id: string;
-  type: 'HERO' | 'BANNER' | 'TEXT' | 'IMAGE' | 'FEATURES' | 'GALLERY' | 'CTA';
+  type: 'HERO' | 'BANNER' | 'TEXT' | 'IMAGE' | 'FEATURES' | 'GALLERY' | 'CTA' | 'MAP';
   position: number;
   enabled: boolean;
   content: Record<string, unknown>;
@@ -28,6 +28,7 @@ const SECTION_TYPES: Array<{ value: PageSection['type']; label: string }> = [
   { value: 'FEATURES', label: 'Características' },
   { value: 'GALLERY', label: 'Galería' },
   { value: 'CTA', label: 'Llamado a la Acción' },
+  { value: 'MAP', label: 'Mapa' },
 ];
 
 // Configuración de campos por tipo de sección
@@ -67,6 +68,12 @@ const SECTION_FIELDS: Record<PageSection['type'], Array<{ key: string; label: st
     { key: 'description', label: 'Descripción', type: 'textarea' },
     { key: 'buttonText', label: 'Texto del Botón', type: 'text' },
     { key: 'buttonLink', label: 'Enlace del Botón', type: 'url' },
+  ],
+  MAP: [
+    { key: 'title', label: 'Título (opcional)', type: 'text' },
+    { key: 'address', label: 'Dirección (opcional, usa la de la empresa si está vacío)', type: 'textarea' },
+    { key: 'width', label: 'Ancho (ej: 100%, 800px)', type: 'text' },
+    { key: 'height', label: 'Alto (ej: 400px, 600px)', type: 'text' },
   ],
 };
 

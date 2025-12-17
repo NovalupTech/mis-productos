@@ -38,6 +38,7 @@ enum SectionType {
   FEATURES
   GALLERY
   CTA
+  MAP
 }
 
 enum SocialType {
@@ -60,6 +61,7 @@ model Company {
   name      String
   email     String?
   phone     String?
+  address   String?
   logo      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -76,6 +78,7 @@ model Company {
   socials    CompanySocial[]
   configs    CompanyConfig[]
   tags       Tag[]
+  paymentMethods PaymentMethod[]
 }
 
 // -------------------------
@@ -530,4 +533,29 @@ enum DiscountTargetType {
 enum DiscountConditionType {
   MIN_QUANTITY
   MIN_AMOUNT
+}
+
+model PaymentMethod {
+  id        String   @id @default(uuid())
+  companyId String
+
+  type      PaymentMethodType
+  enabled   Boolean  @default(false)
+
+  config    Json?    // datos específicos del método
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company   Company  @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, type])
+}
+
+enum PaymentMethodType {
+  BANK_TRANSFER
+  PAYPAL
+  MERCADOPAGO
+  CASH
+  COORDINATE_WITH_SELLER
 }

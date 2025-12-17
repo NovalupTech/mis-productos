@@ -4,7 +4,11 @@ import { MercadoPagoButton, PaypalButtons, Title } from "@/components";
 import { getOrderById } from "@/actions/orders/get-order-by-id";
 import { formatPrice, getPriceConfig, type PriceConfig } from '@/utils/priceFormat';
 import { getCompanyConfigPublic } from '@/actions/company-config/get-company-config-public';
+import { getPaymentMethodsPublic } from '@/actions/payment-methods/get-payment-methods-public';
 import { OrderStatus } from "../ui/OrderStatus";
+import { BankTransferButton } from "@/components/ui/bank-transfer/BankTransferButton";
+import { CoordinateWithSellerButton } from "@/components/ui/coordinate-with-seller/CoordinateWithSellerButton";
+import { PaymentMethodType } from '@prisma/client';
 
 export default async function OrderPage({ params }: {params: Promise<{id: string}>}) {
 
@@ -23,6 +27,19 @@ export default async function OrderPage({ params }: {params: Promise<{id: string
       priceConfig = getPriceConfig(configs as Record<string, any>);
     }
   }
+
+  // Obtener métodos de pago habilitados
+  const { paymentMethods = [] } = await getPaymentMethodsPublic(order.companyId);
+  
+  // Si no hay métodos configurados, mostrar PayPal por defecto
+  const hasConfiguredMethods = paymentMethods.length > 0;
+  
+  // Determinar qué métodos mostrar
+  // PayPal: mostrar si no hay métodos configurados O si está específicamente habilitado
+  const showPayPal = !hasConfiguredMethods || paymentMethods.some(pm => pm.type === 'PAYPAL');
+  const showMercadoPago = paymentMethods.some(pm => pm.type === 'MERCADOPAGO');
+  const bankTransferMethod = paymentMethods.find(pm => pm.type === 'BANK_TRANSFER');
+  const coordinateWithSellerMethod = paymentMethods.find(pm => pm.type === ('COORDINATE_WITH_SELLER' as PaymentMethodType));
 
   return (
     <div className="flex justify-center items-center mb-72 px-10 sm:px-0">
@@ -96,8 +113,37 @@ export default async function OrderPage({ params }: {params: Promise<{id: string
             {
               !order.isPaid ?
                 <>
-                  <MercadoPagoButton amount={order!.total} orderId={order!.id} />
-                  <PaypalButtons amount={order!.total} orderId={order!.id} />
+                  {showPayPal && (
+                    <PaypalButtons amount={order!.total} orderId={order!.id} />
+                  )}
+                  {showMercadoPago && (
+                    <MercadoPagoButton amount={order!.total} orderId={order!.id} />
+                  )}
+                  {bankTransferMethod && bankTransferMethod.config && (
+                    <BankTransferButton 
+                      amount={order!.total} 
+                      orderId={order!.id}
+                      config={bankTransferMethod.config as {
+                        bankName: string;
+                        accountHolder: string;
+                        cbu: string;
+                        alias?: string;
+                        dni?: string;
+                        notes?: string;
+                      }}
+                    />
+                  )}
+                  {coordinateWithSellerMethod && coordinateWithSellerMethod.config && (
+                    <CoordinateWithSellerButton 
+                      amount={order!.total} 
+                      orderId={order!.id}
+                      config={coordinateWithSellerMethod.config as {
+                        contactType: 'whatsapp' | 'email';
+                        whatsappNumber?: string;
+                        email?: string;
+                      }}
+                    />
+                  )}
                 </> :
                 <>
                   <OrderStatus isPaid={order.isPaid} />

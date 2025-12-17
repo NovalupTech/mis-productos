@@ -52,3 +52,4 @@ export const getAllAttributes = async (companyId?: string) => {
 
 
 
+

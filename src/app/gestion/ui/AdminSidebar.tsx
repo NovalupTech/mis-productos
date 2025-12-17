@@ -17,6 +17,7 @@ import {
   IoBookmarkOutline,
   IoBagOutline,
   IoStatsChartOutline,
+  IoCashOutline,
 } from "react-icons/io5";
 import clsx from "clsx";
 import { useSidebar } from "../providers/SidebarProvider";
@@ -80,6 +81,11 @@ const navItems: NavItem[] = [
     href: "/gestion/descuentos",
     label: "Descuentos",
     icon: IoPricetagOutline,
+  },
+  {
+    href: "/gestion/payments",
+    label: "Pagos",
+    icon: IoCashOutline,
   },
   {
     href: "/gestion/orders",

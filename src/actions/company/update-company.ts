@@ -9,6 +9,7 @@ interface UpdateCompanyData {
   name?: string;
   email?: string;
   phone?: string;
+  address?: string;
   logo?: string;
 }
 
@@ -36,6 +37,7 @@ export const updateCompany = async (data: UpdateCompanyData) => {
     if (data.name !== undefined) updateData.name = data.name;
     if (data.email !== undefined) updateData.email = data.email;
     if (data.phone !== undefined) updateData.phone = data.phone;
+    if (data.address !== undefined) updateData.address = data.address;
     if (data.logo !== undefined) updateData.logo = data.logo;
 
     await prisma.company.update({

@@ -9,6 +9,7 @@ import {
   FeaturesSection,
   GallerySection,
   CTASection,
+  MapSection,
 } from '@/components/page-sections';
 
 interface PageProps {
@@ -86,6 +87,8 @@ export default async function DynamicPage({ params }: PageProps) {
                 return <GallerySection key={section.id} content={content} />;
               case 'CTA':
                 return <CTASection key={section.id} content={content} />;
+              case 'MAP':
+                return <MapSection key={section.id} content={content} />;
               default:
                 return null;
             }

@@ -6,13 +6,14 @@ import { updatePage } from '@/actions/page/update-page';
 import { IoCheckmarkCircleOutline, IoCloseCircleOutline, IoStarOutline, IoStar, IoChevronDownOutline, IoChevronUpOutline } from 'react-icons/io5';
 import clsx from 'clsx';
 import { SectionManager } from './SectionManager';
+import { JsonValue } from '@prisma/client/runtime/client';
 
 interface PageSection {
   id: string;
-  type: 'HERO' | 'BANNER' | 'TEXT' | 'IMAGE' | 'FEATURES' | 'GALLERY' | 'CTA';
+  type: 'HERO' | 'BANNER' | 'TEXT' | 'IMAGE' | 'FEATURES' | 'GALLERY' | 'CTA' | 'MAP';
   position: number;
   enabled: boolean;
-  content: Record<string, unknown>;
+  content: JsonValue;
 }
 
 interface Page {
@@ -26,7 +27,7 @@ interface Page {
 }
 
 interface Props {
-  pages: Page[];
+  pages: (Page & { sections: PageSection[] })[];
 }
 
 export const PagesTable = ({ pages }: Props) => {
@@ -325,7 +326,7 @@ export const PagesTable = ({ pages }: Props) => {
               {isExpanded && !isEditing && (
                 <SectionManager
                   pageId={page.id}
-                  sections={page.sections}
+                  sections={page.sections as (PageSection & { content: Record<string, unknown> })[]}
                   onUpdate={() => router.refresh()}
                 />
               )}

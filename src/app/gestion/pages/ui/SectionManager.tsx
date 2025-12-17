@@ -8,7 +8,7 @@ import clsx from 'clsx';
 
 interface PageSection {
   id: string;
-  type: 'HERO' | 'BANNER' | 'TEXT' | 'IMAGE' | 'FEATURES' | 'GALLERY' | 'CTA';
+  type: 'HERO' | 'BANNER' | 'TEXT' | 'IMAGE' | 'FEATURES' | 'GALLERY' | 'CTA' | 'MAP';
   position: number;
   enabled: boolean;
   content: Record<string, unknown>;

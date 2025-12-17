@@ -18,6 +18,8 @@ export { NotFoundPage } from './ui/not-found/NotFoundPage';
 export { Title } from './ui/title/Title';
 export { PaypalButtons } from './ui/paypal/PaypalButtons';
 export { MercadoPagoButton } from './ui/mercado-pago/MercadoPagoButtons';
+export { BankTransferButton } from './ui/bank-transfer/BankTransferButton';
+export { CoordinateWithSellerButton } from './ui/coordinate-with-seller/CoordinateWithSellerButton';
 export { RequiredAttributesModal } from './ui/required-attributes-modal/RequiredAttributesModal';
 export { FloatingSocialButton } from './ui/floating-social-button/FloatingSocialButton';
 export { DiscountBadge } from './ui/discount-badge/DiscountBadge';

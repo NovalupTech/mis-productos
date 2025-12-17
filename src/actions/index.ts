@@ -73,3 +73,7 @@ export * from './discount/update-discount';
 export * from './discount/delete-discount';
 export * from './discount/get-discount-options';
 export * from './discount/get-product-discounts';
+
+export * from './payment-methods/get-payment-methods';
+export * from './payment-methods/upsert-payment-method';
+export * from './payment-methods/get-payment-methods-public';

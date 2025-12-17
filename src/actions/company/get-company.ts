@@ -31,6 +31,7 @@ export const getCompany = async () => {
         name: true,
         email: true,
         phone: true,
+        address: true,
         logo: true,
       },
     });

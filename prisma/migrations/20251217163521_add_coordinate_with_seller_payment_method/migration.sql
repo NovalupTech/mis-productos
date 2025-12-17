@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "PaymentMethodType" ADD VALUE 'COORDINATE_WITH_SELLER';

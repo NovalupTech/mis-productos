@@ -8,7 +8,7 @@ import { Toast } from "@/components/ui/toast/Toast";
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { getCurrentCompanyId, getCurrentDomain } from '@/lib/domain';
-import { getCompanyConfigPublic } from '@/actions';
+import { getCompanyConfigPublic, getPaymentMethodsPublic } from '@/actions';
 import { getPriceConfig } from '@/utils';
 import prisma from '@/lib/prisma';
 import LandingPage from '../landing/page';
@@ -126,6 +126,7 @@ export default async function ShopLayout({
       name: true,
       email: true,
       phone: true,
+      address: true,
       logo: true,
       attributes: {
         select: {
@@ -190,6 +191,9 @@ export default async function ShopLayout({
   // Configuración de precios
   const priceConfig = getPriceConfig(configsMap);
 
+  // Obtener métodos de pago habilitados
+  const { paymentMethods = [] } = await getPaymentMethodsPublic(companyId);
+
   // Si hay companyId, renderizar el shop normal
   return (
     <main className="min-h-screen">
@@ -215,7 +219,7 @@ export default async function ShopLayout({
             { children }
           </div>
 
-          <Footer />
+          <Footer paymentMethods={paymentMethods} />
           <FloatingSocialButton />
             </DiscountProvider>
           </PayPalProvider>

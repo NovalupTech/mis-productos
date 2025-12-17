@@ -283,8 +283,9 @@ async function sendSellerEmail(data: OrderEmailData) {
 
             ${data.orderData.address ? `
               <div class="address">
-                <h2>Dirección de entrega</h2>
+                <h2>Datos del comprador</h2>
                 <p><strong>${data.orderData.address.firstName} ${data.orderData.address.lastName}</strong></p>
+                <p><strong>Email:</strong> ${data.customerEmail || 'No disponible'}</p>
                 <p>${data.orderData.address.address}</p>
                 ${data.orderData.address.address2 ? `<p>${data.orderData.address.address2}</p>` : ''}
                 <p>${data.orderData.address.city}, ${data.orderData.address.postalCode}</p>
