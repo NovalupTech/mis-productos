@@ -169,9 +169,11 @@ model User {
   name          String
   email         String    @unique
   emailVerified DateTime?
-  password      String
+  password      String?
+  phone         String?
   role          Role      @default(user)
   image         String?
+  provider      String    @default("credentials") // "credentials" o "google"
 
   company   Company? @relation(fields: [companyId], references: [id])
   companyId String?

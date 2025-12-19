@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verificar contraseña
-    if (!bcryptjs.compareSync(password, user.password)) {
+    if (!bcryptjs.compareSync(password, user.password ?? '')) {
       return NextResponse.json(
         { ok: false, message: 'Credenciales inválidas' },
         { status: 401 }

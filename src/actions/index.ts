@@ -38,6 +38,8 @@ export * from './product/product-pagination';
 export * from './user/change-user-role';
 export * from './user/get-pagination-users';
 export * from './user/get-paginated-users-by-company';
+export * from './user/get-user-profile';
+export * from './user/update-user-profile';
 export * from './page/get-pages';
 export * from './page/update-page';
 export * from './page/create-page';

@@ -9,7 +9,8 @@ import { titleFont } from "@/config/fonts"
 import { useCartStore } from "@/store/cart/cart-store"
 import { useUIStore } from "@/store/ui/ui-store"
 import { useCompanyStore } from "@/store/company/company-store"
-import { IoCartOutline, IoSearchOutline } from "react-icons/io5"
+import { logout } from "@/actions"
+import { IoCartOutline, IoSearchOutline, IoLogOutOutline, IoChevronDownOutline, IoBagOutline, IoPersonOutline } from "react-icons/io5"
 import { FaInstagram, FaFacebook, FaTiktok, FaTwitter, FaLinkedin, FaYoutube, FaWhatsapp, FaGlobe } from 'react-icons/fa'
 import { Search } from "../search/Search"
 import { CartDropdown } from "../cart-dropdown/CartDropdown"
@@ -28,10 +29,12 @@ export const TopMenu = () => {
   const [loaded, setLoaded] = useState(false);
   const [showSearch, setShowSearch] = useState(false)
   const [showCartDropdown, setShowCartDropdown] = useState(false)
+  const [showUserDropdown, setShowUserDropdown] = useState(false)
   const [imageError, setImageError] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const previousTotalItemsRef = useRef(totalItemsInCart);
   const autoOpenTimeoutRef = useRef<number | null>(null);
+  const userDropdownRef = useRef<HTMLDivElement>(null);
 
   const isCompanyAdmin = session?.user?.role === 'companyAdmin';
 
@@ -104,6 +107,23 @@ export const TopMenu = () => {
     }
   }, [isHomePage]) // Removido showSearch de las dependencias para evitar loops
 
+  // Cerrar el dropdown del usuario cuando se hace click fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userDropdownRef.current && !userDropdownRef.current.contains(event.target as Node)) {
+        setShowUserDropdown(false);
+      }
+    };
+
+    if (showUserDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showUserDropdown])
+
   // Abrir automáticamente el dropdown cuando se agrega un producto al carrito (solo en desktop)
   useEffect(() => {
     // Solo abrir si estamos en desktop, el carrito ya está cargado y hay un aumento en los items
@@ -172,6 +192,20 @@ export const TopMenu = () => {
       setTimeout(() => {
         setShowSearch(true);
       }, 100);
+    }
+  }
+
+  const handleUserClick = () => {
+    setShowUserDropdown(!showUserDropdown);
+  }
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Error al hacer logout:', error);
+      window.location.href = '/';
     }
   }
 
@@ -316,6 +350,80 @@ export const TopMenu = () => {
               {/* Dropdown solo visible en desktop */}
               {!isMobile && <CartDropdown isVisible={showCartDropdown} />}
             </div>
+
+            {/* Botón de autenticación */}
+            {!session ? (
+              <Link
+                href="/login"
+                className="m-2 px-4 py-2 text-gray-700 hover:text-gray-900 rounded-md transition-all font-medium hover:bg-gray-100"
+              >
+                Ingresar
+              </Link>
+            ) : (
+              <div ref={userDropdownRef} className="relative">
+                <button
+                  onClick={handleUserClick}
+                  className="m-2 flex items-center gap-2 px-2 py-1 rounded-md hover:bg-gray-100 transition-all cursor-pointer group"
+                  aria-label="Usuario"
+                >
+                  <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-300 group-hover:border-gray-400 transition-all flex items-center justify-center bg-gray-100 flex-shrink-0">
+                    {session.user?.image ? (
+                      <Image
+                        src={session.user.image}
+                        alt={session.user?.name || 'Usuario'}
+                        width={40}
+                        height={40}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-gray-600 font-semibold text-sm">
+                        {session.user?.name?.charAt(0).toUpperCase() || 'U'}
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-sm font-medium text-gray-700 max-w-[120px] truncate hidden sm:block">
+                    {session.user?.name || 'Usuario'}
+                  </span>
+                  <IoChevronDownOutline className={`w-4 h-4 text-gray-500 transition-transform hidden sm:block ${showUserDropdown ? 'rotate-180' : ''}`} />
+                </button>
+                {/* Dropdown del usuario */}
+                {showUserDropdown && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 py-1 z-50">
+                    <div className="px-4 py-2 border-b border-gray-200">
+                      <p className="text-sm font-medium text-gray-900 truncate">
+                        {session.user?.name || 'Usuario'}
+                      </p>
+                      <p className="text-xs text-gray-500 truncate">
+                        {session.user?.email}
+                      </p>
+                    </div>
+                    <Link
+                      href="/catalog/profile"
+                      onClick={() => setShowUserDropdown(false)}
+                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 transition-colors"
+                    >
+                      <IoPersonOutline className="w-4 h-4" />
+                      Mi perfil
+                    </Link>
+                    <Link
+                      href="/catalog/orders"
+                      onClick={() => setShowUserDropdown(false)}
+                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 transition-colors"
+                    >
+                      <IoBagOutline className="w-4 h-4" />
+                      Mis compras
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 transition-colors"
+                    >
+                      <IoLogOutOutline className="w-4 h-4" />
+                      Salir
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Botón "Gestionar" - Solo en desktop */}
             {isCompanyAdmin && (

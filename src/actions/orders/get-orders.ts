@@ -26,6 +26,9 @@ export const getOrders = async () => {
                         lastName: true,
                     }
                 }
+            },
+            orderBy: {
+                createdAt: 'desc'
             }
         })
 

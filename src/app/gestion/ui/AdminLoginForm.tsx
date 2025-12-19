@@ -2,13 +2,14 @@
 
 import { authenticate } from "@/actions/auth/login";
 import clsx from "clsx";
-import { useEffect, useActionState } from "react";
+import { useEffect, useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { IoInformationOutline } from "react-icons/io5";
 
 export const AdminLoginForm = () => {
 	const [state, dispatch] = useActionState(authenticate, undefined);
-
+	const [email, setEmail] = useState("");
+	const [password, setPassword] = useState("");
 	useEffect(() => {
 	  if(state === 'success'){
 		// Usar window.location.replace para forzar una recarga completa
@@ -33,6 +34,8 @@ export const AdminLoginForm = () => {
 					autoComplete="email"
 					required
 					suppressHydrationWarning
+					value={email}
+					onChange={(e) => setEmail(e.target.value)}
 				/>
 			</div>
 
@@ -48,6 +51,8 @@ export const AdminLoginForm = () => {
 					autoComplete="current-password"
 					required
 					suppressHydrationWarning
+					value={password}
+					onChange={(e) => setPassword(e.target.value)}
 				/>
 			</div>
 

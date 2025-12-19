@@ -16,7 +16,7 @@ export default async function OrdersPage() {
 
   return (
     <div>
-      <Title title="Ordenes" />
+      <Title title="Mis compras" />
 
       <div className="mb-10">
         <table className="min-w-full">
@@ -64,7 +64,9 @@ export default async function OrdersPage() {
                   </td>
                   <td className="text-sm text-gray-900 font-light px-6 ">
                     <Link href={`/catalog/orders/${order.id}`} className="hover:underline">
-                      Ver orden
+                      {
+                        order.isPaid ? 'Detalles' : 'Pagar'
+                      }
                     </Link>
                   </td>
 
