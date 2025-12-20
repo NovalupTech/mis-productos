@@ -141,6 +141,7 @@ model Product {
   OrderItem        OrderItem[]
   ProductAttribute ProductAttribute[]
   tags             ProductTag[]
+  favorites        UserFavorite[]
 
   @@unique([companyId, code])
   @@index([companyId])
@@ -180,6 +181,7 @@ model User {
 
   UserAddress UserAddress?
   Order       Order[]
+  favorites   UserFavorite[]
 
   @@index([companyId])
 }
@@ -238,8 +240,8 @@ model Order {
   company   Company @relation(fields: [companyId], references: [id])
   companyId String
 
-  user   User   @relation(fields: [userId], references: [id])
-  userId String
+  user   User?   @relation(fields: [userId], references: [id])
+  userId String?
 
   customer   Customer? @relation(fields: [customerId], references: [id])
   customerId String?
@@ -389,6 +391,25 @@ model ProductTag {
   @@unique([productId, tagId])
   @@index([productId])
   @@index([tagId])
+}
+
+// -------------------------
+// Favoritos de usuarios
+// -------------------------
+
+model UserFavorite {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@index([productId])
 }
 
 // -------------------------

@@ -19,6 +19,7 @@ interface Props {
 type FormInputs = {
 	firstName: string;
 	lastName: string;
+	email?: string;
 	address: string;
 	address2?: string;
 	postalCode: string;
@@ -33,9 +34,7 @@ export const AddressForm = ({countries, userAddress = {}}: Props) => {
 	const router = useRouter();
 	const setAddress = useAddressStore(state => state.setAddress);
 	const address = useAddressStore(state => state.address);
-	const { data: session } = useSession({
-		required: true
-	})
+	const { data: session } = useSession()
 	const { register, handleSubmit, formState: { isValid }, reset } = useForm<FormInputs>({
 		defaultValues: {
 			...userAddress,
@@ -53,12 +52,16 @@ export const AddressForm = ({countries, userAddress = {}}: Props) => {
 	const onSubmit = async (data: FormInputs) => {
 		const { rememberAddress, ...restAddress } = data;
 		setAddress(restAddress);
-		if(!session?.user.id) return;
-		if(rememberAddress){
-			setUserAddress(restAddress, session?.user.id)
-		} else{
-			deleteUserAddress(session?.user.id)
+		
+		// Solo guardar/eliminar dirección en BD si el usuario está logueado
+		if(session?.user.id){
+			if(rememberAddress){
+				await setUserAddress(restAddress, session.user.id)
+			} else{
+				await deleteUserAddress(session.user.id)
+			}
 		}
+		
 		router.push('/catalog/checkout')
 	}
 
@@ -74,6 +77,23 @@ export const AddressForm = ({countries, userAddress = {}}: Props) => {
 				<span>Apellidos</span>
 				<input {...register('lastName', { required: true})} type="text" className="p-2 border rounded-md bg-gray-200" />
 			</div>
+
+			{!session?.user && (
+				<div className="flex flex-col mb-2">
+					<span>Email</span>
+					<input 
+						{...register('email', { 
+							required: !session?.user,
+							pattern: {
+								value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+								message: 'Email inválido'
+							}
+						})} 
+						type="email" 
+						className="p-2 border rounded-md bg-gray-200" 
+					/>
+				</div>
+			)}
 
 			<div className="flex flex-col mb-2">
 				<span>Dirección</span>
@@ -110,39 +130,44 @@ export const AddressForm = ({countries, userAddress = {}}: Props) => {
 				<input {...register('phone', { required: true})} type="text" className="p-2 border rounded-md bg-gray-200" />
 			</div>
 
-			<div className="flex flex-col mb-2">
-				<div className="inline-flex items-center mb-10">
-					<label
-						className="relative flex cursor-pointer items-center rounded-full p-3"
-						htmlFor="checkbox"
-						data-ripple-dark="true"
-					>
-						<input
-							type="checkbox"
-							className="before:content[''] peer relative h-5 w-5 cursor-pointer appearance-none rounded-md border border-blue-gray-200 transition-all before:absolute before:top-2/4 before:left-2/4 before:block before:h-12 before:w-12 before:-translate-y-2/4 before:-translate-x-2/4 before:rounded-full before:bg-blue-gray-500 before:opacity-0 before:transition-opacity checked:border-blue-500 checked:bg-blue-500 checked:before:bg-blue-500 hover:before:opacity-10"
-							id="checkbox"
-							{...register('rememberAddress')}
-						/>
-						<div className="pointer-events-none absolute top-2/4 left-2/4 -translate-y-2/4 -translate-x-2/4 text-white opacity-0 transition-opacity peer-checked:opacity-100">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								className="h-3.5 w-3.5"
-								viewBox="0 0 20 20"
-								fill="currentColor"
-								stroke="currentColor"
-								strokeWidth="1"
-							>
-								<path
-									fillRule="evenodd"
-									d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-									clipRule="evenodd"
-								></path>
-							</svg>
-						</div>
-					</label>
+			{session?.user && (
+				<div className="flex flex-col mb-2">
+					<div className="inline-flex items-center mb-10">
+						<label
+							className="relative flex cursor-pointer items-center rounded-full p-3"
+							htmlFor="checkbox"
+							data-ripple-dark="true"
+						>
+							<input
+								type="checkbox"
+								className="before:content[''] peer relative h-5 w-5 cursor-pointer appearance-none rounded-md border border-blue-gray-200 transition-all before:absolute before:top-2/4 before:left-2/4 before:block before:h-12 before:w-12 before:-translate-y-2/4 before:-translate-x-2/4 before:rounded-full before:bg-blue-gray-500 before:opacity-0 before:transition-opacity checked:border-blue-500 checked:bg-blue-500 checked:before:bg-blue-500 hover:before:opacity-10"
+								id="checkbox"
+								{...register('rememberAddress')}
+							/>
+							<div className="pointer-events-none absolute top-2/4 left-2/4 -translate-y-2/4 -translate-x-2/4 text-white opacity-0 transition-opacity peer-checked:opacity-100">
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									className="h-3.5 w-3.5"
+									viewBox="0 0 20 20"
+									fill="currentColor"
+									stroke="currentColor"
+									strokeWidth="1"
+								>
+									<path
+										fillRule="evenodd"
+										d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+										clipRule="evenodd"
+									></path>
+								</svg>
+							</div>
+						</label>
 
-                    <span>Recordar direcci&oacute;n?</span>
+						<span>Recordar direcci&oacute;n?</span>
+					</div>
 				</div>
+			)}
+
+			<div className="flex flex-col mb-2">
 				<button
 					disabled={!isValid}
 					type="submit"

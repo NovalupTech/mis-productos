@@ -5,12 +5,6 @@ import prisma from "@/lib/prisma"
 
 export const getOrderById = async (orderId: string) => {
 
-    const session = await middleware();
-
-    if(!session?.user){
-        throw new Error("Unauthorized")
-    }
-
     const order = await prisma.order.findUnique({
         where: {
             id: orderId

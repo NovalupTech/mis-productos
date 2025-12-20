@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { Product, ProductInCart } from '@/interfaces'
 import { useCartStore } from '@/store/cart/cart-store'
 import { formatPrice } from '@/utils'
@@ -11,6 +12,9 @@ import { usePriceConfig } from '@/components/providers/PriceConfigProvider'
 import { useDiscounts } from '@/components/providers/DiscountProvider'
 import { RequiredAttributesModal, DiscountBadge } from '@/components'
 import { getBestDiscount, formatDiscountBadge } from '@/utils/discounts'
+import { toggleFavorite } from '@/actions/favorites/toggle-favorite'
+import { checkFavorite } from '@/actions/favorites/check-favorite'
+import { IoHeart, IoHeartOutline } from 'react-icons/io5'
 
 interface Props {
     product: Product
@@ -21,11 +25,21 @@ interface Props {
 const ProductGridItem = ({product, selectedTag, imageSize = 'medium'}: Props) => {
   const priceConfig = usePriceConfig();
   const { discounts } = useDiscounts();
+  const { data: session } = useSession();
   const [image, setImage] = useState(product.images[0]);
   const [isHovered, setIsHovered] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [isLoadingFavorite, setIsLoadingFavorite] = useState(false);
   const addProductToCart = useCartStore(state => state.addProductToCart);
   const router = useRouter();
+
+  // Verificar si el producto está en favoritos cuando el componente se monta
+  useEffect(() => {
+    if (session?.user) {
+      checkFavorite(product.id).then(setIsFavorite);
+    }
+  }, [session?.user, product.id]);
 
   // Calcular descuento aplicable (no verificar condiciones para mostrar badges de BUY_X_GET_Y)
   const appliedDiscount = getBestDiscount(discounts, product, 1, 0, false);
@@ -85,6 +99,23 @@ const ProductGridItem = ({product, selectedTag, imageSize = 'medium'}: Props) =>
     router.push(`/catalog/product/${product.slug}`);
   };
 
+  const handleToggleFavorite = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!session?.user) {
+      router.push('/login');
+      return;
+    }
+
+    setIsLoadingFavorite(true);
+    const result = await toggleFavorite(product.id);
+    if (result.ok) {
+      setIsFavorite(result.isFavorite || false);
+    }
+    setIsLoadingFavorite(false);
+  };
+
   return (
     <div 
       className='rounded-md overflow-hidden fade-in relative group flex flex-row sm:flex-col h-full border border-gray-200 sm:border-0'
@@ -124,6 +155,21 @@ const ProductGridItem = ({product, selectedTag, imageSize = 'medium'}: Props) =>
               <div className="absolute top-2 left-2 z-10">
                 <DiscountBadge text={appliedDiscount.badgeText} />
               </div>
+            )}
+            {/* Botón de favorito - Solo visible si el usuario está logueado */}
+            {session?.user && (
+              <button
+                onClick={handleToggleFavorite}
+                disabled={isLoadingFavorite}
+                className="absolute top-2 right-2 z-10 p-2 bg-white/90 hover:bg-white rounded-full transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+              >
+                {isFavorite ? (
+                  <IoHeart className="w-5 h-5" style={{ color: 'var(--theme-secondary-color)' }} />
+                ) : (
+                  <IoHeartOutline className="w-5 h-5 text-gray-700" />
+                )}
+              </button>
             )}
             {/* Overlay con botones - Solo visible en desktop */}
             <div className={`hidden sm:flex absolute inset-0 bg-black/20 items-center justify-center transition-opacity duration-300 ${

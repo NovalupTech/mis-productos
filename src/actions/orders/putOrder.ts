@@ -6,6 +6,7 @@ import { Address } from "@/interfaces/Address";
 import { requireCompanyId } from "@/lib/company-context";
 import { getCompanyConfigPublic } from "@/actions/company-config/get-company-config-public";
 import { getCurrentDomain } from "@/lib/domain";
+import { Prisma } from "@prisma/client";
 
 interface productsInCart {
 	productId: string;
@@ -20,10 +21,12 @@ export const placeOrder = async (
 	const user = session?.user.id;
 	const companyId = await requireCompanyId();
 
-	if (!user) {
+	// Si no hay usuario logueado, necesitamos crear/obtener un Customer
+	// Para esto necesitamos el email de la dirección
+	if (!user && (!address || !address.email)) {
 		return {
 			ok: false,
-			message: "No se ha encontrado el usuario",
+			message: "Se requiere email para realizar la compra sin registro",
 		};
 	}
 
@@ -117,6 +120,65 @@ export const placeOrder = async (
 		// transaccion prisma
 		const prismaTx = await prisma.$transaction(async (tx) => {
 			let updatedProducts = products;
+			let customerId: string | undefined = undefined;
+
+			// Si no hay usuario logueado, crear/obtener Customer dentro de la transacción
+			if (!user && address?.email) {
+				// Buscar si ya existe un Customer con ese email y companyId
+				const existingCustomer = await tx.customer.findFirst({
+					where: {
+						email: address.email.toLowerCase(),
+						companyId: companyId
+					}
+				});
+
+				if (existingCustomer) {
+					// Actualizar datos si es necesario
+					const updatedCustomer = await tx.customer.update({
+						where: { id: existingCustomer.id },
+						data: {
+							name: `${address.firstName} ${address.lastName}`,
+							phone: address.phone || existingCustomer.phone
+						}
+					});
+					customerId = updatedCustomer.id;
+				} else {
+					// Crear nuevo Customer dentro de la transacción
+					try {
+						const newCustomer = await tx.customer.create({
+							data: {
+								name: `${address.firstName} ${address.lastName}`,
+								email: address.email.toLowerCase(),
+								phone: address.phone || null,
+								companyId: companyId
+							}
+						});
+						customerId = newCustomer.id;
+					} catch (error: any) {
+						// Si el email ya existe (en otra company), buscar el existente para esta company
+						if (error?.code === 'P2002' && error?.meta?.target?.includes('email')) {
+							const existingCustomer = await tx.customer.findFirst({
+								where: {
+									email: address.email.toLowerCase(),
+									companyId: companyId
+								}
+							});
+							if (existingCustomer) {
+								customerId = existingCustomer.id;
+							} else {
+								throw new Error("No se pudo crear el cliente. El email ya está en uso en otra empresa.");
+							}
+						} else {
+							throw error;
+						}
+					}
+				}
+			}
+
+			// Validar que al menos uno de userId o customerId esté presente
+			if (!user && !customerId) {
+				throw new Error("Se requiere usuario logueado o email para crear la orden");
+			}
 
 			// Restar stock de productos solo si está configurado
 			if (subtractOnOrder) {
@@ -148,25 +210,36 @@ export const placeOrder = async (
 			}
 
 			// insertar orden y productos en orden
-			const order = await tx.order.create({
-				data: {
-					companyId: companyId,
-					userId: user,
-					subTotal: subTotal,
-					total: total,
-					tax: tax,
-					itemsInOrder: itemsInOrder,
-					OrderItem: {
-						createMany: {
-							data: productsInCart.map((prod) => ({
-								productId: prod.productId,
-								quantity: prod.quantity,
-								price:
-									products.find((p) => p.id === prod.productId)?.price ?? 0,
-							})),
-						},
+			const orderData: Prisma.OrderUncheckedCreateInput = {
+				companyId: companyId,
+				subTotal: subTotal,
+				total: total,
+				tax: tax,
+				itemsInOrder: itemsInOrder,
+				OrderItem: {
+					createMany: {
+						data: productsInCart.map((prod) => ({
+							productId: prod.productId,
+							quantity: prod.quantity,
+							price:
+								products.find((p) => p.id === prod.productId)?.price ?? 0,
+						})),
 					},
 				},
+			};
+
+			// Solo agregar userId si existe usuario
+			if (user) {
+				orderData.userId = user;
+			}
+
+			// Solo agregar customerId si existe customer
+			if (customerId) {
+				orderData.customerId = customerId;
+			}
+
+			const order = await tx.order.create({
+				data: orderData,
 			});
 
 			// insertar direccion de la orden solo si se proporciona

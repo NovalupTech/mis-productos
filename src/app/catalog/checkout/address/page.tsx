@@ -9,9 +9,8 @@ export default async function AddressPage() {
   const countries = await getCountries();
   const session = await middleware();
 
-  if(!session?.user.id) return;
-
-  const userAddress = await getUserAddress(session?.user.id);
+  // Obtener dirección del usuario solo si está logueado
+  const userAddress = session?.user.id ? await getUserAddress(session.user.id) : null;
 
   return (
     <div className="flex flex-col sm:justify-center sm:items-center mb-72 px-10 sm:px-0">

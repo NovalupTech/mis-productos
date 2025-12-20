@@ -29,7 +29,7 @@ export default async function OrdersPage() {
 
   return (
     <>
-      <Title title="Todas las orders" />
+      <Title title="Órdenes de clientes" />
 
       <div className="mb-10">
         {/* Desktop Table */}
@@ -79,7 +79,7 @@ export default async function OrdersPage() {
                     {order.id.split("-").at(-1)}
                   </td>
                   <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
-                    {order.OrderAddress?.firstName} {order.OrderAddress?.lastName}
+                    {order.OrderAddress ? order.OrderAddress?.firstName + ' ' + order.OrderAddress?.lastName : order.user.name}
                   </td>
                   <td className="flex items-center text-sm  text-gray-900 font-light px-6 py-4 whitespace-nowrap">
                     {order.isPaid ? (

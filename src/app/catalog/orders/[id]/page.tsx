@@ -9,6 +9,7 @@ import { OrderStatus } from "../ui/OrderStatus";
 import { BankTransferButton } from "@/components/ui/bank-transfer/BankTransferButton";
 import { CoordinateWithSellerButton } from "@/components/ui/coordinate-with-seller/CoordinateWithSellerButton";
 import { PaymentMethodType } from '@prisma/client';
+import Link from "next/link";
 
 export default async function OrderPage({ params }: {params: Promise<{id: string}>}) {
 
@@ -59,19 +60,20 @@ export default async function OrderPage({ params }: {params: Promise<{id: string
           {
             products?.map((product) => (
               <div key={product.product.slug} className="flex mb-5">
+                <a href={`/catalog/product/${product.product.slug}`}>
                   <Image
                     src={product.product.productImage[0].url.startsWith('http') || product.product.productImage[0].url.startsWith('https') ? product.product.productImage[0].url : `/products/${product.product.productImage[0].url}` as string}
-                    style={{
-                      width: '100px',
-                      height: '100px',
-                    }}
                     width={100}
                     height={100}
                     alt={product.product.title}
-                    className="mr-5 rounded"
+                    className="mr-5 rounded w-24 h-24 sm:w-32 sm:h-32 flex-shrink-0 overflow-hidden"
+                    style={{ viewTransitionName: `product-image-${product.product.slug}` }}
                   />
+                </a>
                   <div>
-                    <p>{product.product.title}</p>
+                    <Link href={`/catalog/product/${product.product.slug}`}>
+                      <p>{product.product.title}</p>
+                    </Link>
                     <p>{formatPrice(product.price, priceConfig)} x {product.quantity}</p>
                     <p>Subtotal: {formatPrice(product.price * product.quantity, priceConfig)}</p>
                   </div>

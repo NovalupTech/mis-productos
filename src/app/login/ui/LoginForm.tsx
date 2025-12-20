@@ -6,19 +6,22 @@ import clsx from "clsx";
 import Link from "next/link";
 import { useEffect, useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
+import { useSearchParams } from "next/navigation";
 import { IoArrowBackOutline, IoInformationOutline } from "react-icons/io5";
 
 export const LoginForm = () => {
 	const [state, dispatch] = useActionState(authenticateUser, undefined);
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
+	const searchParams = useSearchParams();
+	const redirect = searchParams.get('redirect') || '/';
 
 	useEffect(() => {
 	  if(state === 'success'){
-		window.location.replace('/')
+		window.location.replace(redirect)
 		return;
 	  }
-	}, [state])
+	}, [state, redirect])
 	
 
 	return (
@@ -76,7 +79,7 @@ export const LoginForm = () => {
 			{/* Botón de Google */}
 			<button
 				type="button"
-				onClick={() => signIn('google', { callbackUrl: '/' })}
+				onClick={() => signIn('google', { callbackUrl: redirect })}
 				className="w-full py-3 px-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-gray-700 font-medium flex items-center justify-center gap-2"
 			>
 				<svg className="w-5 h-5" viewBox="0 0 24 24">

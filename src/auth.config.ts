@@ -8,7 +8,6 @@ import bcryptjs from 'bcryptjs';
 import { getCurrentCompanyId } from './lib/domain';
 
 const url_denied = [
-  '/checkout/address',
   '/checkout'
 ]
 
@@ -138,15 +137,22 @@ export const authConfig = {
           });
           
           // Si el usuario se autenticó con Google y no tiene teléfono, redirigir a completar perfil
+          // Preservar el parámetro redirect si existe (viene del callbackUrl de NextAuth)
           if (userDB?.provider === 'google' && !userDB?.phone) {
-            return Response.redirect(new URL('/login/complete-profile', nextUrl));
+            const redirectUrl = new URL('/login/complete-profile', nextUrl);
+            // Si hay un callbackUrl en los searchParams (de NextAuth), preservarlo como redirect
+            const callbackUrl = nextUrl.searchParams.get('callbackUrl');
+            if (callbackUrl) {
+              redirectUrl.searchParams.set('redirect', callbackUrl);
+            }
+            return Response.redirect(redirectUrl);
           }
         } catch (error) {
           console.error('Error al verificar teléfono del usuario:', error);
         }
       }
       
-      // Si el usuario está en la página de completar perfil pero ya tiene teléfono, redirigir a home
+      // Si el usuario está en la página de completar perfil pero ya tiene teléfono, redirigir
       if (isCompleteProfilePage && isLoggedIn && auth?.user?.email) {
         try {
           const userDB = await prisma.user.findUnique({
@@ -155,7 +161,9 @@ export const authConfig = {
           });
           
           if (userDB?.phone) {
-            return Response.redirect(new URL('/', nextUrl));
+            // Usar el parámetro redirect si existe, sino redirigir al home
+            const redirectParam = nextUrl.searchParams.get('redirect') || '/';
+            return Response.redirect(new URL(redirectParam, nextUrl));
           }
         } catch (error) {
           console.error('Error al verificar teléfono del usuario:', error);
@@ -164,7 +172,7 @@ export const authConfig = {
       
       if (isDenied) {
         if (isLoggedIn) return true;
-        return Response.redirect(new URL('/', nextUrl));
+        return Response.redirect(new URL(nextUrl.searchParams.get('redirect') || '/', nextUrl));
       }
       return true;
     },

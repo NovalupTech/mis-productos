@@ -25,6 +25,11 @@ export const getOrders = async () => {
                         firstName: true,
                         lastName: true,
                     }
+                },
+                user: {
+                    select: {
+                        name: true,
+                    }
                 }
             },
             orderBy: {

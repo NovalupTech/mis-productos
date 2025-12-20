@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form"
 import clsx from "clsx";
 import { updateUserPhone } from "@/actions/auth/update-phone";
 import { IoInformationOutline } from "react-icons/io5";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface FormValues {
     phoneNumber: string;
@@ -18,6 +18,8 @@ export const CompleteProfileForm = () => {
         message: ''
     });
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const redirect = searchParams.get('redirect') || '/';
 
     const onSubmit = async (data: FormValues) => {
         const { phoneNumber } = data;
@@ -25,8 +27,8 @@ export const CompleteProfileForm = () => {
         setErrorState(result);
 
         if(result.ok){
-            // Redirigir al home después de actualizar el teléfono
-            window.location.href = '/';
+            // Redirigir a la URL especificada o al home después de actualizar el teléfono
+            window.location.href = redirect;
         }
     }
 

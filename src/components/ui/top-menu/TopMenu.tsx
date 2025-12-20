@@ -10,7 +10,7 @@ import { useCartStore } from "@/store/cart/cart-store"
 import { useUIStore } from "@/store/ui/ui-store"
 import { useCompanyStore } from "@/store/company/company-store"
 import { logout } from "@/actions"
-import { IoCartOutline, IoSearchOutline, IoLogOutOutline, IoChevronDownOutline, IoBagOutline, IoPersonOutline } from "react-icons/io5"
+import { IoCartOutline, IoSearchOutline, IoLogOutOutline, IoChevronDownOutline, IoBagOutline, IoPersonOutline, IoHeartOutline } from "react-icons/io5"
 import { FaInstagram, FaFacebook, FaTiktok, FaTwitter, FaLinkedin, FaYoutube, FaWhatsapp, FaGlobe } from 'react-icons/fa'
 import { Search } from "../search/Search"
 import { CartDropdown } from "../cart-dropdown/CartDropdown"
@@ -37,6 +37,7 @@ export const TopMenu = () => {
   const userDropdownRef = useRef<HTMLDivElement>(null);
 
   const isCompanyAdmin = session?.user?.role === 'companyAdmin';
+  const isUser = session?.user?.role === 'user';
 
   // Verificar si estamos en la home (donde se muestran los productos)
   const isHomePage = pathname === '/';
@@ -359,7 +360,7 @@ export const TopMenu = () => {
               >
                 Ingresar
               </Link>
-            ) : (
+            ) : isUser ? (
               <div ref={userDropdownRef} className="relative">
                 <button
                   onClick={handleUserClick}
@@ -406,6 +407,14 @@ export const TopMenu = () => {
                       Mi perfil
                     </Link>
                     <Link
+                      href="/catalog/favorites"
+                      onClick={() => setShowUserDropdown(false)}
+                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 transition-colors"
+                    >
+                      <IoHeartOutline className="w-4 h-4" />
+                      Mis favoritos
+                    </Link>
+                    <Link
                       href="/catalog/orders"
                       onClick={() => setShowUserDropdown(false)}
                       className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 transition-colors"
@@ -423,7 +432,7 @@ export const TopMenu = () => {
                   </div>
                 )}
               </div>
-            )}
+            ) : null}
 
             {/* Botón "Gestionar" - Solo en desktop */}
             {isCompanyAdmin && (
