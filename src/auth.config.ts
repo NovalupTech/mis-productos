@@ -2,6 +2,7 @@ export const runtime = 'nodejs';
 import NextAuth, { type NextAuthConfig } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import Google from 'next-auth/providers/google';
+import Facebook from 'next-auth/providers/facebook';
 import { z } from 'zod';
 import prisma from './lib/prisma';
 import bcryptjs from 'bcryptjs';
@@ -64,6 +65,51 @@ export const authConfig = {
           return false;
         }
       }
+      
+      // Si el usuario se autentica con Facebook
+      if (account?.provider === 'facebook') {
+        try {
+          const email = user.email?.toLowerCase();
+          if (!email) return false;
+
+          // Buscar si el usuario ya existe
+          const existingUser = await prisma.user.findUnique({
+            where: { email },
+          });
+
+          if (existingUser) {
+            // Si existe, actualizar datos si es necesario
+            await prisma.user.update({
+              where: { email },
+              data: {
+                name: user.name || existingUser.name,
+                image: user.image || existingUser.image,
+                emailVerified: new Date(),
+                provider: 'facebook',
+                phone: existingUser.phone, // Mantener el teléfono si existe
+              },
+            });
+          } else {
+            // Si no existe, crear nuevo usuario con role "user" y companyId null (cliente)
+            await prisma.user.create({
+              data: {
+                email,
+                name: user.name || '',
+                image: user.image || null,
+                emailVerified: new Date(),
+                provider: 'facebook',
+                phone: null, // Facebook puede no proporcionar teléfono, se pedirá después
+                role: 'user',
+                companyId: null,
+              },
+            });
+          }
+        } catch (error) {
+          console.error('Error en signIn callback de Facebook:', error);
+          return false;
+        }
+      }
+      
       return true;
     },
     jwt: async ({token, user, account}) => {
@@ -102,6 +148,38 @@ export const authConfig = {
             // Fallback si no se encuentra el usuario (no debería pasar)
             token.data = user;
           }
+        } else if (account?.provider === 'facebook' && user.email) {
+          // Si el usuario se autenticó con Facebook, obtener el ID real de la base de datos
+          const userDB = await prisma.user.findUnique({
+            where: { email: user.email.toLowerCase() },
+            select: { 
+              id: true,
+              email: true,
+              name: true,
+              image: true,
+              role: true,
+              emailVerified: true,
+              phone: true
+            },
+          });
+          
+          if (userDB) {
+            token.data = {
+              id: userDB.id,
+              email: userDB.email,
+              name: userDB.name,
+              image: userDB.image,
+              role: userDB.role,
+              emailVerified: userDB.emailVerified
+            };
+            
+            // Marcar en el token si necesita completar su perfil (no tiene teléfono)
+            if (!userDB.phone) {
+              token.needsPhone = true;
+            }
+          } else {
+            token.data = user;
+          }
         } else {
           // Para otros proveedores (credentials), usar el user directamente
           token.data = user;
@@ -136,9 +214,9 @@ export const authConfig = {
             select: { phone: true, provider: true },
           });
           
-          // Si el usuario se autenticó con Google y no tiene teléfono, redirigir a completar perfil
+          // Si el usuario se autenticó con Google o Facebook y no tiene teléfono, redirigir a completar perfil
           // Preservar el parámetro redirect si existe (viene del callbackUrl de NextAuth)
-          if (userDB?.provider === 'google' && !userDB?.phone) {
+          if ((userDB?.provider === 'google' || userDB?.provider === 'facebook') && !userDB?.phone) {
             const redirectUrl = new URL('/login/complete-profile', nextUrl);
             // Si hay un callbackUrl en los searchParams (de NextAuth), preservarlo como redirect
             const callbackUrl = nextUrl.searchParams.get('callbackUrl');
@@ -274,6 +352,10 @@ export const authConfig = {
           response_type: "code"
         }
       }
+    }),
+    Facebook({
+      clientId: process.env.FACEBOOK_CLIENT_ID!,
+      clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
     }),
     ],
 } satisfies NextAuthConfig;
