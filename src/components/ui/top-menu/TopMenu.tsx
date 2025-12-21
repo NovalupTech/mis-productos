@@ -10,7 +10,7 @@ import { useCartStore } from "@/store/cart/cart-store"
 import { useUIStore } from "@/store/ui/ui-store"
 import { useCompanyStore } from "@/store/company/company-store"
 import { logout } from "@/actions"
-import { IoCartOutline, IoSearchOutline, IoLogOutOutline, IoChevronDownOutline, IoBagOutline, IoPersonOutline, IoHeartOutline } from "react-icons/io5"
+import { IoCartOutline, IoSearchOutline, IoLogOutOutline, IoChevronDownOutline, IoBagOutline, IoPersonOutline, IoHeartOutline, IoMenuOutline } from "react-icons/io5"
 import { FaInstagram, FaFacebook, FaTiktok, FaTwitter, FaLinkedin, FaYoutube, FaWhatsapp, FaGlobe } from 'react-icons/fa'
 import { Search } from "../search/Search"
 import { CartDropdown } from "../cart-dropdown/CartDropdown"
@@ -352,16 +352,16 @@ export const TopMenu = () => {
               {!isMobile && <CartDropdown isVisible={showCartDropdown} />}
             </div>
 
-            {/* Botón de autenticación */}
+            {/* Botón de autenticación - Solo visible en desktop */}
             {!session ? (
               <Link
                 href="/login"
-                className="m-2 px-4 py-2 text-gray-700 hover:text-gray-900 rounded-md transition-all font-medium hover:bg-gray-100"
+                className="hidden md:block m-2 px-4 py-2 text-gray-700 hover:text-gray-900 rounded-md transition-all font-medium hover:bg-gray-100"
               >
                 Ingresar
               </Link>
             ) : isUser ? (
-              <div ref={userDropdownRef} className="relative">
+              <div ref={userDropdownRef} className="relative hidden md:block">
                 <button
                   onClick={handleUserClick}
                   className="m-2 flex items-center gap-2 px-2 py-1 rounded-md hover:bg-gray-100 transition-all cursor-pointer group"
@@ -458,9 +458,10 @@ export const TopMenu = () => {
             {/* Botón Menú - Solo visible en mobile */}
             <button 
               onClick={openSideMenu} 
-              className="md:hidden m-2 p-2 rounded-md transition-all hover:bg-gray-100"
+              className="md:hidden m-2 p-2 rounded-md transition-all hover:bg-gray-100 flex items-center justify-center"
+              aria-label="Menú"
             >
-              Menú
+              <IoMenuOutline className="w-6 h-6" />
             </button>
           </div>
         </div>

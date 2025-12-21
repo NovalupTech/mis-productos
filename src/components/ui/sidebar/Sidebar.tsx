@@ -2,10 +2,11 @@
 
 import { useSession } from "next-auth/react"
 import Link from "next/link"
+import Image from "next/image"
 import { useState } from 'react';
 import { useUIStore } from "@/store/ui/ui-store"
 import { useCompanyStore } from "@/store/company/company-store"
-import { IoCloseOutline, IoLogInOutline, IoLogOutOutline, IoPeopleOutline, IoPersonOutline, IoSearchOutline, IoShirtOutline, IoTicketOutline, IoBusinessOutline } from "react-icons/io5"
+import { IoCloseOutline, IoLogInOutline, IoLogOutOutline, IoPeopleOutline, IoPersonOutline, IoSearchOutline, IoShirtOutline, IoTicketOutline, IoBusinessOutline, IoBagOutline, IoHeartOutline } from "react-icons/io5"
 import { FaInstagram, FaFacebook, FaTiktok, FaTwitter, FaLinkedin, FaYoutube, FaWhatsapp, FaGlobe } from 'react-icons/fa'
 import { SocialType } from '@prisma/client'
 import clsx from "clsx"
@@ -117,17 +118,84 @@ export const Sidebar = () => {
             )
           } */}
 
-          {/* {
-            !isAuthenticated ?
-              <Link onClick={closeSideMenu} href="/auth/login" className="flex items-center mt-6 p-2 hover:bg-gray-100 rounded transition-all">
-                <IoLogInOutline size={30} />
-                <span className="ml-3 text-xl">Ingresar</span>
-              </Link> :
-              <button onClick={log_out} className="w-full flex items-center mt-6 p-2 hover:bg-gray-100 rounded transition-all">
+          {/* Información del usuario cuando está autenticado */}
+          {isAuthenticated && session?.user && (
+            <>
+              <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-200">
+                <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-gray-300 flex items-center justify-center bg-gray-100 flex-shrink-0">
+                  {session.user?.image ? (
+                    <Image
+                      src={session.user.image}
+                      alt={session.user?.name || 'Usuario'}
+                      width={64}
+                      height={64}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-gray-600 font-semibold text-xl">
+                      {session.user?.name?.charAt(0).toUpperCase() || 'U'}
+                    </span>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-lg font-semibold text-gray-900 truncate">
+                    {session.user?.name || 'Usuario'}
+                  </p>
+                  <p className="text-sm text-gray-500 truncate">
+                    {session.user?.email}
+                  </p>
+                </div>
+              </div>
+
+              {/* Opciones del menú del usuario */}
+              <Link
+                onClick={closeSideMenu}
+                href="/catalog/profile"
+                className="flex items-center mt-4 p-2 hover:bg-gray-100 rounded transition-all"
+              >
+                <IoPersonOutline size={30} />
+                <span className="ml-3 text-xl">Mi perfil</span>
+              </Link>
+
+              <Link
+                onClick={closeSideMenu}
+                href="/catalog/favorites"
+                className="flex items-center mt-4 p-2 hover:bg-gray-100 rounded transition-all"
+              >
+                <IoHeartOutline size={30} />
+                <span className="ml-3 text-xl">Mis favoritos</span>
+              </Link>
+
+              <Link
+                onClick={closeSideMenu}
+                href="/catalog/orders"
+                className="flex items-center mt-4 p-2 hover:bg-gray-100 rounded transition-all"
+              >
+                <IoBagOutline size={30} />
+                <span className="ml-3 text-xl">Mis compras</span>
+              </Link>
+
+              <button
+                onClick={log_out}
+                className="w-full flex items-center mt-4 p-2 hover:bg-gray-100 rounded transition-all text-left"
+              >
                 <IoLogOutOutline size={30} />
                 <span className="ml-3 text-xl">Salir</span>
               </button>
-          } */}
+            </>
+          )}
+
+          {/* Botón de autenticación cuando no está autenticado */}
+          {!isAuthenticated && (
+            <Link 
+              onClick={closeSideMenu} 
+              href="/login" 
+              className="flex items-center mt-6 p-2 hover:bg-gray-100 rounded transition-all"
+            >
+              <IoLogInOutline size={30} />
+              <span className="ml-3 text-xl">Ingresar</span>
+            </Link>
+          )}
 
           {/* Botón Gestionar - Solo para companyAdmin, visible en mobile */}
           {isCompanyAdmin && (
