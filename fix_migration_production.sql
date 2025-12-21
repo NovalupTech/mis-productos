@@ -1,21 +1,6 @@
-/*
-  Warnings:
-
-  - You are about to drop the column `addressId` on the `OrderAddress` table. All the data in the column will be lost.
-  - Added the required column `address` to the `OrderAddress` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `city` to the `OrderAddress` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `countryId` to the `OrderAddress` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `firstName` to the `OrderAddress` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `lastName` to the `OrderAddress` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `phone` to the `OrderAddress` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `postalCode` to the `OrderAddress` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `firstName` to the `UserAddress` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `lastName` to the `UserAddress` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `phone` to the `UserAddress` table without a default value. This is not possible if the table is not empty.
-
-*/
--- DropIndex
-DROP INDEX IF EXISTS "OrderAddress_addressId_idx";
+-- Script SQL para corregir la migración fallida en producción
+-- Ejecuta este script directamente en tu base de datos de producción
+-- ANTES de ejecutar: npx prisma migrate resolve --applied 20251220170325_reset
 
 -- ============================================
 -- PARTE 1: UserAddress (DEBE IR PRIMERO)
@@ -47,7 +32,7 @@ ALTER COLUMN "phone" SET NOT NULL;
 -- PARTE 2: OrderAddress (DESPUÉS de UserAddress)
 -- ============================================
 
--- Paso 4: Agregar las columnas a OrderAddress como nullable (si no existen ya)
+-- Paso 4: Agregar las columnas como nullable primero (si no existen)
 ALTER TABLE "OrderAddress" 
 ADD COLUMN IF NOT EXISTS "address" TEXT,
 ADD COLUMN IF NOT EXISTS "address2" TEXT,
@@ -59,7 +44,7 @@ ADD COLUMN IF NOT EXISTS "phone" TEXT,
 ADD COLUMN IF NOT EXISTS "postalCode" TEXT;
 
 -- Paso 5: Actualizar datos desde UserAddress si existe addressId
--- Ahora UserAddress ya tiene firstName, lastName y phone
+-- Ahora UserAddress ya tiene firstName, lastName y phone disponibles
 UPDATE "OrderAddress" oa
 SET 
   "address" = COALESCE(ua.address, 'Dirección no especificada'),
@@ -95,9 +80,9 @@ WHERE "address" IS NULL
    OR "postalCode" IS NULL;
 
 -- Paso 7: Eliminar addressId y hacer las columnas NOT NULL
+DROP INDEX IF EXISTS "OrderAddress_addressId_idx";
 ALTER TABLE "OrderAddress" DROP COLUMN IF EXISTS "addressId";
 
--- Paso 8: Hacer las columnas NOT NULL
 ALTER TABLE "OrderAddress" 
 ALTER COLUMN "address" SET NOT NULL,
 ALTER COLUMN "city" SET NOT NULL,
@@ -107,5 +92,32 @@ ALTER COLUMN "lastName" SET NOT NULL,
 ALTER COLUMN "phone" SET NOT NULL,
 ALTER COLUMN "postalCode" SET NOT NULL;
 
--- CreateIndex
+-- ============================================
+-- PARTE 3: Crear índices
+-- ============================================
+
 CREATE INDEX IF NOT EXISTS "OrderAddress_countryId_idx" ON "OrderAddress"("countryId");
+
+-- ============================================
+-- VERIFICACIÓN (opcional, comentar si no quieres ejecutarlo)
+-- ============================================
+
+-- Verificar que no hay NULLs en OrderAddress
+-- SELECT COUNT(*) as nulls_en_orderaddress
+-- FROM "OrderAddress" 
+-- WHERE "address" IS NULL 
+--    OR "city" IS NULL 
+--    OR "countryId" IS NULL 
+--    OR "firstName" IS NULL 
+--    OR "lastName" IS NULL 
+--    OR "phone" IS NULL 
+--    OR "postalCode" IS NULL;
+-- Debe retornar 0
+
+-- Verificar que no hay NULLs en UserAddress
+-- SELECT COUNT(*) as nulls_en_useraddress
+-- FROM "UserAddress" 
+-- WHERE "firstName" IS NULL 
+--    OR "lastName" IS NULL 
+--    OR "phone" IS NULL;
+-- Debe retornar 0
