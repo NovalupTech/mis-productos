@@ -39,7 +39,7 @@ export async function submitPayment({orderId, roundedAmount}: Props): Promise<st
 
     // Obtener el dominio actual para las URLs de retorno
     const domain = await getCurrentDomain();
-    const baseUrl = process.env.ENV === 'dev' ? 'https://3055d9730d17.ngrok-free.app' : `https://${domain}`;
+    const baseUrl = process.env.ENV === 'dev' ? 'https://e7c78ba4e6f7.ngrok-free.ap' : `https://${domain}`;
 
     // Construir las URLs de retorno
     const successUrl = `${baseUrl}/catalog/orders/${orderId}`;
