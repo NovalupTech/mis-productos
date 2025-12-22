@@ -48,17 +48,36 @@ export function encrypt(text: string): string {
  */
 export function decrypt(encryptedText: string): string {
   try {
+    // Verificar que la clave de encriptación esté configurada
+    if (!process.env.ENCRYPTION_KEY) {
+      console.warn('ADVERTENCIA: ENCRYPTION_KEY no está configurada en las variables de entorno');
+    }
+    
     const key = getEncryptionKey();
     const parts = encryptedText.split(':');
     
     if (parts.length !== 3) {
-      throw new Error('Formato de texto encriptado inválido');
+      console.error('Formato inválido - partes encontradas:', parts.length);
+      console.error('Texto recibido (primeros 100 chars):', encryptedText.substring(0, 100));
+      throw new Error(`Formato de texto encriptado inválido: se esperaban 3 partes pero se encontraron ${parts.length}`);
     }
     
     const [ivBase64, authTagBase64, encrypted] = parts;
     
+    if (!ivBase64 || !authTagBase64 || !encrypted) {
+      throw new Error('Una o más partes del texto encriptado están vacías');
+    }
+    
     const iv = Buffer.from(ivBase64, 'base64');
     const authTag = Buffer.from(authTagBase64, 'base64');
+    
+    if (iv.length !== 16) {
+      throw new Error(`IV debe tener 16 bytes, pero tiene ${iv.length}`);
+    }
+    
+    if (authTag.length !== 16) {
+      throw new Error(`AuthTag debe tener 16 bytes, pero tiene ${authTag.length}`);
+    }
     
     const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
     decipher.setAuthTag(authTag);
@@ -69,6 +88,14 @@ export function decrypt(encryptedText: string): string {
     return decrypted;
   } catch (error) {
     console.error('Error al desencriptar:', error);
+    console.error('Detalles del error de desencriptación:', {
+      message: error instanceof Error ? error.message : String(error),
+      name: error instanceof Error ? error.name : undefined,
+      code: (error as any)?.code,
+    });
+    if (error instanceof Error) {
+      throw new Error(`Error al desencriptar el texto: ${error.message}`);
+    }
     throw new Error('Error al desencriptar el texto');
   }
 }

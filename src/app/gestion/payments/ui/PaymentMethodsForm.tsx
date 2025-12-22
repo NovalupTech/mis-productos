@@ -50,6 +50,11 @@ interface PayPalConfig {
   clientSecret: string;
 }
 
+interface MercadoPagoConfig {
+  clientId: string;
+  accessToken: string;
+}
+
 export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsFormProps) => {
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethodFormData[]>(
     initialPaymentMethods.map(convertPaymentMethod)
@@ -81,6 +86,12 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
   const [paypalConfig, setPaypalConfig] = useState<PayPalConfig>({
     clientId: '',
     clientSecret: '',
+  });
+
+  // Estados para formulario de Mercado Pago
+  const [mercadoPagoConfig, setMercadoPagoConfig] = useState<MercadoPagoConfig>({
+    clientId: '',
+    accessToken: '',
   });
 
   // Cargar configuración de transferencia bancaria si existe
@@ -125,6 +136,18 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
     }
   }, [paymentMethods]);
 
+  // Cargar configuración de Mercado Pago si existe
+  useEffect(() => {
+    const mercadoPagoMethod = paymentMethods.find(pm => pm.type === 'MERCADOPAGO');
+    if (mercadoPagoMethod?.config) {
+      setMercadoPagoConfig({
+        clientId: (mercadoPagoMethod.config.clientId as string) || '',
+        // No cargamos el accessToken por seguridad (ya está encriptado)
+        accessToken: '',
+      });
+    }
+  }, [paymentMethods]);
+
   const handleToggle = async (type: PaymentMethodType, enabled: boolean) => {
     setLoading(prev => ({ ...prev, [type]: true }));
     
@@ -152,6 +175,27 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
         // Si solo tiene configuración guardada existente, no enviar config (el servidor usará la existente)
         if (paypalConfig.clientId && paypalConfig.clientSecret) {
           config = paypalConfig as unknown as Record<string, unknown>;
+        }
+        // Si tiene configuración guardada pero no nueva, no enviar config (undefined)
+        // El servidor detectará esto y usará la configuración existente
+      } else if (type === 'MERCADOPAGO') {
+        // Verificar si Mercado Pago ya está configurado en la base de datos
+        const existingMercadoPagoMethod = paymentMethods.find(pm => pm.type === 'MERCADOPAGO');
+        const hasExistingConfig = existingMercadoPagoMethod?.config && 
+          typeof existingMercadoPagoMethod.config === 'object' && 
+          'clientId' in existingMercadoPagoMethod.config &&
+          existingMercadoPagoMethod.config.clientId;
+        
+        // Para Mercado Pago, si está habilitando y no tiene configuración guardada ni nueva, mostrar error
+        if (enabled && !hasExistingConfig && (!mercadoPagoConfig.clientId || !mercadoPagoConfig.accessToken)) {
+          alert('Por favor configura Mercado Pago antes de habilitarlo');
+          setLoading(prev => ({ ...prev, [type]: false }));
+          return;
+        }
+        // Si tiene configuración nueva (clientId y accessToken), enviarla para guardar/actualizar
+        // Si solo tiene configuración guardada existente, no enviar config (el servidor usará la existente)
+        if (mercadoPagoConfig.clientId && mercadoPagoConfig.accessToken) {
+          config = mercadoPagoConfig as unknown as Record<string, unknown>;
         }
         // Si tiene configuración guardada pero no nueva, no enviar config (undefined)
         // El servidor detectará esto y usará la configuración existente
@@ -309,12 +353,58 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
     }
   };
 
+  const handleSaveMercadoPago = async () => {
+    if (!mercadoPagoConfig.clientId || !mercadoPagoConfig.accessToken) {
+      alert('Por favor completa todos los campos requeridos');
+      return;
+    }
+
+    const mercadoPagoMethod = paymentMethods.find(pm => pm.type === 'MERCADOPAGO');
+    const enabled = mercadoPagoMethod?.enabled || false;
+
+    setLoading(prev => ({ ...prev, MERCADOPAGO: true }));
+    
+    try {
+      const result = await upsertPaymentMethod('MERCADOPAGO', enabled, mercadoPagoConfig as unknown as Record<string, unknown>);
+      
+      if (result.ok && result.paymentMethod) {
+        setPaymentMethods(prev => {
+          const existing = prev.findIndex(pm => pm.type === 'MERCADOPAGO');
+          const converted = convertPaymentMethod(result.paymentMethod!);
+          if (existing >= 0) {
+            const updated = [...prev];
+            updated[existing] = converted;
+            return updated;
+          }
+          return [...prev, converted];
+        });
+        // Limpiar el campo de accessToken después de guardar por seguridad
+        setMercadoPagoConfig(prev => ({ ...prev, accessToken: '' }));
+        setExpandedMethod(null);
+        alert('Configuración guardada exitosamente');
+      } else {
+        alert(result.message || 'Error al guardar configuración');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error al guardar configuración');
+    } finally {
+      setLoading(prev => ({ ...prev, MERCADOPAGO: false }));
+    }
+  };
+
   const getPaymentMethodInfo = (type: PaymentMethodType) => {
     switch (type) {
       case 'PAYPAL':
         return {
           name: 'PayPal',
           description: 'Permite a tus clientes pagar con PayPal',
+          icon: IoCardOutline,
+        };
+      case 'MERCADOPAGO':
+        return {
+          name: 'Mercado Pago',
+          description: 'Permite a tus clientes pagar con Mercado Pago',
           icon: IoCardOutline,
         };
       case 'BANK_TRANSFER':
@@ -445,6 +535,113 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
                 )}
               >
                 {loading.PAYPAL ? 'Guardando...' : paypalConfig.clientId ? 'Actualizar Configuración' : 'Guardar Configuración'}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Mercado Pago */}
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <IoCardOutline size={24} className="text-blue-600" />
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800">Mercado Pago</h3>
+              <p className="text-sm text-gray-600">Permite a tus clientes pagar con Mercado Pago</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setExpandedMethod(expandedMethod === 'MERCADOPAGO' ? null : 'MERCADOPAGO')}
+              className="px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+            >
+              {expandedMethod === 'MERCADOPAGO' ? 'Ocultar' : 'Configurar'}
+            </button>
+            <button
+              onClick={() => handleToggle('MERCADOPAGO', !isMethodEnabled('MERCADOPAGO'))}
+              disabled={loading.MERCADOPAGO}
+              className={clsx(
+                'flex items-center gap-2 px-4 py-2 rounded-lg transition-colors',
+                {
+                  'bg-green-100 text-green-700 hover:bg-green-200': isMethodEnabled('MERCADOPAGO'),
+                  'bg-gray-100 text-gray-600 hover:bg-gray-200': !isMethodEnabled('MERCADOPAGO'),
+                  'opacity-50 cursor-not-allowed': loading.MERCADOPAGO,
+                }
+              )}
+            >
+              {isMethodEnabled('MERCADOPAGO') ? (
+                <>
+                  <IoCheckmarkCircleOutline size={20} />
+                  <span>Habilitado</span>
+                </>
+              ) : (
+                <>
+                  <IoCloseCircleOutline size={20} />
+                  <span>Deshabilitado</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {expandedMethod === 'MERCADOPAGO' && (
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <h4 className="text-md font-semibold text-gray-800 mb-4">Configuración de Mercado Pago</h4>
+            {mercadoPagoConfig.clientId && (
+              <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
+                <p className="text-sm text-green-800">
+                  <strong>Mercado Pago está configurado.</strong> El Access Token está guardado de forma segura y encriptada.
+                </p>
+                <p className="text-xs text-green-600 mt-1">
+                  Si necesitas actualizar las credenciales, completa ambos campos y guarda nuevamente.
+                </p>
+              </div>
+            )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Public Key <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={mercadoPagoConfig.clientId}
+                  onChange={(e) => setMercadoPagoConfig(prev => ({ ...prev, clientId: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Ej: APP_USR-1234567890-123456-..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Access Token <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="password"
+                  value={mercadoPagoConfig.accessToken}
+                  onChange={(e) => setMercadoPagoConfig(prev => ({ ...prev, accessToken: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder={mercadoPagoConfig.clientId ? "Ingresa el nuevo access token para actualizar" : "El access token se guardará encriptado"}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  El Access Token se guardará encriptado de forma segura usando AES-256-GCM
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={handleSaveMercadoPago}
+                disabled={loading.MERCADOPAGO || !mercadoPagoConfig.clientId || !mercadoPagoConfig.accessToken}
+                className={clsx(
+                  'px-6 py-2 rounded-lg font-medium transition-colors',
+                  {
+                    'bg-blue-600 text-white hover:bg-blue-700': !loading.MERCADOPAGO && mercadoPagoConfig.clientId && mercadoPagoConfig.accessToken,
+                    'bg-gray-300 text-gray-500 cursor-not-allowed': loading.MERCADOPAGO || !mercadoPagoConfig.clientId || !mercadoPagoConfig.accessToken,
+                  }
+                )}
+              >
+                {loading.MERCADOPAGO ? 'Guardando...' : mercadoPagoConfig.clientId ? 'Actualizar Configuración' : 'Guardar Configuración'}
               </button>
             </div>
           </div>

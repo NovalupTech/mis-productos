@@ -55,6 +55,11 @@ const paypalConfigSchema = z.object({
   clientSecret: z.string().min(1, 'El Client Secret de PayPal es requerido'),
 });
 
+const mercadoPagoConfigSchema = z.object({
+  clientId: z.string().min(1, 'El Client ID de Mercado Pago es requerido'),
+  accessToken: z.string().min(1, 'El Access Token de Mercado Pago es requerido'),
+});
+
 export async function upsertPaymentMethod(
   type: PaymentMethodType,
   enabled: boolean,
@@ -139,6 +144,52 @@ export async function upsertPaymentMethod(
       };
     }
 
+    if (type === 'MERCADOPAGO' && config) {
+      const validation = mercadoPagoConfigSchema.safeParse(config);
+      if (!validation.success) {
+        return {
+          ok: false,
+          message: validation.error.errors[0].message,
+        };
+      }
+
+      // Encriptar el accessToken antes de guardarlo
+      // Eliminar clientSecret si existe (formato antiguo) para migrar al nuevo formato
+      const configToSave: Record<string, unknown> = {
+        clientId: config.clientId,
+        accessToken: encrypt(config.accessToken as string),
+      };
+      
+      // Eliminar explícitamente clientSecret si existe para evitar duplicados
+      if ('clientSecret' in config) {
+        delete configToSave.clientSecret;
+      }
+
+      const paymentMethod = await prisma.paymentMethod.upsert({
+        where: {
+          companyId_type: {
+            companyId,
+            type,
+          },
+        },
+        update: {
+          enabled,
+          config: configToSave as unknown as InputJsonValue,
+        },
+        create: {
+          companyId,
+          type,
+          enabled,
+          config: configToSave as unknown as InputJsonValue,
+        },
+      });
+
+      return {
+        ok: true,
+        paymentMethod,
+      };
+    }
+
     // Si está habilitado pero no tiene config requerida, retornar error
     if (enabled && type === 'BANK_TRANSFER' && !config) {
       return {
@@ -195,6 +246,50 @@ export async function upsertPaymentMethod(
       return {
         ok: false,
         message: 'PayPal requiere configuración',
+      };
+    }
+
+    // Para Mercado Pago, si está habilitando y no tiene config nueva, verificar si ya existe configuración guardada
+    if (enabled && type === 'MERCADOPAGO' && !config) {
+      const existingMercadoPago = await prisma.paymentMethod.findUnique({
+        where: {
+          companyId_type: {
+            companyId,
+            type: 'MERCADOPAGO',
+          },
+        },
+        select: {
+          config: true,
+        },
+      });
+
+      // Si ya existe configuración guardada, permitir habilitar sin requerir config nueva
+      if (existingMercadoPago?.config && 
+          typeof existingMercadoPago.config === 'object' && 
+          'clientId' in existingMercadoPago.config &&
+          existingMercadoPago.config.clientId) {
+        // Usar la configuración existente
+        const paymentMethod = await prisma.paymentMethod.update({
+          where: {
+            companyId_type: {
+              companyId,
+              type: 'MERCADOPAGO',
+            },
+          },
+          data: {
+            enabled,
+          },
+        });
+
+        return {
+          ok: true,
+          paymentMethod,
+        };
+      }
+
+      return {
+        ok: false,
+        message: 'Mercado Pago requiere configuración',
       };
     }
 

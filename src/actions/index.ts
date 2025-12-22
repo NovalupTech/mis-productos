@@ -85,6 +85,7 @@ export * from './payment-methods/get-payment-methods';
 export * from './payment-methods/upsert-payment-method';
 export * from './payment-methods/get-payment-methods-public';
 export * from './payment-methods/get-paypal-config';
+export * from './payment-methods/get-mercado-pago-config';
 
 export * from './shipping/get-shipping-config';
 export * from './shipping/update-shipping-config';

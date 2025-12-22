@@ -1,30 +1,40 @@
 "use client"
 
-import MercadoPagoConfig, { Payment, Preference } from "mercadopago";
-import { redirect } from "next/navigation";
+import { useState } from "react";
 import { submitPayment } from "@/actions/payments/mercado-pago-check-payments";
-import { useCartStore } from "@/store/cart/cart-store";
+
 interface Props {
   orderId: string;
   amount: number;
 }
 
-const mercadopago = new MercadoPagoConfig({
-  accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN ?? '',
-})
-
 export const MercadoPagoButton = ({orderId, amount}: Props) => {
+  const [isLoading, setIsLoading] = useState(false);
 
-  //const [{ isPending }] = usePayPalScriptReducer();
   const roundedAmount = Math.round((amount) * 100) / 100;
 
-  const createReferencePay = async () => {
-    await submitPayment({orderId, roundedAmount});
+  const handlePayment = async () => {
+    setIsLoading(true);
+    try {
+      await submitPayment({orderId, roundedAmount});
+    } catch (error) {
+      console.error('Error al procesar pago con Mercado Pago:', error);
+      alert('Error al procesar el pago. Por favor, intenta nuevamente.');
+      setIsLoading(false);
+    }
   };
+
   return (
-    <button onClick={createReferencePay} className="w-full mb-4 h-10 flex-row items-center justify-center flex gap-2 rounded-lg" style={{backgroundColor: '#00b1ea'}} >
+    <button 
+      onClick={handlePayment} 
+      disabled={isLoading}
+      className="w-full mb-4 h-10 flex-row items-center justify-center flex gap-2 rounded-lg transition-opacity disabled:opacity-50 disabled:cursor-not-allowed" 
+      style={{backgroundColor: '#00b1ea'}}
+    >
       <IconMercadoPago />
-      <p className="font-bold text-white">Pagar con Mercado Pago</p>
+      <p className="font-bold text-white">
+        {isLoading ? 'Procesando...' : 'Pagar con Mercado Pago'}
+      </p>
     </button>
   )
 }
