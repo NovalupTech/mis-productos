@@ -67,18 +67,19 @@ model Company {
   updatedAt DateTime @updatedAt
 
   // Relaciones
-  products   Product[]
-  categories Category[]
-  attributes Attribute[]
-  customers  Customer[]
-  orders     Order[]
-  domains    Domain[]
-  users      User[]
-  pages      Page[]
-  socials    CompanySocial[]
-  configs    CompanyConfig[]
-  tags       Tag[]
+  products       Product[]
+  categories     Category[]
+  attributes     Attribute[]
+  customers      Customer[]
+  orders         Order[]
+  domains        Domain[]
+  users          User[]
+  pages          Page[]
+  socials        CompanySocial[]
+  configs        CompanyConfig[]
+  tags           Tag[]
   paymentMethods PaymentMethod[]
+  payments       Payment[]
 }
 
 // -------------------------
@@ -248,6 +249,7 @@ model Order {
 
   OrderItem    OrderItem[]
   OrderAddress OrderAddress?
+  payments     Payment[]
 
   @@index([companyId])
   @@index([userId])
@@ -559,18 +561,18 @@ enum DiscountConditionType {
 }
 
 model PaymentMethod {
-  id        String   @id @default(uuid())
+  id        String @id @default(uuid())
   companyId String
 
-  type      PaymentMethodType
-  enabled   Boolean  @default(false)
+  type    PaymentMethodType
+  enabled Boolean           @default(false)
 
-  config    Json?    // datos específicos del método
+  config Json? // datos específicos del método
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  company   Company  @relation(fields: [companyId], references: [id])
+  company Company @relation(fields: [companyId], references: [id])
 
   @@unique([companyId, type])
 }
@@ -581,4 +583,41 @@ enum PaymentMethodType {
   MERCADOPAGO
   CASH
   COORDINATE_WITH_SELLER
+}
+
+enum PaymentStatus {
+  approved
+  pending
+  rejected
+  refunded
+  cancelled
+}
+
+// -------------------------
+// Pagos registrados
+// -------------------------
+
+model Payment {
+  id                String        @id @default(uuid())
+  orderId           String
+  companyId         String
+  paymentId         String // ID del pago en Mercado Pago / PayPal
+  paymentMethod     String? // credit_card, debit_card, account_money, etc.
+  amount            Float
+  currency          String        @default("USD")
+  status            PaymentStatus @default(pending)
+  statusDetail      String? // Detalle del status que viene del proveedor
+  externalReference String? // Referencia interna opcional
+  metadata          Json? // Datos adicionales en JSON
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([companyId])
+  @@index([paymentId])
+  @@index([status])
 }

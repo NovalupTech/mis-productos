@@ -35,6 +35,7 @@ export default async function AdminDashboardPage() {
               totalUsers={stats.totalUsers}
               totalOrders={stats.totalOrders}
               recentOrders={stats.recentOrders}
+              recentPayments={stats.recentPayments}
             />
           ) : (
             <div className="bg-white border border-gray-200 rounded-lg p-4">

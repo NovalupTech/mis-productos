@@ -19,6 +19,8 @@ import {
   IoStatsChartOutline,
   IoCashOutline,
   IoCarOutline,
+  IoChevronDownOutline,
+  IoCardOutline,
 } from "react-icons/io5";
 import clsx from "clsx";
 import { useSidebar } from "../providers/SidebarProvider";
@@ -84,11 +86,6 @@ const navItems: NavItem[] = [
     icon: IoPricetagOutline,
   },
   {
-    href: "/gestion/payments",
-    label: "Pagos",
-    icon: IoCashOutline,
-  },
-  {
     href: "/gestion/orders",
     label: "Pedidos",
     icon: IoTicketOutline,
@@ -110,6 +107,7 @@ export const AdminSidebar = () => {
   const router = useRouter();
   const { isCollapsed, toggleSidebar } = useSidebar();
   const [isMobile, setIsMobile] = useState(false);
+  const [paymentsDropdownOpen, setPaymentsDropdownOpen] = useState(false);
   const prevIsMobileRef = useRef<boolean | null>(null);
 
   useEffect(() => {
@@ -243,6 +241,83 @@ export const AdminSidebar = () => {
             </Link>
           );
         })}
+
+        {/* Dropdown de Pagos */}
+        <div className="relative">
+          <button
+            onClick={() => setPaymentsDropdownOpen(!paymentsDropdownOpen)}
+            className={clsx(
+              "w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
+              {
+                "bg-blue-50 text-blue-600": pathname.startsWith("/gestion/payments") || pathname.startsWith("/gestion/payment-methods"),
+                "text-gray-700 hover:bg-gray-100": !(pathname.startsWith("/gestion/payments") || pathname.startsWith("/gestion/payment-methods")),
+                "justify-center": !sidebarVisible,
+              }
+            )}
+          >
+            <IoCashOutline
+              size={22}
+              className={clsx({
+                "text-blue-600": pathname.startsWith("/gestion/payments") || pathname.startsWith("/gestion/payment-methods"),
+                "text-gray-500": !(pathname.startsWith("/gestion/payments") || pathname.startsWith("/gestion/payment-methods")),
+              })}
+            />
+            {sidebarVisible && (
+              <>
+                <span className="font-medium flex-1 text-left">Pagos</span>
+                <IoChevronDownOutline
+                  size={18}
+                  className={clsx("transition-transform", {
+                    "rotate-180": paymentsDropdownOpen,
+                  })}
+                />
+              </>
+            )}
+          </button>
+
+          {sidebarVisible && paymentsDropdownOpen && (
+            <div className="mt-1 ml-4 space-y-1 border-l-2 border-gray-200 pl-2">
+              <Link
+                href="/gestion/payments"
+                onClick={() => {
+                  if (isMobile && isMobileOpen) {
+                    toggleSidebar();
+                  }
+                  setPaymentsDropdownOpen(false);
+                }}
+                className={clsx(
+                  "flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 text-sm",
+                  {
+                    "bg-blue-50 text-blue-600": pathname === "/gestion/payments" || pathname.startsWith("/gestion/payments/"),
+                    "text-gray-700 hover:bg-gray-100": pathname !== "/gestion/payments" && !pathname.startsWith("/gestion/payments/"),
+                  }
+                )}
+              >
+                <IoCardOutline size={18} />
+                <span>Pagos</span>
+              </Link>
+              <Link
+                href="/gestion/payment-methods"
+                onClick={() => {
+                  if (isMobile && isMobileOpen) {
+                    toggleSidebar();
+                  }
+                  setPaymentsDropdownOpen(false);
+                }}
+                className={clsx(
+                  "flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 text-sm",
+                  {
+                    "bg-blue-50 text-blue-600": pathname === "/gestion/payment-methods" || pathname.startsWith("/gestion/payment-methods/"),
+                    "text-gray-700 hover:bg-gray-100": pathname !== "/gestion/payment-methods" && !pathname.startsWith("/gestion/payment-methods/"),
+                  }
+                )}
+              >
+                <IoCashOutline size={18} />
+                <span>Métodos de pago</span>
+              </Link>
+            </div>
+          )}
+        </div>
       </nav>
 
       {/* Footer con botones - Siempre visible */}

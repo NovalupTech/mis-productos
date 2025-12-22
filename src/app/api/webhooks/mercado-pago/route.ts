@@ -6,6 +6,7 @@ import MercadoPagoConfig, {Payment} from "mercadopago";
 import {revalidatePath} from "next/cache";
 import { getMercadoPagoConfig } from "@/actions/payment-methods/get-mercado-pago-config";
 import crypto from "crypto";
+import { upsertPayment, mapMercadoPagoStatus, findPaymentByOrderId } from "@/lib/payments/payment-helpers";
 
 /**
  * Tipos de notificaciones de Mercado Pago
@@ -376,6 +377,61 @@ export async function POST(request: Request) {
     const paymentStatus = payment.status as PaymentStatus;
     console.log(`Payment ${paymentId} para orden ${orderId} tiene estado: ${paymentStatus}`);
 
+    // Obtener información de la orden para crear/actualizar el pago
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      select: { id: true, companyId: true, total: true },
+    });
+
+    if (!order) {
+      console.error(`Orden ${orderId} no encontrada`);
+      return new Response(JSON.stringify({ received: true, message: 'Order not found' }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Mapear estado de Mercado Pago a nuestro estado
+    const mappedStatus = mapMercadoPagoStatus(paymentStatus);
+
+    // Crear o actualizar el registro de pago
+    const paymentMethod = (payment as any).payment_method_id || (payment as any).payment_type_id || null;
+    const statusDetail = (payment as any).status_detail || null;
+
+    const paymentResult = await upsertPayment(
+      paymentId,
+      {
+        orderId: order.id,
+        companyId: order.companyId,
+        paymentId: paymentId,
+        amount: order.total,
+        currency: (payment as any).currency_id || 'USD',
+        paymentMethod: paymentMethod,
+        status: mappedStatus,
+        statusDetail: statusDetail,
+        externalReference: orderId,
+        metadata: {
+          mercadoPagoPayment: {
+            id: paymentId,
+            status: paymentStatus,
+            statusDetail: statusDetail,
+            paymentMethod: paymentMethod,
+            transactionAmount: (payment as any).transaction_amount,
+            dateCreated: (payment as any).date_created,
+            dateApproved: (payment as any).date_approved,
+            dateLastUpdated: (payment as any).date_last_updated,
+          },
+        },
+      }
+    );
+
+    if (!paymentResult.ok) {
+      console.error('Error al crear/actualizar pago:', paymentResult.error);
+      // Continuar con el procesamiento aunque falle el registro del pago
+    } else {
+      console.log(`Pago ${paymentId} registrado/actualizado con estado: ${mappedStatus}`);
+    }
+
     // Manejar diferentes estados del pago
     switch (paymentStatus) {
       case 'approved':
@@ -431,21 +487,8 @@ export async function POST(request: Request) {
         break;
 
       case 'refunded':
-        // Pago reembolsado - marcar como no pagada
-        await prisma.order.update({
-          where: { id: orderId },
-          data: {
-            isPaid: false,
-            paidAt: null,
-          },
-        });
-
-        revalidatePath(`/catalog/orders/${orderId}`);
-        console.log(`Orden ${orderId} marcada como reembolsada`);
-        break;
-
       case 'charged_back':
-        // Contracargo - marcar como no pagada
+        // Pago reembolsado o contracargado - marcar como no pagada
         await prisma.order.update({
           where: { id: orderId },
           data: {
@@ -455,7 +498,7 @@ export async function POST(request: Request) {
         });
 
         revalidatePath(`/catalog/orders/${orderId}`);
-        console.log(`Orden ${orderId} marcada como contracargada`);
+        console.log(`Orden ${orderId} marcada como ${paymentStatus === 'refunded' ? 'reembolsada' : 'contracargada'}`);
         break;
 
       case 'pending':

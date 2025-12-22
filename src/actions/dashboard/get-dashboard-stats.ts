@@ -25,7 +25,7 @@ export const getDashboardStats = async () => {
     }
 
     // Obtener estadísticas en paralelo
-    const [totalProducts, totalUsers, totalOrders, recentOrders, company] = await Promise.all([
+    const [totalProducts, totalUsers, totalOrders, recentOrders, recentPayments, company] = await Promise.all([
       // Total de productos
       prisma.product.count({
         where: { companyId },
@@ -66,6 +66,41 @@ export const getDashboardStats = async () => {
           },
         },
       }),
+      // Últimos 5 pagos
+      prisma.payment.findMany({
+        where: { companyId },
+        take: 5,
+        orderBy: {
+          createdAt: 'desc',
+        },
+        select: {
+          id: true,
+          paymentId: true,
+          amount: true,
+          currency: true,
+          status: true,
+          statusDetail: true,
+          paymentMethod: true,
+          createdAt: true,
+          order: {
+            select: {
+              id: true,
+              customer: {
+                select: {
+                  name: true,
+                  email: true,
+                },
+              },
+              user: {
+                select: {
+                  name: true,
+                  email: true,
+                },
+              },
+            },
+          },
+        },
+      }),
       // Información de la compañía
       prisma.company.findUnique({
         where: { id: companyId },
@@ -85,6 +120,7 @@ export const getDashboardStats = async () => {
         totalUsers,
         totalOrders,
         recentOrders,
+        recentPayments,
         company,
       },
     };

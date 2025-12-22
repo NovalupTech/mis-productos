@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma';
 import { getCurrentDomain } from '@/lib/domain';
 import { revalidatePath } from 'next/cache';
 import { decrypt } from '@/lib/encryption';
+import { upsertPayment, mapPayPalStatus, findPaymentByOrderId } from '@/lib/payments/payment-helpers';
 
 // Función para obtener el token de acceso de PayPal usando configuración de la BD
 async function getPaypalToken(companyId: string): Promise<string | null> {
@@ -193,12 +194,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Verificar que la orden existe y obtener companyId
-    const order = await prisma.order.findUnique({
+    const orderData = await prisma.order.findUnique({
       where: { id: orderId },
       select: { id: true, companyId: true },
     });
 
-    if (!order) {
+    if (!orderData) {
       console.error(`Orden no encontrada en BD: ${orderId}`);
       return NextResponse.json(
         { error: 'Order not found in database' },
@@ -210,7 +211,7 @@ export async function POST(request: NextRequest) {
     const paymentMethod = await prisma.paymentMethod.findUnique({
       where: {
         companyId_type: {
-          companyId: order.companyId,
+          companyId: orderData.companyId,
           type: 'PAYPAL',
         },
       },
@@ -221,10 +222,62 @@ export async function POST(request: NextRequest) {
     });
 
     if (!paymentMethod || !paymentMethod.enabled) {
-      console.error(`PayPal no está configurado o habilitado para la empresa ${order.companyId}`);
+      console.error(`PayPal no está configurado o habilitado para la empresa ${orderData.companyId}`);
       return NextResponse.json(
         { error: 'PayPal not configured for this company' },
         { status: 400 }
+      );
+    }
+
+    // Obtener información completa de la orden
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      select: { id: true, companyId: true, total: true },
+    });
+
+    if (!order) {
+      console.error(`Orden ${orderId} no encontrada`);
+      return NextResponse.json(
+        { error: 'Order not found in database' },
+        { status: 404 }
+      );
+    }
+
+    // Obtener el payment ID de PayPal (puede ser el capture ID o el order ID)
+    const paypalPaymentId = resource.id || resource.supplementary_data?.related_ids?.order_id || null;
+    const amount = resource.purchase_units?.[0]?.amount?.value 
+      ? parseFloat(resource.purchase_units[0].amount.value) 
+      : order.total;
+    const currency = resource.purchase_units?.[0]?.amount?.currency_code || 'USD';
+
+    // Mapear estado de PayPal a nuestro estado
+    const mappedStatus = mapPayPalStatus(resource.status || '', event_type);
+
+    // Crear o actualizar el registro de pago
+    if (paypalPaymentId) {
+      await upsertPayment(
+        paypalPaymentId,
+        {
+          orderId: order.id,
+          companyId: order.companyId,
+          paymentId: paypalPaymentId,
+          amount: amount,
+          currency: currency,
+          paymentMethod: 'PAYPAL',
+          status: mappedStatus,
+          statusDetail: resource.status || event_type,
+          externalReference: orderId,
+          metadata: {
+            paypalPayment: {
+              id: paypalPaymentId,
+              eventType: event_type,
+              status: resource.status,
+              intent: resource.intent,
+              purchaseUnits: resource.purchase_units,
+              createTime: new Date(),
+            },
+          },
+        }
       );
     }
 

@@ -7,6 +7,7 @@ import { requireCompanyId } from "@/lib/company-context";
 import { getCompanyConfigPublic } from "@/actions/company-config/get-company-config-public";
 import { getCurrentDomain } from "@/lib/domain";
 import { Prisma } from "@prisma/client";
+import { createPendingPaymentForOrder } from "@/lib/payments/payment-helpers";
 
 interface productsInCart {
 	productId: string;
@@ -257,6 +258,35 @@ export const placeOrder = async (
 						phone: address.phone,
 					},
 				});
+			}
+
+			// Obtener la moneda de la configuración de la compañía
+			let currency = 'USD'; // Por defecto USD
+			try {
+				const configResult = await getCompanyConfigPublic(companyId);
+				if (configResult.ok && configResult.configs) {
+					const configs = configResult.configs as Record<string, any>;
+					currency = configs['prices.currency'] || 'USD';
+				}
+			} catch (error) {
+				console.error('Error al obtener configuración de moneda:', error);
+				// Usar USD por defecto si hay error
+			}
+
+			// Crear pago pendiente para la orden
+			// Esto se hace fuera de la transacción porque createPendingPaymentForOrder
+			// maneja su propia conexión a la BD
+			const paymentResult = await createPendingPaymentForOrder(
+				order.id,
+				companyId,
+				total,
+				currency,
+				order.id // externalReference = orderId
+			);
+
+			if (!paymentResult.ok) {
+				console.error('Error al crear pago pendiente:', paymentResult.error);
+				// No fallar la creación de la orden si falla el pago pendiente
 			}
 
 			return {
