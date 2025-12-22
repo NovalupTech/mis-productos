@@ -21,9 +21,9 @@ interface CreatePaymentParams {
 }
 
 interface UpdatePaymentParams {
-  paymentId: string;
   status: PaymentStatus;
   statusDetail?: string;
+  paymentMethod?: string;
   metadata?: Record<string, any>;
 }
 
@@ -101,13 +101,20 @@ export const findPaymentByOrderId = async (orderId: string) => {
  */
 export const updatePayment = async (id: string, params: UpdatePaymentParams) => {
   try {
+    const updateData: any = {
+      status: params.status,
+      statusDetail: params.statusDetail,
+      metadata: params.metadata ? { ...params.metadata } : undefined,
+    };
+
+    // Actualizar paymentMethod si se proporciona (solo si no es null/undefined)
+    if (params.paymentMethod !== undefined) {
+      updateData.paymentMethod = params.paymentMethod;
+    }
+
     const payment = await prisma.payment.update({
       where: { id },
-      data: {
-        status: params.status,
-        statusDetail: params.statusDetail,
-        metadata: params.metadata ? { ...params.metadata } : undefined,
-      },
+      data: updateData,
     });
 
     return { ok: true, payment };
@@ -140,9 +147,9 @@ export const upsertPayment = async (
     if (existingPayment.ok && existingPayment.payment) {
       // Actualizar pago existente
       return await updatePayment(existingPayment.payment.id, {
-        paymentId: existingPayment.payment.paymentId,
         status: params.status,
         statusDetail: params.statusDetail,
+        paymentMethod: params.paymentMethod,
         metadata: params.metadata,
       });
     } else {

@@ -394,9 +394,35 @@ export async function POST(request: Request) {
     // Mapear estado de Mercado Pago a nuestro estado
     const mappedStatus = mapMercadoPagoStatus(paymentStatus);
 
-    // Crear o actualizar el registro de pago
-    const paymentMethod = (payment as any).payment_method_id || (payment as any).payment_type_id || null;
-    const statusDetail = (payment as any).status_detail || null;
+    // Extraer método de pago - Mercado Pago puede tenerlo en diferentes campos
+    let paymentMethod: string | null = null;
+    const paymentAny = payment as any;
+    
+    // Intentar diferentes campos donde puede estar el método de pago
+    if (paymentAny.payment_method_id) {
+      paymentMethod = paymentAny.payment_method_id;
+    } else if (paymentAny.payment_method?.id) {
+      paymentMethod = paymentAny.payment_method.id;
+    } else if (paymentAny.payment_type_id) {
+      paymentMethod = paymentAny.payment_type_id;
+    } else if (paymentAny.payment_method?.type) {
+      paymentMethod = paymentAny.payment_method.type;
+    }
+
+    // Log para debugging
+    if (!paymentMethod) {
+      console.log('⚠️ No se encontró paymentMethod en el objeto de Mercado Pago:', {
+        paymentId,
+        hasPaymentMethodId: !!paymentAny.payment_method_id,
+        hasPaymentMethod: !!paymentAny.payment_method,
+        hasPaymentTypeId: !!paymentAny.payment_type_id,
+        paymentKeys: Object.keys(paymentAny).filter(key => key.toLowerCase().includes('payment') || key.toLowerCase().includes('method')),
+      });
+    } else {
+      console.log(`✅ PaymentMethod encontrado: ${paymentMethod} para pago ${paymentId}`);
+    }
+
+    const statusDetail = paymentAny.status_detail || null;
 
     const paymentResult = await upsertPayment(
       paymentId,
