@@ -7,6 +7,7 @@ import { Toast } from "@/components/ui/toast/Toast";
 import { Metadata } from 'next';
 import { getCurrentCompanyId } from '@/lib/domain';
 import { getCompanyConfigPublic, getPaymentMethodsPublic } from '@/actions';
+import { getPaypalConfig } from '@/actions/payment-methods/get-paypal-config';
 import { getPriceConfig } from '@/utils';
 import prisma from '@/lib/prisma';
 
@@ -190,6 +191,9 @@ export default async function DynamicPageLayout({
   // Obtener métodos de pago habilitados
   const { paymentMethods = [] } = await getPaymentMethodsPublic(companyId);
 
+  // Obtener configuración de PayPal
+  const { clientId: paypalClientId } = await getPaypalConfig(companyId);
+
   // Renderizar el layout con la información de la compañía
   return (
     <main className="min-h-screen">
@@ -205,7 +209,7 @@ export default async function DynamicPageLayout({
       <CompanyProvider company={company} />
       <ThemeProvider primaryColor={primaryColor} secondaryColor={secondaryColor}>
         <PriceConfigProvider priceConfig={priceConfig}>
-          <PayPalProvider>
+          <PayPalProvider clientId={paypalClientId}>
             <TopMenu />
             <Sidebar/>
             <Toast />

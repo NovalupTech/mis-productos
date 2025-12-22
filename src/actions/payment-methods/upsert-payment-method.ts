@@ -6,6 +6,7 @@ import prisma from '@/lib/prisma';
 import { PaymentMethodType } from '@prisma/client';
 import { InputJsonValue, JsonValue } from '@prisma/client/runtime/client';
 import { z } from 'zod';
+import { encrypt } from '@/lib/encryption';
 
 const bankTransferConfigSchema = z.object({
   bankName: z.string().min(1, 'El nombre del banco es requerido'),
@@ -47,6 +48,11 @@ const coordinateWithSellerConfigSchema = z.object({
   return true;
 }, {
   message: 'Debe proporcionar el número de WhatsApp o el email según el tipo de contacto seleccionado',
+});
+
+const paypalConfigSchema = z.object({
+  clientId: z.string().min(1, 'El Client ID de PayPal es requerido'),
+  clientSecret: z.string().min(1, 'El Client Secret de PayPal es requerido'),
 });
 
 export async function upsertPaymentMethod(
@@ -93,6 +99,46 @@ export async function upsertPaymentMethod(
       }
     }
 
+    if (type === 'PAYPAL' && config) {
+      const validation = paypalConfigSchema.safeParse(config);
+      if (!validation.success) {
+        return {
+          ok: false,
+          message: validation.error.errors[0].message,
+        };
+      }
+
+      // Encriptar el clientSecret antes de guardarlo
+      const configToSave = {
+        ...config,
+        clientSecret: encrypt(config.clientSecret as string),
+      };
+
+      const paymentMethod = await prisma.paymentMethod.upsert({
+        where: {
+          companyId_type: {
+            companyId,
+            type,
+          },
+        },
+        update: {
+          enabled,
+          config: configToSave as unknown as InputJsonValue,
+        },
+        create: {
+          companyId,
+          type,
+          enabled,
+          config: configToSave as unknown as InputJsonValue,
+        },
+      });
+
+      return {
+        ok: true,
+        paymentMethod,
+      };
+    }
+
     // Si está habilitado pero no tiene config requerida, retornar error
     if (enabled && type === 'BANK_TRANSFER' && !config) {
       return {
@@ -105,6 +151,13 @@ export async function upsertPaymentMethod(
       return {
         ok: false,
         message: 'Coordinar con el vendedor requiere configuración',
+      };
+    }
+
+    if (enabled && type === 'PAYPAL' && !config) {
+      return {
+        ok: false,
+        message: 'PayPal requiere configuración',
       };
     }
 

@@ -22,7 +22,6 @@ export * from './orders/get-paginated-orders';
 export * from './orders/get-orders-by-user';
 
 export * from './payments/update-order-transactionId';
-export * from './payments/paypal-check-payment';
 
 export * from './shipping/get-shipping-config';
 export * from './shipping/update-shipping-config';
@@ -85,6 +84,7 @@ export * from './discount/get-product-discounts';
 export * from './payment-methods/get-payment-methods';
 export * from './payment-methods/upsert-payment-method';
 export * from './payment-methods/get-payment-methods-public';
+export * from './payment-methods/get-paypal-config';
 
 export * from './shipping/get-shipping-config';
 export * from './shipping/update-shipping-config';

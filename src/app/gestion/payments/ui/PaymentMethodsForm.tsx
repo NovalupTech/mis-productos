@@ -45,6 +45,11 @@ interface CoordinateWithSellerConfig {
   email?: string;
 }
 
+interface PayPalConfig {
+  clientId: string;
+  clientSecret: string;
+}
+
 export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsFormProps) => {
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethodFormData[]>(
     initialPaymentMethods.map(convertPaymentMethod)
@@ -70,6 +75,12 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
     contactType: 'whatsapp',
     whatsappNumber: '',
     email: '',
+  });
+
+  // Estados para formulario de PayPal
+  const [paypalConfig, setPaypalConfig] = useState<PayPalConfig>({
+    clientId: '',
+    clientSecret: '',
   });
 
   // Cargar configuración de transferencia bancaria si existe
@@ -102,6 +113,18 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
     }
   }, [paymentMethods]);
 
+  // Cargar configuración de PayPal si existe
+  useEffect(() => {
+    const paypalMethod = paymentMethods.find(pm => pm.type === 'PAYPAL');
+    if (paypalMethod?.config) {
+      setPaypalConfig({
+        clientId: (paypalMethod.config.clientId as string) || '',
+        // No cargamos el clientSecret por seguridad (ya está encriptado)
+        clientSecret: '',
+      });
+    }
+  }, [paymentMethods]);
+
   const handleToggle = async (type: PaymentMethodType, enabled: boolean) => {
     setLoading(prev => ({ ...prev, [type]: true }));
     
@@ -111,6 +134,17 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
         config = bankTransferConfig as unknown as Record<string, unknown>;
       } else if (type === 'COORDINATE_WITH_SELLER') {
         config = coordinateWithSellerConfig as unknown as Record<string, unknown>;
+      } else if (type === 'PAYPAL') {
+        // Para PayPal, si está habilitando y no tiene configuración completa, mostrar error
+        if (enabled && (!paypalConfig.clientId || !paypalConfig.clientSecret)) {
+          alert('Por favor configura PayPal antes de habilitarlo');
+          setLoading(prev => ({ ...prev, [type]: false }));
+          return;
+        }
+        // Si tiene configuración, guardarla
+        if (paypalConfig.clientId && paypalConfig.clientSecret) {
+          config = paypalConfig as unknown as Record<string, unknown>;
+        }
       }
       
       const result = await upsertPaymentMethod(type, enabled, config);
@@ -225,6 +259,46 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
     }
   };
 
+  const handleSavePayPal = async () => {
+    if (!paypalConfig.clientId || !paypalConfig.clientSecret) {
+      alert('Por favor completa todos los campos requeridos');
+      return;
+    }
+
+    const paypalMethod = paymentMethods.find(pm => pm.type === 'PAYPAL');
+    const enabled = paypalMethod?.enabled || false;
+
+    setLoading(prev => ({ ...prev, PAYPAL: true }));
+    
+    try {
+      const result = await upsertPaymentMethod('PAYPAL', enabled, paypalConfig as unknown as Record<string, unknown>);
+      
+      if (result.ok && result.paymentMethod) {
+        setPaymentMethods(prev => {
+          const existing = prev.findIndex(pm => pm.type === 'PAYPAL');
+          const converted = convertPaymentMethod(result.paymentMethod!);
+          if (existing >= 0) {
+            const updated = [...prev];
+            updated[existing] = converted;
+            return updated;
+          }
+          return [...prev, converted];
+        });
+        // Limpiar el campo de secret después de guardar por seguridad
+        setPaypalConfig(prev => ({ ...prev, clientSecret: '' }));
+        setExpandedMethod(null);
+        alert('Configuración guardada exitosamente');
+      } else {
+        alert(result.message || 'Error al guardar configuración');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error al guardar configuración');
+    } finally {
+      setLoading(prev => ({ ...prev, PAYPAL: false }));
+    }
+  };
+
   const getPaymentMethodInfo = (type: PaymentMethodType) => {
     switch (type) {
       case 'PAYPAL':
@@ -270,31 +344,101 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
               <p className="text-sm text-gray-600">Permite a tus clientes pagar con PayPal</p>
             </div>
           </div>
-          <button
-            onClick={() => handleToggle('PAYPAL', !isMethodEnabled('PAYPAL'))}
-            disabled={loading.PAYPAL}
-            className={clsx(
-              'flex items-center gap-2 px-4 py-2 rounded-lg transition-colors',
-              {
-                'bg-green-100 text-green-700 hover:bg-green-200': isMethodEnabled('PAYPAL'),
-                'bg-gray-100 text-gray-600 hover:bg-gray-200': !isMethodEnabled('PAYPAL'),
-                'opacity-50 cursor-not-allowed': loading.PAYPAL,
-              }
-            )}
-          >
-            {isMethodEnabled('PAYPAL') ? (
-              <>
-                <IoCheckmarkCircleOutline size={20} />
-                <span>Habilitado</span>
-              </>
-            ) : (
-              <>
-                <IoCloseCircleOutline size={20} />
-                <span>Deshabilitado</span>
-              </>
-            )}
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setExpandedMethod(expandedMethod === 'PAYPAL' ? null : 'PAYPAL')}
+              className="px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+            >
+              {expandedMethod === 'PAYPAL' ? 'Ocultar' : 'Configurar'}
+            </button>
+            <button
+              onClick={() => handleToggle('PAYPAL', !isMethodEnabled('PAYPAL'))}
+              disabled={loading.PAYPAL}
+              className={clsx(
+                'flex items-center gap-2 px-4 py-2 rounded-lg transition-colors',
+                {
+                  'bg-green-100 text-green-700 hover:bg-green-200': isMethodEnabled('PAYPAL'),
+                  'bg-gray-100 text-gray-600 hover:bg-gray-200': !isMethodEnabled('PAYPAL'),
+                  'opacity-50 cursor-not-allowed': loading.PAYPAL,
+                }
+              )}
+            >
+              {isMethodEnabled('PAYPAL') ? (
+                <>
+                  <IoCheckmarkCircleOutline size={20} />
+                  <span>Habilitado</span>
+                </>
+              ) : (
+                <>
+                  <IoCloseCircleOutline size={20} />
+                  <span>Deshabilitado</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
+
+        {expandedMethod === 'PAYPAL' && (
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <h4 className="text-md font-semibold text-gray-800 mb-4">Configuración de PayPal</h4>
+            {paypalConfig.clientId && (
+              <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
+                <p className="text-sm text-green-800">
+                  <strong>PayPal está configurado.</strong> El Client Secret está guardado de forma segura y encriptada.
+                </p>
+                <p className="text-xs text-green-600 mt-1">
+                  Si necesitas actualizar las credenciales, completa ambos campos y guarda nuevamente.
+                </p>
+              </div>
+            )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Client ID <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={paypalConfig.clientId}
+                  onChange={(e) => setPaypalConfig(prev => ({ ...prev, clientId: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Ej: AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTt"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Client Secret <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="password"
+                  value={paypalConfig.clientSecret}
+                  onChange={(e) => setPaypalConfig(prev => ({ ...prev, clientSecret: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder={paypalConfig.clientId ? "Ingresa el nuevo secret para actualizar" : "El secret se guardará encriptado"}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  El Client Secret se guardará encriptado de forma segura usando AES-256-GCM
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={handleSavePayPal}
+                disabled={loading.PAYPAL || !paypalConfig.clientId || !paypalConfig.clientSecret}
+                className={clsx(
+                  'px-6 py-2 rounded-lg font-medium transition-colors',
+                  {
+                    'bg-blue-600 text-white hover:bg-blue-700': !loading.PAYPAL && paypalConfig.clientId && paypalConfig.clientSecret,
+                    'bg-gray-300 text-gray-500 cursor-not-allowed': loading.PAYPAL || !paypalConfig.clientId || !paypalConfig.clientSecret,
+                  }
+                )}
+              >
+                {loading.PAYPAL ? 'Guardando...' : paypalConfig.clientId ? 'Actualizar Configuración' : 'Guardar Configuración'}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Transferencia Bancaria */}

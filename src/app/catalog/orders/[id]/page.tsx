@@ -35,13 +35,13 @@ export default async function OrderPage({ params }: {params: Promise<{id: string
   // Si los precios no se muestran, solo mostrar "coordinar con el vendedor"
   const hidePrices = priceConfig.showPrices === false;
   
-  // Si no hay métodos configurados, mostrar PayPal por defecto
+  // Si no hay métodos configurados, mostrar "coordinar con el vendedor" por defecto
   const hasConfiguredMethods = paymentMethods.length > 0;
   
   // Determinar qué métodos mostrar
   // Si los precios están ocultos, solo mostrar "coordinar con el vendedor"
-  // PayPal: mostrar si no hay métodos configurados O si está específicamente habilitado (solo si se muestran precios)
-  const showPayPal = !hidePrices && (!hasConfiguredMethods || paymentMethods.some(pm => pm.type === 'PAYPAL'));
+  // PayPal: mostrar solo si está específicamente habilitado (solo si se muestran precios)
+  const showPayPal = !hidePrices && paymentMethods.some(pm => pm.type === 'PAYPAL');
   const showMercadoPago = !hidePrices && paymentMethods.some(pm => pm.type === 'MERCADOPAGO');
   const bankTransferMethod = !hidePrices ? paymentMethods.find(pm => pm.type === 'BANK_TRANSFER') : null;
   const coordinateWithSellerMethod = paymentMethods.find(pm => pm.type === ('COORDINATE_WITH_SELLER' as PaymentMethodType));
@@ -148,45 +148,58 @@ export default async function OrderPage({ params }: {params: Promise<{id: string
                     )
                   ) : (
                     // Si los precios se muestran, mostrar todos los métodos configurados
+                    // Si no hay métodos configurados, mostrar "coordinar con el vendedor" por defecto
                     <>
-                      {showPayPal && (
-                        <PaypalButtons amount={order!.total} orderId={order!.id} />
-                      )}
-                      {showMercadoPago && (
-                        <MercadoPagoButton amount={order!.total} orderId={order!.id} />
-                      )}
-                      {bankTransferMethod && bankTransferMethod.config && (
-                        <BankTransferButton 
-                          amount={order!.total} 
-                          orderId={order!.id}
-                          config={bankTransferMethod.config as {
-                            bankName: string;
-                            accountHolder: string;
-                            cbu: string;
-                            alias?: string;
-                            dni?: string;
-                            notes?: string;
-                            receiptContactType?: 'email' | 'whatsapp';
-                            receiptEmail?: string;
-                            receiptWhatsApp?: string;
-                          }}
-                          coordinateWithSellerConfig={coordinateWithSellerMethod?.config as {
-                            contactType: 'whatsapp' | 'email';
-                            whatsappNumber?: string;
-                            email?: string;
-                          } | undefined}
-                        />
-                      )}
-                      {coordinateWithSellerMethod && coordinateWithSellerMethod.config && (
-                        <CoordinateWithSellerButton 
-                          amount={order!.total} 
-                          orderId={order!.id}
-                          config={coordinateWithSellerMethod.config as {
-                            contactType: 'whatsapp' | 'email';
-                            whatsappNumber?: string;
-                            email?: string;
-                          }}
-                        />
+                      {!hasConfiguredMethods ? (
+                        // Si no hay métodos configurados, mostrar mensaje para coordinar con el vendedor
+                        <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                          <p className="text-sm text-yellow-800">
+                            Por favor, contacta al vendedor para coordinar el pago de tu pedido.
+                          </p>
+                        </div>
+                      ) : (
+                        // Si hay métodos configurados, mostrar los que estén habilitados
+                        <>
+                          {showPayPal && (
+                            <PaypalButtons amount={order!.total} orderId={order!.id} />
+                          )}
+                          {showMercadoPago && (
+                            <MercadoPagoButton amount={order!.total} orderId={order!.id} />
+                          )}
+                          {bankTransferMethod && bankTransferMethod.config && (
+                            <BankTransferButton 
+                              amount={order!.total} 
+                              orderId={order!.id}
+                              config={bankTransferMethod.config as {
+                                bankName: string;
+                                accountHolder: string;
+                                cbu: string;
+                                alias?: string;
+                                dni?: string;
+                                notes?: string;
+                                receiptContactType?: 'email' | 'whatsapp';
+                                receiptEmail?: string;
+                                receiptWhatsApp?: string;
+                              }}
+                              coordinateWithSellerConfig={coordinateWithSellerMethod?.config as {
+                                contactType: 'whatsapp' | 'email';
+                                whatsappNumber?: string;
+                                email?: string;
+                              } | undefined}
+                            />
+                          )}
+                          {coordinateWithSellerMethod && coordinateWithSellerMethod.config && (
+                            <CoordinateWithSellerButton 
+                              amount={order!.total} 
+                              orderId={order!.id}
+                              config={coordinateWithSellerMethod.config as {
+                                contactType: 'whatsapp' | 'email';
+                                whatsappNumber?: string;
+                                email?: string;
+                              }}
+                            />
+                          )}
+                        </>
                       )}
                     </>
                   )}

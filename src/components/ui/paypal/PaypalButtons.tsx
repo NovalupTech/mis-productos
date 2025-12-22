@@ -4,10 +4,11 @@ import { useState } from 'react';
 import { PayPalButtons, usePayPalScriptReducer } from "@paypal/react-paypal-js"
 import { CreateOrderData, CreateOrderActions, OnApproveActions, OnApproveData } from '@paypal/paypal-js'
 import { setTransactionId } from "@/actions/payments/update-order-transactionId";
-import { paypalCheckPaymnent } from "@/actions/payments/paypal-check-payment";
 import { usePriceConfig } from "@/components/providers/PriceConfigProvider";
 import { convertAmountToUSD } from "@/actions/payments/convert-to-usd";
 import { getOrderDataForPayment } from "@/actions/orders/get-order-data-for-payment";
+import { getOrderById } from "@/actions/orders/get-order-by-id";
+import { useRouter } from "next/navigation";
 
 interface Props {
   orderId: string;
@@ -18,6 +19,7 @@ export const PaypalButtons = ({orderId, amount}: Props) => {
 
   const [{ isPending }] = usePayPalScriptReducer();
   const priceConfig = usePriceConfig();
+  const router = useRouter();
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
   const createOrder = async (data: CreateOrderData, actions: CreateOrderActions) => {
@@ -132,18 +134,53 @@ export const PaypalButtons = ({orderId, amount}: Props) => {
 
   const onApprove = async (data: OnApproveData, actions: OnApproveActions) => {
     try {
-      console.log('onApprove')
+      // Capturar el pago - esto ejecuta POST /v2/checkout/orders/{order_id}/capture automáticamente
       const details = await actions.order?.capture();
       if(!details?.id) {
+        setIsProcessingPayment(false);
         return;
       }
 
-      // Solo después de que PayPal haya completado su parte, mostramos el indicador
+      // Mostrar el indicador de carga
       setIsProcessingPayment(true);
       
-      await paypalCheckPaymnent(details.id);
-      // El revalidatePath hará que la página se recargue automáticamente
-      // No necesitamos cambiar el estado aquí porque la página se recargará
+      // Esperar a que el webhook actualice la orden
+      // Hacemos polling para verificar el estado de la orden
+      // El webhook se encargará de actualizar isPaid y enviar los emails
+      let attempts = 0;
+      const maxAttempts = 30; // 30 intentos = 30 segundos máximo
+      const pollInterval = 1000; // 1 segundo entre intentos
+
+      const checkOrderStatus = async (): Promise<boolean> => {
+        try {
+          const { order } = await getOrderById(orderId);
+          return order?.isPaid === true;
+        } catch (error) {
+          console.error('Error verificando estado de la orden:', error);
+          return false;
+        }
+      };
+
+      // Polling hasta que la orden esté pagada o se alcance el máximo de intentos
+      while (attempts < maxAttempts) {
+        const isPaid = await checkOrderStatus();
+        
+        if (isPaid) {
+          // La orden fue pagada por el webhook, recargar la página
+          router.refresh();
+          setIsProcessingPayment(false);
+          return;
+        }
+
+        attempts++;
+        await new Promise(resolve => setTimeout(resolve, pollInterval));
+      }
+
+      // Si después de 30 segundos no se actualizó, recargar de todas formas
+      // El webhook puede haber tardado más, pero la página se actualizará cuando llegue
+      console.warn('Timeout esperando actualización del webhook, recargando página...');
+      router.refresh();
+      setIsProcessingPayment(false);
     } catch (error) {
       console.error('Error al procesar el pago:', error);
       setIsProcessingPayment(false);
@@ -165,9 +202,9 @@ export const PaypalButtons = ({orderId, amount}: Props) => {
   }
 
   return (
-    <div className="relative">
+    <>
       {isProcessingPayment && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-white bg-opacity-90 rounded-lg mb-16">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-white bg-opacity-95 backdrop-blur-sm">
           <div className="flex flex-col items-center justify-center gap-4 p-6">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
             <div className="text-center">
@@ -177,16 +214,18 @@ export const PaypalButtons = ({orderId, amount}: Props) => {
           </div>
         </div>
       )}
-      <div className="mb-3">
-        <p className="text-xs text-gray-600 text-center">
-          PayPal procesará el pago en USD
-        </p>
+      <div className="relative">
+        <div className="mb-3">
+          <p className="text-xs text-gray-600 text-center">
+            PayPal procesará el pago en USD
+          </p>
+        </div>
+        <PayPalButtons 
+          createOrder={createOrder} 
+          onApprove={onApprove}
+          onError={onError}
+        />
       </div>
-      <PayPalButtons 
-        createOrder={createOrder} 
-        onApprove={onApprove}
-        onError={onError}
-      />
-    </div>
+    </>
   )
 }

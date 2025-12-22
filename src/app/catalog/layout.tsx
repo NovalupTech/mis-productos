@@ -9,6 +9,7 @@ import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { getCurrentCompanyId, getCurrentDomain } from '@/lib/domain';
 import { getCompanyConfigPublic, getPaymentMethodsPublic } from '@/actions';
+import { getPaypalConfig } from '@/actions/payment-methods/get-paypal-config';
 import { getPriceConfig } from '@/utils';
 import prisma from '@/lib/prisma';
 import LandingPage from '../landing/page';
@@ -194,6 +195,9 @@ export default async function ShopLayout({
   // Obtener métodos de pago habilitados
   const { paymentMethods = [] } = await getPaymentMethodsPublic(companyId);
 
+  // Obtener configuración de PayPal
+  const { clientId: paypalClientId } = await getPaypalConfig(companyId);
+
   // Si hay companyId, renderizar el shop normal
   return (
     <main className="min-h-screen">
@@ -209,7 +213,7 @@ export default async function ShopLayout({
       <CompanyProvider company={company} />
       <ThemeProvider primaryColor={primaryColor} secondaryColor={secondaryColor}>
         <PriceConfigProvider priceConfig={priceConfig}>
-          <PayPalProvider>
+          <PayPalProvider clientId={paypalClientId}>
             <DiscountProvider>
               <TopMenu />
               <Sidebar/>
