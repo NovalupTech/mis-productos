@@ -53,7 +53,7 @@ export const toggleOrderPayment = async (orderId: string, isPaid: boolean) => {
           paymentId: existingPayment.payment.paymentId,
           amount: order.total,
           currency: existingPayment.payment.currency,
-          paymentMethod: existingPayment.payment.paymentMethod,
+          paymentMethod: existingPayment.payment.paymentMethod || undefined,
           status: paymentStatus,
           statusDetail: isPaid ? 'Marcado como pagado por admin' : 'Marcado como no pagado por admin',
           externalReference: orderId,

@@ -1,7 +1,7 @@
 'use server';
 
 import prisma from '@/lib/prisma';
-import { PaymentStatus } from '@prisma/client';
+import { Payment, PaymentStatus } from '@prisma/client';
 import { mapMercadoPagoStatus, mapPayPalStatus } from './payment-status-mapper';
 
 // Re-exportar las funciones de mapeo para mantener compatibilidad
@@ -133,13 +133,14 @@ export const upsertPayment = async (
     if (!existingPayment.ok || !existingPayment.payment) {
       const orderPayment = await findPaymentByOrderId(params.orderId);
       if (orderPayment.ok && orderPayment.payment) {
-        existingPayment = { ok: true, payment: orderPayment.payment };
+        existingPayment = { ok: true, payment: orderPayment.payment as Payment & { order: { id: string; companyId: string; total: number } } };
       }
     }
 
     if (existingPayment.ok && existingPayment.payment) {
       // Actualizar pago existente
       return await updatePayment(existingPayment.payment.id, {
+        paymentId: existingPayment.payment.paymentId,
         status: params.status,
         statusDetail: params.statusDetail,
         metadata: params.metadata,
