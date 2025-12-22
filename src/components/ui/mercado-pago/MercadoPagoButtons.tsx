@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { submitPayment } from "@/actions/payments/mercado-pago-check-payments";
+import { showErrorToast } from "@/utils/toast";
 
 interface Props {
   orderId: string;
@@ -19,7 +20,7 @@ export const MercadoPagoButton = ({orderId, amount}: Props) => {
       await submitPayment({orderId, roundedAmount});
     } catch (error) {
       console.error('Error al procesar pago con Mercado Pago:', error);
-      alert('Error al procesar el pago. Por favor, intenta nuevamente.');
+      showErrorToast('Error al procesar el pago. Por favor, intenta nuevamente.');
       setIsLoading(false);
     }
   };

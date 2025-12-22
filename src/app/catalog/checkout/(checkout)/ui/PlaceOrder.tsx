@@ -7,6 +7,7 @@ import { formatPrice } from "@/utils";
 import { usePriceConfig } from "@/components/providers/PriceConfigProvider";
 import clsx from "clsx";
 import { placeOrder } from "@/actions/orders/putOrder";
+import { TermsModal } from "@/components/ui/terms-modal/TermsModal";
 
 interface PlaceOrderProps {
 	handlesShipping: boolean;
@@ -16,6 +17,7 @@ export const PlaceOrder = ({ handlesShipping }: PlaceOrderProps) => {
 	const [loaded, setLoaded] = useState(false);
     const [OrderPlaced, setOrderPlaced] = useState(false)
 	const [errorMessage, setErrorMessage] = useState('')
+	const [showTermsModal, setShowTermsModal] = useState(false);
     const address = useAddressStore(state => state.address);
     const cart = useCartStore(store => store.cart);
     const priceConfig = usePriceConfig();
@@ -125,9 +127,16 @@ export const PlaceOrder = ({ handlesShipping }: PlaceOrderProps) => {
 					<p>
 						<span className="text-xs">
 							Al hacer clic en &apos;Ir a pagar&apos; aceptas nuestros{" "}
-							<a href="#" className="underline">
-								Terminos y condiciones
-							</a>
+							<button
+								type="button"
+								onClick={(e) => {
+									e.preventDefault();
+									setShowTermsModal(true);
+								}}
+								className="underline hover:text-blue-600 transition-colors"
+							>
+								Términos y condiciones
+							</button>
 						</span>
 					</p>
 				)}
@@ -140,6 +149,8 @@ export const PlaceOrder = ({ handlesShipping }: PlaceOrderProps) => {
 					{priceConfig.showPrices === false ? 'Coordinar pago' : 'Ir a pagar'}
 				</button>
 			</div>
+
+			<TermsModal isOpen={showTermsModal} onClose={() => setShowTermsModal(false)} />
 		</div>
 	);
 };

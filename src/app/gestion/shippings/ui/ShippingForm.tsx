@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { updateShippingConfig } from '@/actions/shipping/update-shipping-config';
 import { IoCheckmarkCircleOutline, IoCloseCircleOutline } from 'react-icons/io5';
 import clsx from 'clsx';
+import { showErrorToast, showSuccessToast } from '@/utils/toast';
 
 interface ShippingConfig {
   enabled: boolean;
@@ -27,13 +28,13 @@ export const ShippingForm = ({ initialConfig }: ShippingFormProps) => {
     try {
       const result = await updateShippingConfig(config);
       if (result.ok) {
-        alert('Configuración guardada exitosamente');
+        showSuccessToast('Configuración guardada exitosamente');
       } else {
-        alert(result.message || 'Error al guardar configuración');
+        showErrorToast(result.message || 'Error al guardar configuración');
       }
     } catch (error) {
       console.error('Error:', error);
-      alert('Error al guardar configuración');
+      showErrorToast('Error al guardar configuración');
     } finally {
       setLoading(false);
     }

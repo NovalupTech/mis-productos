@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { getCategories, createCategory, updateCategory, deleteCategory } from '@/actions';
 import { Category } from '@/interfaces';
 import { IoCloseOutline, IoAddOutline, IoCheckmarkOutline, IoCreateOutline, IoTrashOutline } from 'react-icons/io5';
+import { showErrorToast, showSuccessToast } from '@/utils/toast';
+import { confirmDelete } from '@/utils/confirm';
 
 interface CategoriesModalProps {
   isOpen: boolean;
@@ -61,12 +63,13 @@ export const CategoriesModal = ({ isOpen, onClose, onCategoriesChange, companyId
         // Limpiar el input y cerrar el modo de agregar
         setNewCategoryName('');
         setIsAddingCategory(false);
+        showSuccessToast('Categoría creada exitosamente');
       } else {
-        alert(message || 'No se pudo crear la categoría');
+        showErrorToast(message || 'No se pudo crear la categoría');
       }
     } catch (error) {
       console.error('Error al crear categoría:', error);
-      alert('Error al crear la categoría');
+      showErrorToast('Error al crear la categoría');
     } finally {
       setCreatingCategory(false);
     }
@@ -103,21 +106,25 @@ export const CategoriesModal = ({ isOpen, onClose, onCategoriesChange, companyId
         // Limpiar el estado de edición
         setEditingId(null);
         setEditingName('');
+        showSuccessToast('Categoría actualizada exitosamente');
       } else {
-        alert(message || 'No se pudo actualizar la categoría');
+        showErrorToast(message || 'No se pudo actualizar la categoría');
       }
     } catch (error) {
       console.error('Error al actualizar categoría:', error);
-      alert('Error al actualizar la categoría');
+      showErrorToast('Error al actualizar la categoría');
     } finally {
       setUpdatingCategory(false);
     }
   };
 
   const handleDeleteCategory = async (categoryId: string) => {
-    if (!confirm('¿Estás seguro de que deseas eliminar esta categoría?')) {
-      return;
-    }
+    const confirmed = await confirmDelete(
+      '¿Estás seguro de que deseas eliminar esta categoría?',
+      () => {}
+    );
+    
+    if (!confirmed) return;
 
     setDeletingId(categoryId);
     try {
@@ -128,12 +135,13 @@ export const CategoriesModal = ({ isOpen, onClose, onCategoriesChange, companyId
         const updatedCategories = categories.filter(cat => cat.id !== categoryId);
         setCategories(updatedCategories);
         onCategoriesChange(updatedCategories);
+        showSuccessToast('Categoría eliminada exitosamente');
       } else {
-        alert(message || 'No se pudo eliminar la categoría');
+        showErrorToast(message || 'No se pudo eliminar la categoría');
       }
     } catch (error) {
       console.error('Error al eliminar categoría:', error);
-      alert('Error al eliminar la categoría');
+      showErrorToast('Error al eliminar la categoría');
     } finally {
       setDeletingId(null);
     }

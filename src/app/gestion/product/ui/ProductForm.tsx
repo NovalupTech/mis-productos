@@ -15,6 +15,8 @@ import { AttributesManager } from './AttributesManager';
 import { useState } from 'react';
 import { ProductAttributeWithDetails } from '@/interfaces';
 import { IoTrashOutline } from 'react-icons/io5';
+import { showErrorToast } from '@/utils/toast';
+import { confirmDelete } from '@/utils/confirm';
 
 interface Props {
   product: Partial<Product> & { productImage?: ProductWithImage[] };
@@ -113,7 +115,7 @@ export const ProductForm = ({ product, categories }: Props) => {
     const { ok, product:updatedProduct } = await createUpdateProduct(formData);
 
     if ( !ok ) {
-      alert('Producto no se pudo actualizar');
+      showErrorToast('Producto no se pudo actualizar');
       return;
     }
 
@@ -136,12 +138,13 @@ export const ProductForm = ({ product, categories }: Props) => {
   const handleDeleteProduct = async () => {
     if (!product.id) return;
 
-    const confirmed = window.confirm(
+    const confirmed = await confirmDelete(
       '¿Estás seguro de que deseas eliminar este producto?\n\n' +
       'Esta acción eliminará:\n' +
       '- El producto\n' +
       '- Todas las imágenes asociadas\n\n' +
-      'Esta acción no se puede deshacer.'
+      'Esta acción no se puede deshacer.',
+      () => {}
     );
 
     if (!confirmed) return;
@@ -154,10 +157,10 @@ export const ProductForm = ({ product, categories }: Props) => {
         router.push('/gestion/products');
         router.refresh();
       } else {
-        alert(result.message || 'Error al eliminar el producto');
+        showErrorToast(result.message || 'Error al eliminar el producto');
       }
     } catch (error) {
-      alert('Error al eliminar el producto');
+      showErrorToast('Error al eliminar el producto');
     } finally {
       setIsDeleting(false);
     }

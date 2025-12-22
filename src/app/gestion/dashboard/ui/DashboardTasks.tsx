@@ -5,6 +5,8 @@ import {
   IoPeopleOutline,
   IoSettingsOutline,
   IoPricetagOutline,
+  IoCarOutline,
+  IoCashOutline,
 } from 'react-icons/io5';
 
 interface Task {
@@ -22,9 +24,9 @@ const recommendedTasks: Task[] = [
     id: '1',
     number: 1,
     title: 'Configurar los datos de tu empresa',
-    description: 'Completá los datos de contacto y subí el logo. Te recomendamos subir el logo normal y la versión para celular.',
+    description: 'Completá los datos de contacto y subí el logo',
     icon: IoBusinessOutline,
-    // link: '/gestion/settings', // TODO: Crear página de configuración
+     link: '/gestion/company'
   },
   {
     id: '2',
@@ -40,8 +42,24 @@ const recommendedTasks: Task[] = [
     title: 'Configura tipos de precio, descuentos y reglas de precios',
     description: 'Configura los tipos de precio, descuentos y reglas de precios que usas en tu empresa',
     icon: IoPricetagOutline,
-    link: '/gestion/pricing',
+    link: '/gestion/prices',
   },
+  {
+    id: '4',
+    number: 4,
+    title: 'Configurar las formas de pago',
+    description: 'Configura las formas de pago que usas en tu empresa',
+    icon: IoCashOutline,
+    link: '/gestion/payments',
+  },
+  {
+    id: '5',
+    number: 5,
+    title: 'Configurar los tipos de envío',
+    description: 'Configura los tipos de envío que usas en tu empresa',
+    icon: IoCarOutline,
+    link: '/gestion/shippings',
+  }
 ];
 
 const otherTasks: Task[] = [

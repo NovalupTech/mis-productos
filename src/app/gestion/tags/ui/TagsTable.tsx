@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { updateTag, deleteTag } from '@/actions';
 import { IoPencilOutline, IoTrashOutline, IoCheckmarkCircleOutline, IoCloseCircleOutline } from 'react-icons/io5';
 import { Tag } from '@/interfaces';
+import { showErrorToast, showWarningToast, showSuccessToast } from '@/utils/toast';
+import { confirmDelete } from '@/utils/confirm';
 
 interface Props {
   tags: Tag[];
@@ -41,28 +43,33 @@ export const TagsTable = ({ tags }: Props) => {
       
       if (result.ok) {
         setEditingId(null);
+        showSuccessToast('Tag actualizado exitosamente');
         router.refresh();
       } else {
-        alert(result.message || 'Error al actualizar el tag');
+        showErrorToast(result.message || 'Error al actualizar el tag');
       }
     } else {
-      alert('El nombre del tag no puede estar vacío');
+      showWarningToast('El nombre del tag no puede estar vacío');
     }
     setLoading(null);
   };
 
   const handleDelete = async (tagId: string) => {
-    if (!confirm('¿Estás seguro de que deseas eliminar este tag? Esta acción eliminará todas las asociaciones con productos.')) {
-      return;
-    }
+    const confirmed = await confirmDelete(
+      '¿Estás seguro de que deseas eliminar este tag? Esta acción eliminará todas las asociaciones con productos.',
+      () => {}
+    );
+    
+    if (!confirmed) return;
 
     setDeletingId(tagId);
     const result = await deleteTag(tagId);
     
     if (result.ok) {
+      showSuccessToast('Tag eliminado exitosamente');
       router.refresh();
     } else {
-      alert(result.message || 'Error al eliminar el tag');
+      showErrorToast(result.message || 'Error al eliminar el tag');
     }
     setDeletingId(null);
   };

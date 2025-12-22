@@ -7,6 +7,7 @@ import { IoCheckmarkCircleOutline, IoCloseCircleOutline, IoStarOutline, IoStar, 
 import clsx from 'clsx';
 import { SectionManager } from './SectionManager';
 import { JsonValue } from '@prisma/client/runtime/client';
+import { showErrorToast } from '@/utils/toast';
 
 interface PageSection {
   id: string;
@@ -74,7 +75,7 @@ export const PagesTable = ({ pages }: Props) => {
         setEditingId(null);
         router.refresh();
       } else {
-        alert(result.message);
+        showErrorToast(result.message);
       }
     }
     setLoading(null);
@@ -93,7 +94,7 @@ export const PagesTable = ({ pages }: Props) => {
         setLoading(null);
       }, 150);
     } else {
-      alert(result.message);
+      showErrorToast(result.message);
       setLoading(null);
     }
   };
@@ -111,7 +112,7 @@ export const PagesTable = ({ pages }: Props) => {
         setLoading(null);
       }, 150);
     } else {
-      alert(result.message);
+      showErrorToast(result.message);
       setLoading(null);
     }
   };

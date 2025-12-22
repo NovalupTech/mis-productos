@@ -7,6 +7,8 @@ import { IoPencilOutline, IoTrashOutline, IoCheckmarkCircleOutline, IoCloseCircl
 import { AttributeType } from '@prisma/client';
 import { AttributeValuesManager } from './AttributeValuesManager';
 import { CreateAttributeModal } from './CreateAttributeModal';
+import { showErrorToast, showSuccessToast } from '@/utils/toast';
+import { confirmDelete } from '@/utils/confirm';
 
 interface AttributeValue {
   id: string;
@@ -49,17 +51,21 @@ export const AttributesTable = ({ attributes }: Props) => {
   };
 
   const handleDelete = async (attributeId: string) => {
-    if (!confirm('¿Estás seguro de que deseas eliminar este atributo? Esta acción eliminará todos sus valores y las asociaciones con productos.')) {
-      return;
-    }
+    const confirmed = await confirmDelete(
+      '¿Estás seguro de que deseas eliminar este atributo? Esta acción eliminará todos sus valores y las asociaciones con productos.',
+      () => {}
+    );
+    
+    if (!confirmed) return;
 
     setDeletingId(attributeId);
     const result = await deleteAttribute(attributeId);
     
     if (result.ok) {
+      showSuccessToast('Atributo eliminado exitosamente');
       router.refresh();
     } else {
-      alert(result.message || 'Error al eliminar el atributo');
+      showErrorToast(result.message || 'Error al eliminar el atributo');
     }
     setDeletingId(null);
   };
@@ -110,7 +116,7 @@ export const AttributesTable = ({ attributes }: Props) => {
               const valuesCount = attribute.values?.length || 0;
 
               return (
-                <>
+                <div key={attribute.id}>
                   <tr key={attribute.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="text-sm font-medium text-gray-900">{attribute.name}</span>
@@ -182,7 +188,7 @@ export const AttributesTable = ({ attributes }: Props) => {
                       </td>
                     </tr>
                   )}
-                </>
+                </div>
               );
             })}
           </tbody>

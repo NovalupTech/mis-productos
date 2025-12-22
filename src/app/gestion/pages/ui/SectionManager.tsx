@@ -5,6 +5,8 @@ import { deleteSection, updateSection } from '@/actions';
 import { IoAddOutline, IoCreateOutline, IoTrashOutline, IoCheckmarkCircleOutline, IoCloseCircleOutline, IoArrowUpOutline, IoArrowDownOutline } from 'react-icons/io5';
 import { SectionFormModal } from './SectionFormModal';
 import clsx from 'clsx';
+import { showErrorToast } from '@/utils/toast';
+import { confirmDelete } from '@/utils/confirm';
 
 interface PageSection {
   id: string;
@@ -50,9 +52,12 @@ export const SectionManager = ({ pageId, sections, onUpdate }: Props) => {
   const [loading, setLoading] = useState<string | null>(null);
 
   const handleDelete = async (sectionId: string) => {
-    if (!confirm('¿Estás seguro de que deseas eliminar esta sección?')) {
-      return;
-    }
+    const confirmed = await confirmDelete(
+      '¿Estás seguro de que deseas eliminar esta sección?',
+      () => {}
+    );
+    
+    if (!confirmed) return;
 
     setLoading(sectionId);
     const result = await deleteSection(sectionId);
@@ -63,7 +68,7 @@ export const SectionManager = ({ pageId, sections, onUpdate }: Props) => {
         setLoading(null);
       }, 150);
     } else {
-      alert(result.message);
+      showErrorToast(result.message);
       setLoading(null);
     }
   };
@@ -81,7 +86,7 @@ export const SectionManager = ({ pageId, sections, onUpdate }: Props) => {
         setLoading(null);
       }, 150);
     } else {
-      alert(result.message);
+      showErrorToast(result.message);
       setLoading(null);
     }
   };
@@ -105,7 +110,7 @@ export const SectionManager = ({ pageId, sections, onUpdate }: Props) => {
         setLoading(null);
       }, 150);
     } catch (error) {
-      alert('Error al mover la sección');
+      showErrorToast('Error al mover la sección');
       setLoading(null);
     }
   };
@@ -130,7 +135,7 @@ export const SectionManager = ({ pageId, sections, onUpdate }: Props) => {
         setLoading(null);
       }, 150);
     } catch (error) {
-      alert('Error al mover la sección');
+      showErrorToast('Error al mover la sección');
       setLoading(null);
     }
   };

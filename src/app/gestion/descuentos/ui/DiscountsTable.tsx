@@ -6,6 +6,8 @@ import { updateDiscount, deleteDiscount } from '@/actions';
 import { IoPencilOutline, IoTrashOutline, IoCheckmarkCircleOutline, IoCloseCircleOutline, IoChevronDownOutline, IoChevronUpOutline } from 'react-icons/io5';
 import { DiscountType, DiscountTargetType, DiscountConditionType } from '@prisma/client';
 import { CreateDiscountModal } from './CreateDiscountModal';
+import { showErrorToast, showSuccessToast } from '@/utils/toast';
+import { confirmDelete } from '@/utils/confirm';
 
 interface DiscountTarget {
   id: string;
@@ -98,17 +100,21 @@ export const DiscountsTable = ({ discounts }: Props) => {
   };
 
   const handleDelete = async (discountId: string) => {
-    if (!confirm('¿Estás seguro de que deseas eliminar este descuento?')) {
-      return;
-    }
+    const confirmed = await confirmDelete(
+      '¿Estás seguro de que deseas eliminar este descuento?',
+      () => {}
+    );
+    
+    if (!confirmed) return;
 
     setDeletingId(discountId);
     const result = await deleteDiscount(discountId);
     
     if (result.ok) {
+      showSuccessToast('Descuento eliminado exitosamente');
       router.refresh();
     } else {
-      alert(result.message || 'Error al eliminar el descuento');
+      showErrorToast(result.message || 'Error al eliminar el descuento');
     }
     setDeletingId(null);
   };

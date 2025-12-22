@@ -5,6 +5,7 @@ import { upsertPaymentMethod } from '@/actions/payment-methods/upsert-payment-me
 import { PaymentMethodType, PaymentMethod } from '@prisma/client';
 import { IoCheckmarkCircleOutline, IoCloseCircleOutline, IoCardOutline, IoWalletOutline, IoChatbubbleOutline, IoMailOutline } from 'react-icons/io5';
 import clsx from 'clsx';
+import { showErrorToast, showWarningToast, showSuccessToast } from '@/utils/toast';
 
 interface PaymentMethodFormData {
   id: string;
@@ -167,7 +168,7 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
         
         // Para PayPal, si está habilitando y no tiene configuración guardada ni nueva, mostrar error
         if (enabled && !hasExistingConfig && (!paypalConfig.clientId || !paypalConfig.clientSecret)) {
-          alert('Por favor configura PayPal antes de habilitarlo');
+          showWarningToast('Por favor configura PayPal antes de habilitarlo');
           setLoading(prev => ({ ...prev, [type]: false }));
           return;
         }
@@ -188,7 +189,7 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
         
         // Para Mercado Pago, si está habilitando y no tiene configuración guardada ni nueva, mostrar error
         if (enabled && !hasExistingConfig && (!mercadoPagoConfig.clientId || !mercadoPagoConfig.accessToken)) {
-          alert('Por favor configura Mercado Pago antes de habilitarlo');
+          showWarningToast('Por favor configura Mercado Pago antes de habilitarlo');
           setLoading(prev => ({ ...prev, [type]: false }));
           return;
         }
@@ -215,11 +216,11 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
           return [...prev, converted];
         });
       } else {
-        alert(result.message || 'Error al actualizar método de pago');
+        showErrorToast(result.message || 'Error al actualizar método de pago');
       }
     } catch (error) {
       console.error('Error:', error);
-      alert('Error al actualizar método de pago');
+      showErrorToast('Error al actualizar método de pago');
     } finally {
       setLoading(prev => ({ ...prev, [type]: false }));
     }
@@ -227,15 +228,15 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
 
   const handleSaveBankTransfer = async () => {
     if (!bankTransferConfig.bankName || !bankTransferConfig.accountHolder || !bankTransferConfig.cbu) {
-      alert('Por favor completa los campos requeridos');
+      showWarningToast('Por favor completa los campos requeridos');
       return;
     }
     if (bankTransferConfig.receiptContactType === 'email' && !bankTransferConfig.receiptEmail) {
-      alert('Por favor ingresa el email para recibir comprobantes');
+      showWarningToast('Por favor ingresa el email para recibir comprobantes');
       return;
     }
     if (bankTransferConfig.receiptContactType === 'whatsapp' && !bankTransferConfig.receiptWhatsApp) {
-      alert('Por favor ingresa el número de WhatsApp para recibir comprobantes');
+      showWarningToast('Por favor ingresa el número de WhatsApp para recibir comprobantes');
       return;
     }
 
@@ -259,13 +260,13 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
           return [...prev, converted];
         });
         setExpandedMethod(null);
-        alert('Configuración guardada exitosamente');
+        showSuccessToast('Configuración guardada exitosamente');
       } else {
-        alert(result.message || 'Error al guardar configuración');
+        showErrorToast(result.message || 'Error al guardar configuración');
       }
     } catch (error) {
       console.error('Error:', error);
-      alert('Error al guardar configuración');
+      showErrorToast('Error al guardar configuración');
     } finally {
       setLoading(prev => ({ ...prev, BANK_TRANSFER: false }));
     }
@@ -273,11 +274,11 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
 
   const handleSaveCoordinateWithSeller = async () => {
     if (coordinateWithSellerConfig.contactType === 'whatsapp' && !coordinateWithSellerConfig.whatsappNumber) {
-      alert('Por favor ingresa el número de WhatsApp');
+      showWarningToast('Por favor ingresa el número de WhatsApp');
       return;
     }
     if (coordinateWithSellerConfig.contactType === 'email' && !coordinateWithSellerConfig.email) {
-      alert('Por favor ingresa el email');
+      showWarningToast('Por favor ingresa el email');
       return;
     }
 
@@ -301,13 +302,13 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
           return [...prev, converted];
         });
         setExpandedMethod(null);
-        alert('Configuración guardada exitosamente');
+        showSuccessToast('Configuración guardada exitosamente');
       } else {
-        alert(result.message || 'Error al guardar configuración');
+        showErrorToast(result.message || 'Error al guardar configuración');
       }
     } catch (error) {
       console.error('Error:', error);
-      alert('Error al guardar configuración');
+      showErrorToast('Error al guardar configuración');
     } finally {
       setLoading(prev => ({ ...prev, COORDINATE_WITH_SELLER: false }));
     }
@@ -315,7 +316,7 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
 
   const handleSavePayPal = async () => {
     if (!paypalConfig.clientId || !paypalConfig.clientSecret) {
-      alert('Por favor completa todos los campos requeridos');
+      showWarningToast('Por favor completa todos los campos requeridos');
       return;
     }
 
@@ -341,13 +342,13 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
         // Limpiar el campo de secret después de guardar por seguridad
         setPaypalConfig(prev => ({ ...prev, clientSecret: '' }));
         setExpandedMethod(null);
-        alert('Configuración guardada exitosamente');
+        showSuccessToast('Configuración guardada exitosamente');
       } else {
-        alert(result.message || 'Error al guardar configuración');
+        showErrorToast(result.message || 'Error al guardar configuración');
       }
     } catch (error) {
       console.error('Error:', error);
-      alert('Error al guardar configuración');
+      showErrorToast('Error al guardar configuración');
     } finally {
       setLoading(prev => ({ ...prev, PAYPAL: false }));
     }
@@ -355,7 +356,7 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
 
   const handleSaveMercadoPago = async () => {
     if (!mercadoPagoConfig.clientId || !mercadoPagoConfig.accessToken) {
-      alert('Por favor completa todos los campos requeridos');
+      showWarningToast('Por favor completa todos los campos requeridos');
       return;
     }
 
@@ -381,13 +382,13 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
         // Limpiar el campo de accessToken después de guardar por seguridad
         setMercadoPagoConfig(prev => ({ ...prev, accessToken: '' }));
         setExpandedMethod(null);
-        alert('Configuración guardada exitosamente');
+        showSuccessToast('Configuración guardada exitosamente');
       } else {
-        alert(result.message || 'Error al guardar configuración');
+        showErrorToast(result.message || 'Error al guardar configuración');
       }
     } catch (error) {
       console.error('Error:', error);
-      alert('Error al guardar configuración');
+      showErrorToast('Error al guardar configuración');
     } finally {
       setLoading(prev => ({ ...prev, MERCADOPAGO: false }));
     }

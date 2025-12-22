@@ -14,6 +14,8 @@ import { FaInstagram, FaFacebook, FaTiktok, FaTwitter, FaLinkedin, FaYoutube, Fa
 import { SocialFormModal } from './SocialFormModal';
 import { SocialType } from '@prisma/client';
 import clsx from 'clsx';
+import { showErrorToast } from '@/utils/toast';
+import { confirmDelete } from '@/utils/confirm';
 
 interface CompanySocial {
   id: string;
@@ -93,9 +95,12 @@ export const SocialsManager = ({ initialSocials }: Props) => {
   };
 
   const handleDelete = async (socialId: string) => {
-    if (!confirm('¿Estás seguro de que deseas eliminar esta red social?')) {
-      return;
-    }
+    const confirmed = await confirmDelete(
+      '¿Estás seguro de que deseas eliminar esta red social?',
+      () => {}
+    );
+    
+    if (!confirmed) return;
 
     setLoading(socialId);
     const result = await deleteCompanySocial(socialId);
@@ -103,7 +108,7 @@ export const SocialsManager = ({ initialSocials }: Props) => {
       setSocials(socials.filter((s) => s.id !== socialId));
       router.refresh();
     } else {
-      alert(result.message);
+      showErrorToast(result.message);
     }
     setLoading(null);
   };
@@ -122,7 +127,7 @@ export const SocialsManager = ({ initialSocials }: Props) => {
       );
       router.refresh();
     } else {
-      alert(result.message);
+      showErrorToast(result.message);
     }
     setLoading(null);
   };
@@ -160,10 +165,10 @@ export const SocialsManager = ({ initialSocials }: Props) => {
         setFloatingConfig(newConfig);
         router.refresh();
       } else {
-        alert(result.message || 'Error al actualizar la configuración');
+        showErrorToast(result.message || 'Error al actualizar la configuración');
       }
     } catch (error) {
-      alert('Error al actualizar la configuración');
+      showErrorToast('Error al actualizar la configuración');
     } finally {
       setLoadingConfig(false);
     }

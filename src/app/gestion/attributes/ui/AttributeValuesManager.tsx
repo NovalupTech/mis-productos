@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { createAttributeValue, updateAttributeValue, deleteAttributeValue } from '@/actions';
 import { IoAddOutline, IoPencilOutline, IoTrashOutline, IoCheckmarkCircleOutline, IoCloseCircleOutline } from 'react-icons/io5';
+import { showErrorToast, showWarningToast, showSuccessToast } from '@/utils/toast';
+import { confirmDelete } from '@/utils/confirm';
 
 interface AttributeValue {
   id: string;
@@ -34,7 +36,7 @@ export const AttributeValuesManager = ({ attribute, onSuccess }: Props) => {
 
   const handleAdd = async () => {
     if (!newValue.trim()) {
-      alert('El valor no puede estar vacío');
+      showWarningToast('El valor no puede estar vacío');
       return;
     }
 
@@ -47,9 +49,10 @@ export const AttributeValuesManager = ({ attribute, onSuccess }: Props) => {
     if (result.ok) {
       setNewValue('');
       setIsAdding(false);
+      showSuccessToast('Valor creado exitosamente');
       onSuccess();
     } else {
-      alert(result.message || 'Error al crear el valor');
+      showErrorToast(result.message || 'Error al crear el valor');
     }
     setLoading(null);
   };
@@ -78,28 +81,33 @@ export const AttributeValuesManager = ({ attribute, onSuccess }: Props) => {
       
       if (result.ok) {
         setEditingId(null);
+        showSuccessToast('Valor actualizado exitosamente');
         onSuccess();
       } else {
-        alert(result.message || 'Error al actualizar el valor');
+        showErrorToast(result.message || 'Error al actualizar el valor');
       }
     } else {
-      alert('El valor no puede estar vacío');
+      showWarningToast('El valor no puede estar vacío');
     }
     setLoading(null);
   };
 
   const handleDelete = async (valueId: string) => {
-    if (!confirm('¿Estás seguro de que deseas eliminar este valor? Esta acción eliminará todas las asociaciones con productos.')) {
-      return;
-    }
+    const confirmed = await confirmDelete(
+      '¿Estás seguro de que deseas eliminar este valor? Esta acción eliminará todas las asociaciones con productos.',
+      () => {}
+    );
+    
+    if (!confirmed) return;
 
     setDeletingId(valueId);
     const result = await deleteAttributeValue(valueId);
     
     if (result.ok) {
+      showSuccessToast('Valor eliminado exitosamente');
       onSuccess();
     } else {
-      alert(result.message || 'Error al eliminar el valor');
+      showErrorToast(result.message || 'Error al eliminar el valor');
     }
     setDeletingId(null);
   };
@@ -255,6 +263,7 @@ export const AttributeValuesManager = ({ attribute, onSuccess }: Props) => {
     </div>
   );
 };
+
 
 
 

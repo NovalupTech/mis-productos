@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { getAllAttributes, createAttributeValue } from '@/actions';
 import { ProductAttributeWithDetails } from '@/interfaces';
 import { IoCloseOutline, IoAddOutline, IoCheckmarkOutline } from 'react-icons/io5';
+import { showErrorToast, showSuccessToast } from '@/utils/toast';
 
 interface Attribute {
   id: string;
@@ -232,12 +233,13 @@ export const AttributesManager = ({
         // Limpiar el input y cerrar el modo de agregar
         setNewValueText('');
         setAddingValueForAttribute(null);
+        showSuccessToast('Valor de atributo creado exitosamente');
       } else {
-        alert(message || 'No se pudo crear el valor');
+        showErrorToast(message || 'No se pudo crear el valor');
       }
     } catch (error) {
       console.error('Error al crear valor de atributo:', error);
-      alert('Error al crear el valor');
+      showErrorToast('Error al crear el valor');
     } finally {
       setCreatingValue(false);
     }

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { getAllTags, createTag } from '@/actions';
 import { Tag } from '@/interfaces';
 import { IoCloseOutline, IoAddOutline, IoCheckmarkOutline } from 'react-icons/io5';
+import { showErrorToast, showSuccessToast } from '@/utils/toast';
 
 interface TagsModalProps {
   isOpen: boolean;
@@ -77,12 +78,13 @@ export const TagsModal = ({ isOpen, onClose, selectedTagIds, onTagsChange, compa
         // Limpiar el input y cerrar el modo de agregar
         setNewTagName('');
         setIsAddingTag(false);
+        showSuccessToast('Tag creado exitosamente');
       } else {
-        alert(message || 'No se pudo crear el tag');
+        showErrorToast(message || 'No se pudo crear el tag');
       }
     } catch (error) {
       console.error('Error al crear tag:', error);
-      alert('Error al crear el tag');
+      showErrorToast('Error al crear el tag');
     } finally {
       setCreatingTag(false);
     }

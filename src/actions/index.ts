@@ -20,6 +20,7 @@ export * from './orders/putOrder';
 export * from './orders/get-order-by-id';
 export * from './orders/get-paginated-orders';
 export * from './orders/get-orders-by-user';
+export * from './orders/toggle-order-payment';
 
 export * from './payments/update-order-transactionId';
 
