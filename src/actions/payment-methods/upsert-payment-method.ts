@@ -154,7 +154,44 @@ export async function upsertPaymentMethod(
       };
     }
 
+    // Para PayPal, si está habilitando y no tiene config nueva, verificar si ya existe configuración guardada
     if (enabled && type === 'PAYPAL' && !config) {
+      const existingPaypal = await prisma.paymentMethod.findUnique({
+        where: {
+          companyId_type: {
+            companyId,
+            type: 'PAYPAL',
+          },
+        },
+        select: {
+          config: true,
+        },
+      });
+
+      // Si ya existe configuración guardada, permitir habilitar sin requerir config nueva
+      if (existingPaypal?.config && 
+          typeof existingPaypal.config === 'object' && 
+          'clientId' in existingPaypal.config &&
+          existingPaypal.config.clientId) {
+        // Usar la configuración existente
+        const paymentMethod = await prisma.paymentMethod.update({
+          where: {
+            companyId_type: {
+              companyId,
+              type: 'PAYPAL',
+            },
+          },
+          data: {
+            enabled,
+          },
+        });
+
+        return {
+          ok: true,
+          paymentMethod,
+        };
+      }
+
       return {
         ok: false,
         message: 'PayPal requiere configuración',

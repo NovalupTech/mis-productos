@@ -135,16 +135,26 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
       } else if (type === 'COORDINATE_WITH_SELLER') {
         config = coordinateWithSellerConfig as unknown as Record<string, unknown>;
       } else if (type === 'PAYPAL') {
-        // Para PayPal, si está habilitando y no tiene configuración completa, mostrar error
-        if (enabled && (!paypalConfig.clientId || !paypalConfig.clientSecret)) {
+        // Verificar si PayPal ya está configurado en la base de datos
+        const existingPaypalMethod = paymentMethods.find(pm => pm.type === 'PAYPAL');
+        const hasExistingConfig = existingPaypalMethod?.config && 
+          typeof existingPaypalMethod.config === 'object' && 
+          'clientId' in existingPaypalMethod.config &&
+          existingPaypalMethod.config.clientId;
+        
+        // Para PayPal, si está habilitando y no tiene configuración guardada ni nueva, mostrar error
+        if (enabled && !hasExistingConfig && (!paypalConfig.clientId || !paypalConfig.clientSecret)) {
           alert('Por favor configura PayPal antes de habilitarlo');
           setLoading(prev => ({ ...prev, [type]: false }));
           return;
         }
-        // Si tiene configuración, guardarla
+        // Si tiene configuración nueva (clientId y clientSecret), enviarla para guardar/actualizar
+        // Si solo tiene configuración guardada existente, no enviar config (el servidor usará la existente)
         if (paypalConfig.clientId && paypalConfig.clientSecret) {
           config = paypalConfig as unknown as Record<string, unknown>;
         }
+        // Si tiene configuración guardada pero no nueva, no enviar config (undefined)
+        // El servidor detectará esto y usará la configuración existente
       }
       
       const result = await upsertPaymentMethod(type, enabled, config);
