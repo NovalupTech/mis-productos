@@ -7,13 +7,6 @@ import { getCompanyIdFromContext } from '@/lib/company-context';
 export const getCompany = async () => {
   const session = await middleware();
 
-  if (session?.user.role !== 'admin' && session?.user.role !== 'companyAdmin') {
-    return {
-      ok: false,
-      message: 'Debe de ser un usuario administrador'
-    };
-  }
-
   try {
     const companyId = await getCompanyIdFromContext();
 
