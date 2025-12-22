@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { getOrderById } from "../orders/get-order-by-id";
 import { getMercadoPagoConfig } from "../payment-methods/get-mercado-pago-config";
 import { getCurrentDomain } from "@/lib/domain";
+import { getCompany } from "../company/get-company";
 
 const site_url = process.env.SITE_URL ?? ''
 
@@ -46,6 +47,11 @@ export async function submitPayment({orderId, roundedAmount}: Props): Promise<st
     const failureUrl = `${baseUrl}/catalog/orders/${orderId}`;
     const pendingUrl = `${baseUrl}/catalog/orders/${orderId}`;
 
+    const company = await getCompany();
+    if(!company.ok){
+        throw new Error(company.message);
+    }
+
     console.log('Creando preferencia de Mercado Pago con URLs:', {
       success: successUrl,
       failure: failureUrl,
@@ -64,6 +70,8 @@ export async function submitPayment({orderId, roundedAmount}: Props): Promise<st
         unit_price: price,
         quantity,
         title: product.title,
+        category_id: product.categoryId,
+        description: product.description,
       })),
       back_urls: {
         success: successUrl,
@@ -71,7 +79,7 @@ export async function submitPayment({orderId, roundedAmount}: Props): Promise<st
         pending: pendingUrl,
       },
       external_reference: orderId,
-      statement_descriptor: 'Tienda',
+      statement_descriptor: `Tienda ${company.company?.name}`,
       notification_url: webhookUrl, // URL específica para notificaciones de esta preferencia
       metadata: {
         text: `Pago de la orden ${orderId}, total: ${roundedAmount}`,
