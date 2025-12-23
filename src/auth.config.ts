@@ -205,9 +205,16 @@ export const authConfig = {
       const isDenied = url_denied.includes(nextUrl.pathname);
       const isCompleteProfilePage = nextUrl.pathname === '/login/complete-profile';
       const isLoginPage = nextUrl.pathname === '/login' || nextUrl.pathname.startsWith('/login/');
+      const isAdminPage = nextUrl.pathname === '/admin' || nextUrl.pathname.startsWith('/admin/');
+      const isGestionPage = nextUrl.pathname === '/gestion' || nextUrl.pathname.startsWith('/gestion/');
+      
+      // Permitir acceso a /admin siempre (la página manejará la lógica de autenticación)
+      if (isAdminPage) {
+        return true;
+      }
       
       // Si el usuario está logueado y se autenticó con Google, verificar si tiene teléfono
-      if (isLoggedIn && auth?.user?.email && !isCompleteProfilePage && !isLoginPage) {
+      if (isLoggedIn && auth?.user?.email && !isCompleteProfilePage && !isLoginPage && !isAdminPage && !isGestionPage) {
         try {
           const userDB = await prisma.user.findUnique({
             where: { email: (auth.user.email as string).toLowerCase() },
@@ -289,6 +296,42 @@ export const authConfig = {
 
             const userDB = await prisma.user.findFirst({
                 where: whereClause,
+            });
+
+            if(!userDB) return null
+            if(!userDB.password || !bcryptjs.compareSync(password, userDB.password)) return null
+
+            // Actualizar provider si no está establecido
+            if (!userDB.provider || userDB.provider === 'credentials') {
+              await prisma.user.update({
+                where: { id: userDB.id },
+                data: { provider: 'credentials' },
+              });
+            }
+
+            return { email: userDB.email, id: userDB.id, name: userDB.name, image: userDB.image, role: userDB.role, emailVerified: userDB.emailVerified };
+        },
+      }),
+    Credentials({
+        id: 'admin-credentials',
+        async authorize(credentials) {
+          const parsedCredentials = z
+            .object({ email: z.string().email(), password: z.string().min(6) })
+            .safeParse(credentials);
+
+            if (!parsedCredentials.success) {
+              return null;
+            }
+
+            const { email, password } = parsedCredentials.data;
+
+            // Siempre buscar usuario con role "admin" y companyId null (independientemente del dominio)
+            const userDB = await prisma.user.findFirst({
+                where: {
+                  email: email.toLowerCase(),
+                  role: 'admin',
+                  companyId: null,
+                },
             });
 
             if(!userDB) return null

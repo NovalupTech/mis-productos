@@ -4,8 +4,14 @@ import { AdminSidebar } from "../ui/AdminSidebar";
 import { useSidebar } from "../providers/SidebarProvider";
 import { useEffect, useState } from "react";
 import { IoMenuOutline } from "react-icons/io5";
+import { AdminCompanySelectorClient } from "./AdminCompanySelectorClient";
 
-export function AdminLayoutContent({ children }: { children: React.ReactNode }) {
+interface AdminLayoutContentProps {
+  children: React.ReactNode;
+  selectedCompanyId?: string | null;
+}
+
+export function AdminLayoutContent({ children, selectedCompanyId }: AdminLayoutContentProps) {
   const { isCollapsed, toggleSidebar } = useSidebar();
   const [isMobile, setIsMobile] = useState(false);
 
@@ -23,7 +29,7 @@ export function AdminLayoutContent({ children }: { children: React.ReactNode }) 
     <div className="flex h-screen bg-gray-50">
       <AdminSidebar />
       <main
-        className="flex-1 overflow-y-auto transition-all duration-300"
+        className="flex-1 overflow-y-auto transition-all duration-300 flex flex-col"
         style={{
           marginLeft: isMobile ? "0px" : (isCollapsed ? "80px" : "256px"),
         }}
@@ -38,7 +44,8 @@ export function AdminLayoutContent({ children }: { children: React.ReactNode }) 
             <IoMenuOutline size={24} className="text-gray-600" />
           </button>
         )}
-        <div className="p-4 sm:p-6">
+        {selectedCompanyId && <AdminCompanySelectorClient companyId={selectedCompanyId} />}
+        <div className="flex-1 p-4 sm:p-6">
           {children}
         </div>
       </main>
