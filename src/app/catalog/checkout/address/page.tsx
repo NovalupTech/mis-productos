@@ -13,7 +13,7 @@ export default async function AddressPage() {
   const userAddress = session?.user.id ? await getUserAddress(session.user.id) : null;
 
   return (
-    <div className="flex flex-col sm:justify-center sm:items-center mb-72 px-10 sm:px-0">
+    <div className="flex flex-col sm:justify-center sm:items-center mb-72 px-8 sm:px-0">
       <div className="w-full  xl:w-[1000px] flex flex-col justify-center text-left">
         <Title title="Dirección" subtitle="Dirección de entrega" />
 

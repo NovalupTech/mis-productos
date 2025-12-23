@@ -432,7 +432,7 @@ export async function POST(request: Request) {
         paymentId: paymentId,
         amount: order.total,
         currency: (payment as any).currency_id || 'USD',
-        paymentMethod: paymentMethod,
+        paymentMethod: paymentMethod || undefined,
         status: mappedStatus,
         statusDetail: statusDetail,
         externalReference: orderId,

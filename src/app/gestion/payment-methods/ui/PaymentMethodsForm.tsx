@@ -436,19 +436,19 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
   return (
     <div className="space-y-4">
       {/* PayPal */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <div className="flex items-center justify-between mb-4">
+      <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
           <div className="flex items-center gap-3">
-            <IoCardOutline size={24} className="text-blue-600" />
+            <IoCardOutline size={24} className="text-blue-600 flex-shrink-0" />
             <div>
-              <h3 className="text-lg font-semibold text-gray-800">PayPal</h3>
-              <p className="text-sm text-gray-600">Permite a tus clientes pagar con PayPal</p>
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800">PayPal</h3>
+              <p className="text-xs sm:text-sm text-gray-600">Permite a tus clientes pagar con PayPal</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
             <button
               onClick={() => setExpandedMethod(expandedMethod === 'PAYPAL' ? null : 'PAYPAL')}
-              className="px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+              className="px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors w-full sm:w-auto"
             >
               {expandedMethod === 'PAYPAL' ? 'Ocultar' : 'Configurar'}
             </button>
@@ -456,7 +456,7 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
               onClick={() => handleToggle('PAYPAL', !isMethodEnabled('PAYPAL'))}
               disabled={loading.PAYPAL}
               className={clsx(
-                'flex items-center gap-2 px-4 py-2 rounded-lg transition-colors',
+                'flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors w-full sm:w-auto',
                 {
                   'bg-green-100 text-green-700 hover:bg-green-200': isMethodEnabled('PAYPAL'),
                   'bg-gray-100 text-gray-600 hover:bg-gray-200': !isMethodEnabled('PAYPAL'),
@@ -480,8 +480,8 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
         </div>
 
         {expandedMethod === 'PAYPAL' && (
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <h4 className="text-md font-semibold text-gray-800 mb-4">Configuración de PayPal</h4>
+          <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-200">
+            <h4 className="text-sm sm:text-md font-semibold text-gray-800 mb-4">Configuración de PayPal</h4>
             {paypalConfig.clientId && (
               <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
                 <p className="text-sm text-green-800">
@@ -528,7 +528,7 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
                 onClick={handleSavePayPal}
                 disabled={loading.PAYPAL || !paypalConfig.clientId || !paypalConfig.clientSecret}
                 className={clsx(
-                  'px-6 py-2 rounded-lg font-medium transition-colors',
+                  'px-4 sm:px-6 py-2 rounded-lg text-sm sm:text-base font-medium transition-colors w-full sm:w-auto',
                   {
                     'bg-blue-600 text-white hover:bg-blue-700': !loading.PAYPAL && paypalConfig.clientId && paypalConfig.clientSecret,
                     'bg-gray-300 text-gray-500 cursor-not-allowed': loading.PAYPAL || !paypalConfig.clientId || !paypalConfig.clientSecret,
@@ -543,19 +543,19 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
       </div>
 
       {/* Mercado Pago */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <div className="flex items-center justify-between mb-4">
+      <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
           <div className="flex items-center gap-3">
-            <IoCardOutline size={24} className="text-blue-600" />
+            <IoCardOutline size={24} className="text-blue-600 flex-shrink-0" />
             <div>
-              <h3 className="text-lg font-semibold text-gray-800">Mercado Pago</h3>
-              <p className="text-sm text-gray-600">Permite a tus clientes pagar con Mercado Pago</p>
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800">Mercado Pago</h3>
+              <p className="text-xs sm:text-sm text-gray-600">Permite a tus clientes pagar con Mercado Pago</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
             <button
               onClick={() => setExpandedMethod(expandedMethod === 'MERCADOPAGO' ? null : 'MERCADOPAGO')}
-              className="px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+              className="px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors w-full sm:w-auto"
             >
               {expandedMethod === 'MERCADOPAGO' ? 'Ocultar' : 'Configurar'}
             </button>
@@ -563,7 +563,7 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
               onClick={() => handleToggle('MERCADOPAGO', !isMethodEnabled('MERCADOPAGO'))}
               disabled={loading.MERCADOPAGO}
               className={clsx(
-                'flex items-center gap-2 px-4 py-2 rounded-lg transition-colors',
+                'flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors w-full sm:w-auto',
                 {
                   'bg-green-100 text-green-700 hover:bg-green-200': isMethodEnabled('MERCADOPAGO'),
                   'bg-gray-100 text-gray-600 hover:bg-gray-200': !isMethodEnabled('MERCADOPAGO'),
@@ -587,8 +587,8 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
         </div>
 
         {expandedMethod === 'MERCADOPAGO' && (
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <h4 className="text-md font-semibold text-gray-800 mb-4">Configuración de Mercado Pago</h4>
+          <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-200">
+            <h4 className="text-sm sm:text-md font-semibold text-gray-800 mb-4">Configuración de Mercado Pago</h4>
             {mercadoPagoConfig.clientId && (
               <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
                 <p className="text-sm text-green-800">
@@ -635,7 +635,7 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
                 onClick={handleSaveMercadoPago}
                 disabled={loading.MERCADOPAGO || !mercadoPagoConfig.clientId || !mercadoPagoConfig.accessToken}
                 className={clsx(
-                  'px-6 py-2 rounded-lg font-medium transition-colors',
+                  'px-4 sm:px-6 py-2 rounded-lg text-sm sm:text-base font-medium transition-colors w-full sm:w-auto',
                   {
                     'bg-blue-600 text-white hover:bg-blue-700': !loading.MERCADOPAGO && mercadoPagoConfig.clientId && mercadoPagoConfig.accessToken,
                     'bg-gray-300 text-gray-500 cursor-not-allowed': loading.MERCADOPAGO || !mercadoPagoConfig.clientId || !mercadoPagoConfig.accessToken,
@@ -650,19 +650,19 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
       </div>
 
       {/* Transferencia Bancaria */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <div className="flex items-center justify-between mb-4">
+      <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
           <div className="flex items-center gap-3">
-            <IoWalletOutline size={24} className="text-blue-600" />
+            <IoWalletOutline size={24} className="text-blue-600 flex-shrink-0" />
             <div>
-              <h3 className="text-lg font-semibold text-gray-800">Transferencia Bancaria</h3>
-              <p className="text-sm text-gray-600">Los clientes pueden realizar transferencias bancarias</p>
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800">Transferencia Bancaria</h3>
+              <p className="text-xs sm:text-sm text-gray-600">Los clientes pueden realizar transferencias bancarias</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
             <button
               onClick={() => setExpandedMethod(expandedMethod === 'BANK_TRANSFER' ? null : 'BANK_TRANSFER')}
-              className="px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+              className="px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors w-full sm:w-auto"
             >
               {expandedMethod === 'BANK_TRANSFER' ? 'Ocultar' : 'Configurar'}
             </button>
@@ -670,7 +670,7 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
               onClick={() => handleToggle('BANK_TRANSFER', !isMethodEnabled('BANK_TRANSFER'))}
               disabled={loading.BANK_TRANSFER}
               className={clsx(
-                'flex items-center gap-2 px-4 py-2 rounded-lg transition-colors',
+                'flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors w-full sm:w-auto',
                 {
                   'bg-green-100 text-green-700 hover:bg-green-200': isMethodEnabled('BANK_TRANSFER'),
                   'bg-gray-100 text-gray-600 hover:bg-gray-200': !isMethodEnabled('BANK_TRANSFER'),
@@ -694,8 +694,8 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
         </div>
 
         {expandedMethod === 'BANK_TRANSFER' && (
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <h4 className="text-md font-semibold text-gray-800 mb-4">Datos Bancarios</h4>
+          <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-200">
+            <h4 className="text-sm sm:text-md font-semibold text-gray-800 mb-4">Datos Bancarios</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -777,8 +777,8 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
               </div>
             </div>
 
-            <div className="mt-6 pt-6 border-t border-gray-200">
-              <h4 className="text-md font-semibold text-gray-800 mb-4">Recibir Comprobante</h4>
+            <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-200">
+              <h4 className="text-sm sm:text-md font-semibold text-gray-800 mb-4">Recibir Comprobante</h4>
               <p className="text-sm text-gray-600 mb-4">
                 Configura cómo quieres recibir los comprobantes de transferencia
               </p>
@@ -855,7 +855,7 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
               <button
                 onClick={handleSaveBankTransfer}
                 disabled={loading.BANK_TRANSFER}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 sm:px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base font-medium w-full sm:w-auto"
               >
                 {loading.BANK_TRANSFER ? 'Guardando...' : 'Guardar Configuración'}
               </button>
@@ -865,19 +865,19 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
       </div>
 
       {/* Coordinar con el Vendedor */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <div className="flex items-center justify-between mb-4">
+      <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
           <div className="flex items-center gap-3">
-            <IoChatbubbleOutline size={24} className="text-green-600" />
+            <IoChatbubbleOutline size={24} className="text-green-600 flex-shrink-0" />
             <div>
-              <h3 className="text-lg font-semibold text-gray-800">Coordinar con el Vendedor</h3>
-              <p className="text-sm text-gray-600">Los clientes pueden contactar al vendedor para coordinar el pago</p>
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800">Coordinar con el Vendedor</h3>
+              <p className="text-xs sm:text-sm text-gray-600">Los clientes pueden contactar al vendedor para coordinar el pago</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
             <button
               onClick={() => setExpandedMethod(expandedMethod === 'COORDINATE_WITH_SELLER' ? null : 'COORDINATE_WITH_SELLER')}
-              className="px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+              className="px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors w-full sm:w-auto"
             >
               {expandedMethod === 'COORDINATE_WITH_SELLER' ? 'Ocultar' : 'Configurar'}
             </button>
@@ -885,7 +885,7 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
               onClick={() => handleToggle('COORDINATE_WITH_SELLER', !isMethodEnabled('COORDINATE_WITH_SELLER'))}
               disabled={loading.COORDINATE_WITH_SELLER}
               className={clsx(
-                'flex items-center gap-2 px-4 py-2 rounded-lg transition-colors',
+                'flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors w-full sm:w-auto',
                 {
                   'bg-green-100 text-green-700 hover:bg-green-200': isMethodEnabled('COORDINATE_WITH_SELLER'),
                   'bg-gray-100 text-gray-600 hover:bg-gray-200': !isMethodEnabled('COORDINATE_WITH_SELLER'),
@@ -909,8 +909,8 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
         </div>
 
         {expandedMethod === 'COORDINATE_WITH_SELLER' && (
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <h4 className="text-md font-semibold text-gray-800 mb-4">Configuración de Contacto</h4>
+          <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-200">
+            <h4 className="text-sm sm:text-md font-semibold text-gray-800 mb-4">Configuración de Contacto</h4>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -982,7 +982,7 @@ export const PaymentMethodsForm = ({ initialPaymentMethods }: PaymentMethodsForm
               <button
                 onClick={handleSaveCoordinateWithSeller}
                 disabled={loading.COORDINATE_WITH_SELLER}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 sm:px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base font-medium w-full sm:w-auto"
               >
                 {loading.COORDINATE_WITH_SELLER ? 'Guardando...' : 'Guardar Configuración'}
               </button>
