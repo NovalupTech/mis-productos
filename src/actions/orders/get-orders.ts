@@ -30,6 +30,30 @@ export const getOrders = async () => {
                     select: {
                         name: true,
                     }
+                },
+                OrderItem: {
+                    select: {
+                        quantity: true,
+                        price: true,
+                        product: {
+                            select: {
+                                title: true,
+                                slug: true,
+                                productImage: {
+                                    select: {
+                                        url: true
+                                    },
+                                    take: 1
+                                }
+                            }
+                        }
+                    },
+                    take: 3
+                },
+                company: {
+                    select: {
+                        name: true
+                    }
                 }
             },
             orderBy: {

@@ -143,11 +143,11 @@ export const AdminSidebar = () => {
       // Ejecutar el logout primero
       await logout();
       // Luego redirigir a la página de signout usando window.location para forzar recarga completa
-      window.location.href = '/auth/signout';
+      window.location.href = '/';
     } catch (error) {
       console.error('Error al hacer logout:', error);
       // Si hay error, redirigir de todas formas
-      window.location.href = '/auth/signout';
+      window.location.href = '/';
     }
   };
 
