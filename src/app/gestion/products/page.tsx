@@ -9,22 +9,29 @@ import { getCurrentCompanyId } from "@/lib/domain";
 import { PriceConfig } from "@/utils/priceFormat";
 import { ImportProductsButton } from "./ui/ImportProductsButton";
 import { ApiImportButton } from "./ui/ApiImportButton";
+import { ProductSearch } from "./ui/ProductSearch";
 
 interface Props {
   searchParams: {
     page?: string;
+    search?: string;
   };
 }
 
-export default async function OrdersPage({ searchParams }: {searchParams: Promise<{page?: string}>}) {
-  const {page} = await searchParams;
+export default async function OrdersPage({ searchParams }: {searchParams: Promise<{page?: string; search?: string}>}) {
+  const {page, search} = await searchParams;
   const pageNumber = page ? +page : 1;
 
+  const companyId = await getCurrentCompanyId();
   const { products, totalPages } =
-    await getPaginatedProductsWithImages({ page: pageNumber, take: 10 });
+    await getPaginatedProductsWithImages({ 
+      page: pageNumber, 
+      take: 10,
+      companyId: companyId || undefined,
+      search: search || undefined
+    });
 
   // Obtener configuración de precios de la compañía
-  const companyId = await getCurrentCompanyId();
   let priceConfig = { currency: 'USD', format: 'symbol-before', showPrices: true }; // Valores por defecto
   
   if (companyId) {
@@ -38,17 +45,24 @@ export default async function OrdersPage({ searchParams }: {searchParams: Promis
     <>
       <Title title="Mantenimiento de productos" />
 
-      <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 mb-5">
-        <ImportProductsButton />
-        <ApiImportButton />
-        <Link href="/gestion/product/new" className="btn-primary text-center">
-          Nuevo producto
-        </Link>
+      <div className="mb-5">
+        <div className="mb-4">
+          <ProductSearch />
+        </div>
+        <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3">
+          <ImportProductsButton />
+          <ApiImportButton />
+          <Link href="/gestion/product/new" className="btn-primary text-center">
+            Nuevo producto
+          </Link>
+        </div>
       </div>
 
       {products.length === 0 ? (
         <div className="flex justify-center items-center h-full mt-10">
-          <p className="text-gray-500">No hay productos cargados</p>
+          <p className="text-gray-500">
+            {search ? `No se encontraron productos que coincidan con "${search}"` : 'No hay productos cargados'}
+          </p>
         </div>
       ) : (
         <div className="mb-10">

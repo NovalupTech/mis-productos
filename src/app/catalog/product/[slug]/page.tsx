@@ -12,6 +12,7 @@ import { getPriceConfig, formatPrice } from '@/utils';
 import { PriceConfig } from "@/utils/priceFormat";
 import { ProductDiscountInfo } from "./ui/ProductDiscountInfo";
 import { BackToCatalogButton } from "./ui/BackToCatalogButton";
+import { ShareButton } from "./ui/ShareButton";
 
 interface Props {
   params: {
@@ -81,9 +82,10 @@ export default async function ProductPage({params}: {params: Promise<{slug: stri
 
   return (
     <div className="flex flex-col md:flex-row mt-5 mb-20 gap-4 md:gap-6 max-w-5xl mx-auto px-4">
-      {/* Botón para volver al catálogo */}
-      <div className="w-full md:hidden">
+      {/* Botones para volver al catálogo y compartir - Mobile */}
+      <div className="w-full md:hidden flex gap-2">
         <BackToCatalogButton />
+        <ShareButton productTitle={product.title} productDescription={product.description} />
       </div>
 
       {/* Desktop Slideshow */}
@@ -96,9 +98,10 @@ export default async function ProductPage({params}: {params: Promise<{slug: stri
 
       {/* Product Details */}
       <div className="flex-1 md:w-[55%] px-0 md:pl-6">
-        {/* Botón para volver al catálogo - Solo visible en desktop */}
-        <div className="hidden md:block mb-4">
+        {/* Botones para volver al catálogo y compartir - Desktop */}
+        <div className="hidden md:flex md:gap-2 mb-4">
           <BackToCatalogButton />
+          <ShareButton productTitle={product.title} productDescription={product.description} />
         </div>
 
         {stockConfig.showInDetails && <StockLabel slug={slug} />}

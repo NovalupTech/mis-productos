@@ -92,8 +92,6 @@ Content-Type: application/json
     ]
   }'`;
 
-  if (typeof window === 'undefined') return null;
-
   const modalContent = (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50" style={{ zIndex: 9999 }}>
       <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto m-4" style={{ zIndex: 10000 }}>
@@ -273,7 +271,7 @@ Content-Type: application/json
         <IoCodeWorkingOutline size={20} />
         Importar por API
       </button>
-      {isModalOpen && createPortal(modalContent, document.body)}
+      {isModalOpen && typeof window !== 'undefined' && createPortal(modalContent, document.body)}
     </>
   );
 };

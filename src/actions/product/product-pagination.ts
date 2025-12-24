@@ -30,12 +30,30 @@ export const getPaginatedProductsWithImages = async ({
     // Si no se pasa companyId, obtenerlo del contexto (dominio)
     const finalCompanyId = companyId || await getCompanyIdFromContext();
 
-    const where: any = {
-      title: search ? {
-        contains: search,
-        mode: 'insensitive',
-      } : undefined,
-    };
+    const where: any = {};
+
+    // Construir condiciones base
+    const baseConditions: any[] = [];
+
+    // Búsqueda por título o código
+    if (search) {
+      baseConditions.push({
+        OR: [
+          {
+            title: {
+              contains: search,
+              mode: 'insensitive',
+            },
+          },
+          {
+            code: {
+              contains: search,
+              mode: 'insensitive',
+            },
+          },
+        ],
+      });
+    }
 
     if (finalCompanyId) {
       where.companyId = finalCompanyId;
@@ -68,15 +86,12 @@ export const getPaginatedProductsWithImages = async ({
         },
       }));
       
-      // Si hay múltiples filtros, combinarlos con AND
-      if (attributeFilterConditions.length === 1) {
-        Object.assign(where, attributeFilterConditions[0]);
-      } else {
-        where.AND = [
-          ...(where.AND || []),
-          ...attributeFilterConditions,
-        ];
-      }
+      baseConditions.push(...attributeFilterConditions);
+    }
+
+    // Combinar todas las condiciones base con AND si hay alguna
+    if (baseConditions.length > 0) {
+      where.AND = [...(where.AND || []), ...baseConditions];
     }
 
     const productsPromise = prisma.product.findMany({
