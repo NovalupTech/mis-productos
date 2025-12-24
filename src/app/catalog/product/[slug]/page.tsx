@@ -2,6 +2,7 @@ export const revalidate = 600000; //7 dias aprox
 
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
 import { ProductMobileSlideShow, ProductSlideShow, StockLabel, DiscountBadge } from "@/components";
 import { getProductBySlug } from "@/actions/product/get-product-by-slug";
 import { titleFont } from "@/config/fonts";
@@ -29,13 +30,58 @@ export async function generateMetadata(
   // fetch data
   const product = await getProductBySlug({slug});
 
+  if (!product) {
+    return {
+      title: 'Producto no encontrado',
+      description: 'El producto que buscas no existe',
+    };
+  }
+
+  // Obtener la URL base del sitio
+  const headersList = await headers();
+  const host = headersList.get('host') || headersList.get('x-forwarded-host');
+  // Detectar el protocolo: usar x-forwarded-proto si está disponible (proxies/CDNs), 
+  // o determinar según el entorno
+  const forwardedProto = headersList.get('x-forwarded-proto');
+  const protocol = forwardedProto || (process.env.NODE_ENV === 'production' ? 'https' : 'http');
+  const baseUrl = host ? `${protocol}://${host}` : '';
+
+  // Obtener la primera imagen del producto (o la segunda si existe)
+  const productImage = product.images?.[0] || product.images?.[1];
+  
+  // Construir la URL absoluta de la imagen
+  let imageUrl = '';
+  if (productImage) {
+    if (productImage.startsWith('http') || productImage.startsWith('https')) {
+      // Si ya es una URL completa (Cloudinary), usarla directamente
+      imageUrl = productImage;
+    } else {
+      // Si es relativa, construir la URL absoluta
+      imageUrl = baseUrl ? `${baseUrl}/products/${productImage}` : `/products/${productImage}`;
+    }
+  }
+
   return {
-    title: product?.title,
-    description: product?.description,
+    title: product.title,
+    description: product.description || product.title,
     openGraph: {
-      title: product?.title,
-      description: product?.description,
-      images: ['/products/'+product?.images[1]],
+      title: product.title,
+      description: product.description || product.title,
+      images: imageUrl ? [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: product.title,
+        }
+      ] : [],
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: product.title,
+      description: product.description || product.title,
+      images: imageUrl ? [imageUrl] : [],
     },
   }
 }
