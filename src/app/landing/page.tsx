@@ -43,7 +43,7 @@ export default function LandingPage() {
               <a href="#como-funciona">Cómo funciona</a>
               <a href="#galeria">Demo/Galería</a>
               <a href="#faq">FAQ</a>
-              <CalendlyButton className={`${styles.button} ${styles.buttonPrimary} ${styles.nav__cta}`}>Agendá una reunión</CalendlyButton>
+              <CalendlyButton className={`${styles.button} ${styles.buttonPrimary} ${styles.nav__cta}`}>Crear mi catálogo ahora</CalendlyButton>
             </nav>
           </div>
         </header>
@@ -54,11 +54,12 @@ export default function LandingPage() {
           <div className={`${styles.container} ${styles.hero__grid}`}>
             <div className={styles.hero__text}>
               <p className={styles.pill}>Catálogo personalizable</p>
-              <h1>Vende tus productos y servicios desde tu propia web — fácil y rápido.</h1>
-              <p className={styles.lead}>Misproductos: catálogos autoadministrables, precios, categorías y descuentos en segundos, pagos integrados y subdominio para tu empresa.</p>
+              <h1>Vende por WhatsApp en minutos sin configurar tiendas complejas.</h1>
+              <b>Tu catálogo + pagos + contacto listo hoy.</b>
+              <p className={styles.lead}>Misproductos: catálogos autoadministrables, precios, categorías y descuentos en segundos, pagos integrados y subdominio para tu empresa. Soporte por whatsapp constante.</p>
               <div className={styles.hero__actions}>
-                <CalendlyButton className={`${styles.button} ${styles.buttonPrimary}`}>Agendá una reunión</CalendlyButton>
-                <a className={`${styles.button} ${styles.buttonGhost}`} href="#galeria">Ver ejemplos</a>
+                <CalendlyButton className={`${styles.button} ${styles.buttonPrimary}`}>Crear mi catálogo ahora</CalendlyButton>
+                <a className={`${styles.button} ${styles.buttonGhost}`} href="#galeria">Empezá a vender hoy</a>
               </div>
             </div>
             <div className={styles.hero__media}>
@@ -387,6 +388,22 @@ export default function LandingPage() {
                 <summary>¿Puedo personalizar los banners con mi marca?</summary>
                 <p>Sí. Los banners son completamente personalizables: puedes subir tus propias imágenes, agregar enlaces a productos específicos o páginas externas, y configurar el orden de rotación.</p>
               </details>
+              <details open>
+                <summary>¿Necesito tener tienda física?</summary>
+                <p>No es necesario. Misproductos está diseñado para vender online, por lo que puedes operar completamente digital. Muchos de nuestros clientes venden desde casa, tienen almacenes o trabajan con dropshipping.</p>
+              </details>
+              <details open>
+                <summary>¿Puedo vender por WhatsApp también?</summary>
+                <p>Sí. El catálogo está optimizado para compartir por WhatsApp. Tus clientes pueden ver productos, precios y hacer pedidos directamente desde el enlace que compartas. Además, puedes integrar el botón de WhatsApp en cada producto para contacto directo.</p>
+              </details>
+              <details open>
+                <summary>¿Cuánto tarda en estar online mi catálogo?</summary>
+                <p>Tu catálogo puede estar online en 48 horas. Incluye configuración inicial, onboarding personalizado y soporte para que puedas empezar a vender rápidamente.</p>
+              </details>
+              <details open>
+                <summary>¿Puedo cambiar luego de plan?</summary>
+                <p>Sí, puedes cambiar de plan en cualquier momento. Si necesitas más funcionalidades o quieres reducir tu plan, puedes hacerlo desde tu panel de administración sin perder tus datos ni productos.</p>
+              </details>
             </div>
           </div>
         </section>
@@ -394,12 +411,12 @@ export default function LandingPage() {
         <section className={styles.cta} id="cta-final">
           <div className={`${styles.container} ${styles.cta__box}`}>
             <div>
-              <h2>Agendá una reunión y empezá hoy</h2>
+              <h2>Agendá una reunión y empezá a vender hoy</h2>
               <p>¿Listo para vender? Hacemos todo en 48h.</p>
             </div>
             <div className={styles.cta__actions}>
-              <CalendlyButton className={`${styles.button} ${styles.buttonPrimary}`}>Agendá una reunión</CalendlyButton>
-              <a className={`${styles.button} ${styles.buttonGhost}`} target="_blank" rel="noopener noreferrer" href="https://wa.me/5491163717386?text=Hola%2C%20quiero%20m%C3%A1s%20informaci%C3%B3n%20sobre%20Misproductos">Solicitar demo</a>
+              <CalendlyButton className={`${styles.button} ${styles.buttonPrimary}`}>Crear mi catálogo ahora</CalendlyButton>
+              <a className={`${styles.button} ${styles.buttonGhost}`} target="_blank" rel="noopener noreferrer" href="https://wa.me/5491163717386?text=Hola%2C%20quiero%20m%C3%A1s%20informaci%C3%B3n%20sobre%20Misproductos">Empezá a vender hoy</a>
             </div>
           </div>
         </section>
