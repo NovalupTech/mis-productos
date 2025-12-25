@@ -9,7 +9,8 @@ export const getStockBySlug = async (slug: string):Promise<number> => {
                 inStock: true
             },
             where: {
-                slug
+                slug,
+                active: true,
             }
         });
 

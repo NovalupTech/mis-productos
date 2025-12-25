@@ -77,7 +77,7 @@ const ProductGridItem = ({product, selectedTag, imageSize = 'medium'}: Props) =>
       title: product.title,
       price: product.price,
       quantity: 1,
-      image: product.images[0],
+      image: product.images[0] ?? 'no-image.webp',
       categoryId: product.categoryId,
       tags: product.tags,
       selectedAttributes: undefined,
@@ -143,7 +143,7 @@ const ProductGridItem = ({product, selectedTag, imageSize = 'medium'}: Props) =>
             }`}
           >
             <Image
-                src={image.startsWith('http') || image.startsWith('https') ? image : `/products/${image}`}
+                src={image?.startsWith('http') || image?.startsWith('https') ? image : `/products/${image ?? 'no-image.webp'}`}
                 alt={product.title}
                 width={500}
                 height={500}

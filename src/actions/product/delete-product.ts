@@ -127,24 +127,13 @@ export const deleteProduct = async (productId: string) => {
 
     await Promise.all(deleteImagePromises);
 
-    // Eliminar ProductAttribute antes de eliminar el producto
-    await prisma.productAttribute.deleteMany({
-      where: {
-        productId: productId,
-      },
-    });
-
-    // Eliminar ProductTag antes de eliminar el producto
-    await prisma.productTag.deleteMany({
-      where: {
-        productId: productId,
-      },
-    });
-
-    // Eliminar el producto (ahora que las relaciones dependientes ya fueron eliminadas)
-    await prisma.product.delete({
+    // Soft delete: marcar el producto como inactivo en lugar de eliminarlo físicamente
+    await prisma.product.update({
       where: {
         id: productId,
+      },
+      data: {
+        active: false,
       },
     });
 

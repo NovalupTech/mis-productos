@@ -63,6 +63,9 @@ export const getPaginatedProductsWithImages = async ({
       where.categoryId = categoryId;
     }
 
+    // Solo productos activos
+    where.active = true;
+
     // Aplicar filtro por tag
     if (tag) {
       where.tags = {

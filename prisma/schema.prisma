@@ -131,6 +131,7 @@ model Product {
   slug        String  @unique
   featured    Boolean @default(false)
   code        String?
+  active      Boolean @default(true)
 
   company   Company @relation(fields: [companyId], references: [id])
   companyId String

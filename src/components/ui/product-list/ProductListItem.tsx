@@ -61,7 +61,7 @@ export const ProductListItem = ({product, selectedTag}: Props) => {
       title: product.title,
       price: product.price,
       quantity: 1,
-      image: product.images[0],
+      image: product.images[0] ?? 'no-image.webp',
       categoryId: product.categoryId,
       tags: product.tags,
       selectedAttributes: undefined,
@@ -90,7 +90,7 @@ export const ProductListItem = ({product, selectedTag}: Props) => {
         className="relative w-24 h-24 sm:w-32 sm:h-32 flex-shrink-0 overflow-hidden rounded-md"
       >
         <Image
-          src={image.startsWith('http') || image.startsWith('https') ? image : `/products/${image}`}
+          src={image?.startsWith('http') || image?.startsWith('https') ? image : `/products/${image ?? 'no-image.webp'}`}
           alt={product.title}
           width={128}
           height={128}

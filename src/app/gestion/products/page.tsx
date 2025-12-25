@@ -118,7 +118,7 @@ export default async function OrdersPage({ searchParams }: {searchParams: Promis
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       <Link href={`/gestion/product/${product.slug}`}>
                         <ProductImage
-                          src={product.productImage[0]?.url}
+                          src={product.productImage[0]?.url ?? 'no-image.webp'}
                           width={80}
                           height={80}
                           alt={product.title}
@@ -165,7 +165,7 @@ export default async function OrdersPage({ searchParams }: {searchParams: Promis
                 <div className="flex gap-4">
                   <div className="flex-shrink-0">
                     <ProductImage
-                      src={product.productImage[0]?.url}
+                      src={product.productImage[0]?.url ?? 'no-image.webp'}
                       width={80}
                       height={80}
                       alt={product.title}

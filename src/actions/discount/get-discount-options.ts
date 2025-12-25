@@ -19,7 +19,10 @@ export const getDiscountOptions = async () => {
 
     const [products, categories, tags] = await Promise.all([
       prisma.product.findMany({
-        where: { companyId },
+        where: { 
+          companyId,
+          active: true,
+        },
         select: {
           id: true,
           title: true,

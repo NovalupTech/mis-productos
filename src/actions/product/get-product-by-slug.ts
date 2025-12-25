@@ -17,6 +17,7 @@ export const getProductBySlug = async ({ slug, companyId }: Props) => {
       where: {
         slug: slug.toLowerCase().replace(/ /g, '-' ).trim(),
         ...(finalCompanyId ? { companyId: finalCompanyId } : {}),
+        active: true,
       },
       include: {
         productImage: {

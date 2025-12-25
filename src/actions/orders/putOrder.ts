@@ -36,6 +36,7 @@ export const placeOrder = async (
 			id: {
 				in: productsInCart.map((product) => product.productId),
 			},
+			active: true,
 		},
 	});
 
