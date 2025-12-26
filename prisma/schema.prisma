@@ -128,7 +128,7 @@ model Product {
   description String
   inStock     Int
   price       Float   @default(0)
-  slug        String  @unique
+  slug        String
   featured    Boolean @default(false)
   code        String?
   active      Boolean @default(true)
@@ -146,6 +146,7 @@ model Product {
   favorites        UserFavorite[]
 
   @@unique([companyId, code])
+  @@unique([companyId, slug])
   @@index([companyId])
   @@index([categoryId])
 }

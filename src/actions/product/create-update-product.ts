@@ -111,7 +111,7 @@ export const createUpdateProduct = async( formData: FormData ) => {
       const companyId = await requireCompanyId();
   
       if ( id ) {
-        // Actualizar
+        // Actualizar por ID
         product = await tx.product.update({
           where: { id },
           data: {
@@ -123,30 +123,78 @@ export const createUpdateProduct = async( formData: FormData ) => {
             inStock: rest.inStock,
             categoryId: rest.categoryId,
             featured: rest.featured ?? false,
+            active: true,
             code: rest.code || undefined, // Solo actualizar si se proporciona
           }
         });
   
       } else {
-        // Crear - generar código si no se proporciona
-        let productCode = rest.code;
-        if (!productCode || productCode.trim() === '') {
-          productCode = await generateProductCode(tx, companyId);
+        // Buscar producto existente por companyId + slug o companyId + code
+        let existingProduct: Product | null = null;
+
+        // Primero intentar buscar por slug (companyId + slug es único)
+        if (rest.slug) {
+          existingProduct = await tx.product.findUnique({
+            where: {
+              companyId_slug: {
+                companyId: companyId,
+                slug: rest.slug,
+              }
+            }
+          });
         }
 
-        product = await tx.product.create({
-          data: {
-            companyId: companyId,
-            title: rest.title,
-            slug: rest.slug,
-            description: rest.description,
-            price: rest.price,
-            inStock: rest.inStock,
-            categoryId: rest.categoryId,
-            featured: rest.featured ?? false,
-            code: productCode,
+        // Si no se encontró por slug y hay código, buscar por código (companyId + code es único)
+        if (!existingProduct && rest.code && rest.code.trim() !== '') {
+          existingProduct = await tx.product.findUnique({
+            where: {
+              companyId_code: {
+                companyId: companyId,
+                code: rest.code,
+              }
+            }
+          });
+        }
+
+        if ( existingProduct ) {
+          // Si existe, actualizar
+          product = await tx.product.update({
+            where: { id: existingProduct.id },
+            data: {
+              companyId: companyId,
+              title: rest.title,
+              slug: rest.slug,
+              description: rest.description,
+              price: rest.price,
+              inStock: rest.inStock,
+              categoryId: rest.categoryId,
+              featured: rest.featured ?? false,
+              code: rest.code || undefined, // Solo actualizar si se proporciona
+              active: true,
+            }
+          });
+        } else {
+          // Crear - generar código si no se proporciona
+          let productCode = rest.code;
+          if (!productCode || productCode.trim() === '') {
+            productCode = await generateProductCode(tx, companyId);
           }
-        })
+
+          product = await tx.product.create({
+            data: {
+              companyId: companyId,
+              title: rest.title,
+              slug: rest.slug,
+              description: rest.description,
+              price: rest.price,
+              inStock: rest.inStock,
+              categoryId: rest.categoryId,
+              featured: rest.featured ?? false,
+              code: productCode,
+              active: true,
+            }
+          })
+        }
       }
 
       // Gestionar tags del producto
