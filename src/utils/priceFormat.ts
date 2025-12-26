@@ -18,6 +18,7 @@ export const CURRENCIES = [
 export const DEFAULT_CURRENCY = 'USD';
 export const DEFAULT_FORMAT = 'symbol-before';
 export const DEFAULT_SHOW_PRICES = true;
+export const DEFAULT_DECIMALS = 2;
 
 /**
  * Interfaz para la configuración de precios
@@ -26,10 +27,38 @@ export interface PriceConfig {
   currency?: string;
   format?: string;
   showPrices?: boolean;
+  decimals?: number;
   enableTax?: boolean;
   taxType?: 'percentage' | 'fixed';
   taxValue?: number;
 }
+
+/**
+ * Formatea un número con separador de miles (punto) y decimales (coma)
+ * @param value - El valor numérico
+ * @param decimals - Cantidad de decimales
+ * @returns El número formateado como string (ej: "50.000,50")
+ */
+const formatNumber = (value: number, decimals: number): string => {
+  // Redondear el valor según los decimales configurados
+  const multiplier = Math.pow(10, decimals);
+  const roundedValue = Math.round(value * multiplier) / multiplier;
+  
+  // Separar parte entera y decimal
+  const parts = roundedValue.toFixed(decimals).split('.');
+  const integerPart = parts[0];
+  const decimalPart = parts[1] || '';
+  
+  // Agregar separador de miles (punto) a la parte entera
+  const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  
+  // Si hay decimales, agregarlos con coma, sino solo retornar la parte entera
+  if (decimals > 0 && decimalPart) {
+    return `${formattedInteger},${decimalPart}`;
+  }
+  
+  return formattedInteger;
+};
 
 /**
  * Formatea un precio según la configuración de la empresa
@@ -43,10 +72,11 @@ export const formatPrice = (value: number, config?: PriceConfig): string | null 
     return null;
   }
 
-  // Redondear el valor a 2 decimales
-  const roundedValue = Math.round(value * 100) / 100;
-  // Formatear a 2 decimales siempre
-  const formattedValue = roundedValue.toFixed(2);
+  // Obtener la cantidad de decimales de la configuración o usar el valor por defecto
+  const decimals = config?.decimals !== undefined ? config.decimals : DEFAULT_DECIMALS;
+  
+  // Formatear el número con separador de miles (punto) y decimales (coma)
+  const formattedValue = formatNumber(value, decimals);
 
   // Usar valores por defecto si no hay configuración
   const currency = config?.currency || DEFAULT_CURRENCY;
@@ -83,6 +113,9 @@ export const getPriceConfig = (configs: Record<string, any>): PriceConfig => {
     showPrices: configs['prices.showPrices'] !== undefined 
       ? configs['prices.showPrices'] 
       : DEFAULT_SHOW_PRICES,
+    decimals: configs['prices.decimals'] !== undefined 
+      ? Number(configs['prices.decimals']) 
+      : DEFAULT_DECIMALS,
     enableTax: configs['prices.enableTax'] !== undefined 
       ? configs['prices.enableTax'] 
       : false,

@@ -4,6 +4,7 @@ import { getPaginatedProductsWithImages, getCompanyConfigPublic } from "@/action
 import { Product } from "@/interfaces";
 import { getCurrentCompanyId } from '@/lib/domain';
 import { CatalogHeaderWrapper } from "./ui/CatalogHeaderWrapper";
+import { PriceConfig } from "@/utils";
 
 export default async function CatalogPage({ searchParams } :{searchParams: Promise<{page?: string, search?: string, [key: string]: string | undefined}>} & {params: Promise<{page?: string, search?: string}>}) {
 
@@ -33,7 +34,7 @@ export default async function CatalogPage({ searchParams } :{searchParams: Promi
   const companyId = await getCurrentCompanyId();
   let columns = 4; // Valor por defecto: 4 columnas
   let imageSize: 'small' | 'medium' | 'large' = 'medium'; // Valor por defecto: medium
-  let priceConfig = { currency: 'USD', format: 'symbol-before', showPrices: true }; // Valores por defecto
+  let priceConfig: PriceConfig = { currency: 'USD', format: 'symbol-before', showPrices: true, decimals: 2 }; // Valores por defecto
   if (companyId) {
     const { configs } = await getCompanyConfigPublic(companyId);
     if (configs && typeof configs === 'object' && !Array.isArray(configs)) {
@@ -51,6 +52,7 @@ export default async function CatalogPage({ searchParams } :{searchParams: Promi
         currency: configsMap['prices.currency'] || 'USD',
         format: configsMap['prices.format'] || 'symbol-before',
         showPrices: configsMap['prices.showPrices'] !== undefined ? configsMap['prices.showPrices'] : true,
+        decimals: configsMap['prices.decimals'] !== undefined ? Number(configsMap['prices.decimals']) : 2,
       };
     }
   }

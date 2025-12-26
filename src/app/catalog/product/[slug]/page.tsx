@@ -97,7 +97,7 @@ export default async function ProductPage({params}: {params: Promise<{slug: stri
 
   // Obtener configuración de precios y stock
   const companyId = await getCurrentCompanyId();
-  let priceConfig: PriceConfig = { currency: 'USD', format: 'symbol-before', showPrices: true };
+  let priceConfig: PriceConfig = { currency: 'USD', format: 'symbol-before', showPrices: true, decimals: 2 };
   let stockConfig = {
     showInDetails: true,
     showLowStockMessage: true,

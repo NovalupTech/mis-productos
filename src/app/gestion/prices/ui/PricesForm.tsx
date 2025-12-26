@@ -30,6 +30,7 @@ const FORMAT_OPTIONS = [
 // Valores por defecto
 const DEFAULT_CURRENCY = 'USD';
 const DEFAULT_FORMAT = 'symbol-before';
+const DEFAULT_DECIMALS = 2;
 const DEFAULT_SHOW_PRICES = true;
 const DEFAULT_ENABLE_TAX = false;
 const DEFAULT_TAX_TYPE = 'percentage';
@@ -42,6 +43,11 @@ export const PricesForm = ({ initialConfig }: PricesFormProps) => {
   );
   const [format, setFormat] = useState<string>(
     initialConfig['prices.format'] || DEFAULT_FORMAT
+  );
+  const [decimals, setDecimals] = useState<number>(
+    initialConfig['prices.decimals'] !== undefined 
+      ? Number(initialConfig['prices.decimals']) 
+      : DEFAULT_DECIMALS
   );
   const [showPrices, setShowPrices] = useState<boolean>(
     initialConfig['prices.showPrices'] !== undefined 
@@ -68,6 +74,7 @@ export const PricesForm = ({ initialConfig }: PricesFormProps) => {
   // Verificar si cada configuración existe (no es default)
   const hasCurrency = !!initialConfig['prices.currency'];
   const hasFormat = !!initialConfig['prices.format'];
+  const hasDecimals = initialConfig['prices.decimals'] !== undefined;
   const hasShowPrices = initialConfig['prices.showPrices'] !== undefined;
   const hasEnableTax = initialConfig['prices.enableTax'] !== undefined;
   const hasTaxType = !!initialConfig['prices.taxType'];
@@ -78,21 +85,23 @@ export const PricesForm = ({ initialConfig }: PricesFormProps) => {
   const currencySymbol = selectedCurrency?.symbol || '$';
 
   // Función para formatear el precio de ejemplo
-  const formatExamplePrice = (value: number, currencyCode: string, formatType: string) => {
+  const formatExamplePrice = (value: number, currencyCode: string, formatType: string, decimalPlaces?: number) => {
     const currency = CURRENCIES.find(c => c.value === currencyCode);
     const symbol = currency?.symbol || '$';
+    const decimalCount = decimalPlaces !== undefined ? decimalPlaces : decimals;
+    const formattedValue = value.toFixed(decimalCount);
     
     switch (formatType) {
       case 'symbol-before':
-        return `${symbol}${value}`;
+        return `${symbol}${formattedValue}`;
       case 'symbol-after':
-        return `${value}${symbol}`;
+        return `${formattedValue}${symbol}`;
       case 'code-before':
-        return `${currencyCode} ${value}`;
+        return `${currencyCode} ${formattedValue}`;
       case 'code-after':
-        return `${value} ${currencyCode}`;
+        return `${formattedValue} ${currencyCode}`;
       default:
-        return `${symbol}${value}`;
+        return `${symbol}${formattedValue}`;
     }
   };
 
@@ -105,6 +114,7 @@ export const PricesForm = ({ initialConfig }: PricesFormProps) => {
       const result = await updateCompanyConfig([
         { key: 'prices.currency', value: currency },
         { key: 'prices.format', value: format },
+        { key: 'prices.decimals', value: decimals },
         { key: 'prices.showPrices', value: showPrices },
         { key: 'prices.enableTax', value: enableTax },
         { key: 'prices.taxType', value: taxType },
@@ -144,6 +154,8 @@ export const PricesForm = ({ initialConfig }: PricesFormProps) => {
           setCurrency(DEFAULT_CURRENCY);
         } else if (key === 'prices.format') {
           setFormat(DEFAULT_FORMAT);
+        } else if (key === 'prices.decimals') {
+          setDecimals(DEFAULT_DECIMALS);
         } else if (key === 'prices.showPrices') {
           setShowPrices(DEFAULT_SHOW_PRICES);
         } else if (key === 'prices.enableTax') {
@@ -174,7 +186,7 @@ export const PricesForm = ({ initialConfig }: PricesFormProps) => {
   return (
     <form onSubmit={handleSubmit} className="max-w-4xl">
       {/* Sección: Moneda */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-4 sm:p-6 mb-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <IoPricetagOutline className="text-gray-600" size={20} />
@@ -217,8 +229,57 @@ export const PricesForm = ({ initialConfig }: PricesFormProps) => {
         </div>
       </div>
 
+      {/* Sección: Decimales */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <IoPricetagOutline className="text-gray-600" size={20} />
+            <h2 className="text-lg font-semibold text-gray-800">Decimales del precio</h2>
+          </div>
+          {hasDecimals && (
+            <button
+              type="button"
+              onClick={() => handleResetToDefault('prices.decimals')}
+              disabled={deletingKey === 'prices.decimals'}
+              className="flex items-center gap-1 text-xs text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              title="Restaurar al valor por defecto"
+            >
+              <IoRefreshOutline size={14} />
+              <span>Default</span>
+            </button>
+          )}
+        </div>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Cantidad de decimales a mostrar
+          </label>
+          <input
+            type="number"
+            min="0"
+            max="6"
+            value={decimals}
+            onChange={(e) => {
+              const value = parseInt(e.target.value, 10);
+              if (!isNaN(value) && value >= 0 && value <= 6) {
+                setDecimals(value);
+              }
+            }}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Selecciona cuántos decimales quieres mostrar en los precios (0-6)
+          </p>
+        </div>
+        <div className="text-sm text-gray-600">
+          <p className="font-medium mb-1">Vista previa:</p>
+          <p className="text-lg font-semibold" style={{ color: 'var(--theme-secondary-color)' }}>
+            {formatExamplePrice(99.99, currency, format)}
+          </p>
+        </div>
+      </div>
+
       {/* Sección: Formato */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-4 sm:p-6 mb-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <IoPricetagOutline className="text-gray-600" size={20} />
@@ -258,7 +319,7 @@ export const PricesForm = ({ initialConfig }: PricesFormProps) => {
                 <div className="flex-1">
                   <span className="text-sm font-medium text-gray-700">{option.label}</span>
                   <span className="ml-2 text-sm text-gray-500">
-                    ({formatExamplePrice(100, currency, option.value)})
+                    ({formatExamplePrice(100, currency, option.value, decimals)})
                   </span>
                 </div>
               </label>
@@ -417,14 +478,14 @@ export const PricesForm = ({ initialConfig }: PricesFormProps) => {
               <div className="space-y-1 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Subtotal:</span>
-                  <span className="font-medium">{formatExamplePrice(100, currency, format)}</span>
+                  <span className="font-medium">{formatExamplePrice(100, currency, format, decimals)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">IVA ({taxType === 'percentage' ? `${taxValue}%` : formatExamplePrice(taxValue, currency, format)}):</span>
+                  <span className="text-gray-600">IVA ({taxType === 'percentage' ? `${taxValue}%` : formatExamplePrice(taxValue, currency, format, decimals)}):</span>
                   <span className="font-medium">
                     {taxType === 'percentage' 
-                      ? formatExamplePrice(100 * (taxValue / 100), currency, format)
-                      : formatExamplePrice(taxValue, currency, format)
+                      ? formatExamplePrice(100 * (taxValue / 100), currency, format, decimals)
+                      : formatExamplePrice(taxValue, currency, format, decimals)
                     }
                   </span>
                 </div>
@@ -432,8 +493,8 @@ export const PricesForm = ({ initialConfig }: PricesFormProps) => {
                   <span className="font-semibold text-gray-800">Total:</span>
                   <span className="font-bold text-lg" style={{ color: 'var(--theme-secondary-color)' }}>
                     {taxType === 'percentage' 
-                      ? formatExamplePrice(100 + (100 * (taxValue / 100)), currency, format)
-                      : formatExamplePrice(100 + taxValue, currency, format)
+                      ? formatExamplePrice(100 + (100 * (taxValue / 100)), currency, format, decimals)
+                      : formatExamplePrice(100 + taxValue, currency, format, decimals)
                     }
                   </span>
                 </div>
