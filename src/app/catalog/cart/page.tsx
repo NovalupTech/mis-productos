@@ -20,7 +20,7 @@ export default async function CartPage() {
   }
 
   return (
-    <div className="flex justify-center items-center mb-72 px-8 sm:px-0" style={{ backgroundColor: 'var(--theme-primary-color)', minHeight: '100vh' }}>
+    <div className="flex justify-center mb-72 px-8 sm:px-0" style={{ backgroundColor: 'var(--theme-primary-color)', minHeight: '100vh' }}>
       <div className="flex flex-col w-[1000px]">
 
         <Title title="Carrito" />

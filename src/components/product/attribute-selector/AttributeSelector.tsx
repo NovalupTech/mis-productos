@@ -135,12 +135,29 @@ export const AttributeSelector = ({
                 type="button"
                 onClick={() => handleChange(value)}
                 className={clsx(
-                  'px-4 py-2 rounded-md border transition-colors',
+                  'px-4 py-2 rounded-md border transition-colors font-semibold',
                   {
-                    'bg-blue-500 text-white border-blue-500': isSelected,
-                    'bg-white text-gray-700 border-gray-300 hover:border-blue-300': !isSelected,
+                    'border-transparent': isSelected,
+                    'bg-white text-gray-700 border-gray-300 hover:border-gray-400': !isSelected,
                   }
                 )}
+                style={isSelected ? {
+                  backgroundColor: 'var(--theme-secondary-color)',
+                  color: 'var(--theme-secondary-text-color)',
+                  borderColor: 'var(--theme-secondary-color)',
+                } : {}}
+                onMouseEnter={(e) => {
+                  if (isSelected) {
+                    e.currentTarget.style.backgroundColor = 'var(--theme-secondary-color-hover)';
+                    e.currentTarget.style.borderColor = 'var(--theme-secondary-color-hover)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (isSelected) {
+                    e.currentTarget.style.backgroundColor = 'var(--theme-secondary-color)';
+                    e.currentTarget.style.borderColor = 'var(--theme-secondary-color)';
+                  }
+                }}
               >
                 {value}
               </button>
