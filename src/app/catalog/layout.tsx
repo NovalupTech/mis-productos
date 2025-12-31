@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { PriceConfigProvider } from "@/components/providers/PriceConfigProvider";
 import { PayPalProvider } from "@/components/providers/PayPalProvider";
 import { DiscountProvider } from "@/components/providers/DiscountProvider";
+import { FavoritesProvider } from "@/components/providers/FavoritesProvider";
 import { Toast } from "@/components/ui/toast/Toast";
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
@@ -224,9 +225,10 @@ export default async function ShopLayout({
         <PriceConfigProvider priceConfig={priceConfig}>
           <PayPalProvider clientId={paypalClientId}>
             <DiscountProvider>
-              <TopMenu />
-              <Sidebar/>
-              <Toast />
+              <FavoritesProvider>
+                <TopMenu />
+                <Sidebar/>
+                <Toast />
 
           <div className="mx-0 sm:mx-10" style={{ backgroundColor: primaryColor }}>
             { children }
@@ -234,6 +236,7 @@ export default async function ShopLayout({
 
           <Footer paymentMethods={paymentMethods} />
           <FloatingSocialButton />
+              </FavoritesProvider>
             </DiscountProvider>
           </PayPalProvider>
         </PriceConfigProvider>

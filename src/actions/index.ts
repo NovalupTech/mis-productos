@@ -91,3 +91,8 @@ export * from './payment-methods/get-mercado-pago-config';
 export * from './shipping/get-shipping-config';
 export * from './shipping/update-shipping-config';
 export * from './shipping/get-shipping-config-public';
+
+export * from './favorites/check-favorite';
+export * from './favorites/toggle-favorite';
+export * from './favorites/get-user-favorites';
+export * from './favorites/get-favorite-ids';

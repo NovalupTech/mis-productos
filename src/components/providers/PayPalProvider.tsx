@@ -2,7 +2,6 @@
 
 import { PayPalScriptProvider } from "@paypal/react-paypal-js"
 import { usePriceConfig } from "./PriceConfigProvider"
-import { SessionProvider } from "next-auth/react"
 
 interface PayPalProviderProps {
   children: React.ReactNode
@@ -12,13 +11,9 @@ interface PayPalProviderProps {
 export const PayPalProvider = ({ children, clientId }: PayPalProviderProps) => {
   const priceConfig = usePriceConfig()
   
-  // Si no hay clientId, no renderizar PayPalProvider (los botones no funcionarán)
+  // Si no hay clientId, solo renderizar children (SessionProvider ya está en el layout raíz)
   if (!clientId) {
-    return (
-      <SessionProvider>
-        {children}
-      </SessionProvider>
-    )
+    return <>{children}</>
   }
   
   return (
@@ -30,9 +25,7 @@ export const PayPalProvider = ({ children, clientId }: PayPalProviderProps) => {
         locale: 'es_AR'
       }}
     >
-      <SessionProvider>
-        {children}
-      </SessionProvider>
+      {children}
     </PayPalScriptProvider>
   )
 }

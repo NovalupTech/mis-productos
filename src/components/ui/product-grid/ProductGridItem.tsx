@@ -1,19 +1,19 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { Product, ProductInCart } from '@/interfaces'
 import { useCartStore } from '@/store/cart/cart-store'
+import { useFavoritesStore } from '@/store/favorites/favorites-store'
 import { formatPrice } from '@/utils'
 import { usePriceConfig } from '@/components/providers/PriceConfigProvider'
 import { useDiscounts } from '@/components/providers/DiscountProvider'
 import { RequiredAttributesModal, DiscountBadge } from '@/components'
 import { getBestDiscount, formatDiscountBadge } from '@/utils/discounts'
 import { toggleFavorite } from '@/actions/favorites/toggle-favorite'
-import { checkFavorite } from '@/actions/favorites/check-favorite'
 import { IoHeart, IoHeartOutline } from 'react-icons/io5'
 
 interface Props {
@@ -31,16 +31,12 @@ const ProductGridItem = ({product, selectedTag, imageSize = 'medium'}: Props) =>
   const [image, setImage] = useState(product.images[0]);
   const [isHovered, setIsHovered] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(false);
   const [isLoadingFavorite, setIsLoadingFavorite] = useState(false);
   const addProductToCart = useCartStore(state => state.addProductToCart);
-
-  // Verificar si el producto está en favoritos cuando el componente se monta
-  useEffect(() => {
-    if (session?.user) {
-      checkFavorite(product.id).then(setIsFavorite);
-    }
-  }, [session?.user, product.id]);
+  const { isFavorite: checkIsFavorite, addFavorite, removeFavorite } = useFavoritesStore();
+  
+  // Usar el store para verificar si es favorito
+  const isFavorite = checkIsFavorite(product.id);
 
   // Calcular descuento aplicable (no verificar condiciones para mostrar badges de BUY_X_GET_Y)
   const appliedDiscount = getBestDiscount(discounts, product, 1, 0, false);
@@ -112,7 +108,12 @@ const ProductGridItem = ({product, selectedTag, imageSize = 'medium'}: Props) =>
     setIsLoadingFavorite(true);
     const result = await toggleFavorite(product.id);
     if (result.ok) {
-      setIsFavorite(result.isFavorite || false);
+      // Actualizar el store en lugar del estado local
+      if (result.isFavorite) {
+        addFavorite(product.id);
+      } else {
+        removeFavorite(product.id);
+      }
     }
     setIsLoadingFavorite(false);
   };

@@ -44,6 +44,7 @@ export const InfiniteScrollProducts = ({
   const observerTarget = useRef<HTMLDivElement>(null)
   const searchParams = useSearchParams()
   const prevFiltersRef = useRef<string>('')
+  const isLoadingRef = useRef(false) // Ref para evitar llamadas concurrentes
   const { viewMode: storeViewMode } = useCatalogViewStore()
   const { sortMode } = useCatalogSortStore()
 
@@ -87,60 +88,98 @@ export const InfiniteScrollProducts = ({
       setTotalPages(initialTotalPages)
       setHasMore(initialPage < initialTotalPages)
       prevFiltersRef.current = filtersKey
+      isLoadingRef.current = false // Resetear el flag de carga
     }
   }, [initialProducts, initialPage, initialTotalPages, filtersKey])
 
-  const loadMoreProducts = useCallback(async () => {
-    if (isLoading || !hasMore) return
+  // Usar refs para mantener los valores más recientes sin causar recreaciones del callback
+  const filtersRef = useRef({ search, tag, attributeFilters })
+  const currentPageRef = useRef(currentPage)
+  const hasMoreRef = useRef(hasMore)
 
+  // Actualizar refs cuando cambian los valores
+  useEffect(() => {
+    filtersRef.current = { search, tag, attributeFilters }
+    currentPageRef.current = currentPage
+    hasMoreRef.current = hasMore
+  }, [search, tag, attributeFilters, currentPage, hasMore])
+
+  // Sincronizar isLoadingRef con isLoading
+  useEffect(() => {
+    isLoadingRef.current = isLoading
+  }, [isLoading])
+
+  const loadMoreProducts = useCallback(async () => {
+    // Usar refs para verificar el estado actual sin depender de los valores en el closure
+    if (isLoadingRef.current || !hasMoreRef.current) return
+
+    isLoadingRef.current = true
     setIsLoading(true)
+    
     try {
-      const nextPage = currentPage + 1
+      const nextPage = currentPageRef.current + 1
+      const filters = filtersRef.current
+      
       const result = await getPaginatedProductsWithImages({
         page: nextPage,
-        search,
-        tag,
-        attributeFilters,
+        search: filters.search,
+        tag: filters.tag,
+        attributeFilters: filters.attributeFilters,
       })
 
       if (result.products.length > 0) {
         setProducts((prev) => [...prev, ...(result.products as unknown as Product[])])
         setCurrentPage(nextPage)
         setHasMore(nextPage < result.totalPages)
+        hasMoreRef.current = nextPage < result.totalPages
       } else {
         setHasMore(false)
+        hasMoreRef.current = false
       }
     } catch (error) {
       console.error('Error loading more products:', error)
       setHasMore(false)
+      hasMoreRef.current = false
     } finally {
+      isLoadingRef.current = false
       setIsLoading(false)
     }
-  }, [currentPage, isLoading, hasMore, search, tag, attributeFilters])
+  }, []) // Sin dependencias - usa refs para acceder a valores actuales
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore && !isLoading) {
-          loadMoreProducts()
-        }
-      },
-      {
-        rootMargin: '100px', // Cargar 100px antes de llegar al final
-      }
-    )
+    // Solo crear el observer si hay más productos para cargar
+    if (!hasMore) return
 
-    const currentTarget = observerTarget.current
-    if (currentTarget) {
-      observer.observe(currentTarget)
-    }
+    let observer: IntersectionObserver | null = null
+    let currentTarget: HTMLDivElement | null = null
+
+    // Pequeño delay para evitar que se dispare inmediatamente al montar
+    const timeoutId = setTimeout(() => {
+      observer = new IntersectionObserver(
+        (entries) => {
+          // Verificar usando refs para evitar condiciones de carrera
+          if (entries[0].isIntersecting && hasMoreRef.current && !isLoadingRef.current) {
+            loadMoreProducts()
+          }
+        },
+        {
+          rootMargin: '100px', // Cargar 100px antes de llegar al final
+        }
+      )
+
+      currentTarget = observerTarget.current
+      if (currentTarget) {
+        observer.observe(currentTarget)
+      }
+    }, 100) // Delay de 100ms para evitar llamadas inmediatas
 
     return () => {
-      if (currentTarget) {
+      clearTimeout(timeoutId)
+      if (observer && currentTarget) {
         observer.unobserve(currentTarget)
       }
     }
-  }, [hasMore, isLoading, loadMoreProducts])
+  }, [hasMore, loadMoreProducts]) // Solo recrear cuando cambia hasMore o loadMoreProducts
 
   return (
     <>
