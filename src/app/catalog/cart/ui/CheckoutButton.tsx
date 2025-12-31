@@ -12,9 +12,10 @@ export const CheckoutButton = ({ handlesShipping }: CheckoutButtonProps) => {
 
   return (
     <Link 
-      className="flex justify-center mt-5 mb-2 w-full text-white py-2 px-4 rounded transition-all font-medium"
+      className="flex justify-center mt-5 mb-2 w-full py-2 px-4 rounded transition-all font-medium"
       style={{
         backgroundColor: 'var(--theme-secondary-color)',
+        color: 'var(--theme-secondary-text-color)',
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.backgroundColor = 'var(--theme-secondary-color-hover)';

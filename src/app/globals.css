@@ -60,7 +60,15 @@ body {
 
 
 .btn-primary {
-  @apply bg-blue-600 hover:bg-blue-800 text-white py-2 px-4 rounded transition-all;
+  background-color: var(--theme-secondary-color);
+  color: var(--theme-secondary-text-color);
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  transition: all 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: var(--theme-secondary-color-hover);
 }
 
 .btn-secondary {

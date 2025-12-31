@@ -95,7 +95,10 @@ export default async function OrdersPage() {
                 return (
                   <div 
                     key={order.id} 
-                    className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden"
+                    className="border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden"
+                    style={{
+                      backgroundColor: 'var(--theme-primary-color)',
+                    }}
                   >
                     {/* Header de la orden */}
                     <div className="p-4 border-b border-gray-100">
@@ -185,7 +188,17 @@ export default async function OrdersPage() {
                       </div>
                       <Link
                         href={`/catalog/orders/${order.id}`}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium whitespace-nowrap"
+                        className="px-4 py-2 rounded-lg transition-colors text-sm font-medium whitespace-nowrap"
+                        style={{
+                          backgroundColor: 'var(--theme-secondary-color)',
+                          color: 'var(--theme-secondary-text-color)',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = 'var(--theme-secondary-color-hover)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'var(--theme-secondary-color)';
+                        }}
                       >
                         {order.isPaid ? 'Ver compra' : 'Pagar ahora'}
                       </Link>

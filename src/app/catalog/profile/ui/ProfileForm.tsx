@@ -260,10 +260,26 @@ export const ProfileForm = ({ countries, user }: Props) => {
           className={clsx(
             "px-6 py-2 rounded-md font-medium transition-colors",
             {
-              "bg-blue-600 text-white hover:bg-blue-700": !isLoading,
-              "bg-gray-400 text-gray-200 cursor-not-allowed": isLoading
+              "cursor-not-allowed opacity-50": isLoading
             }
           )}
+          style={!isLoading ? {
+            backgroundColor: 'var(--theme-secondary-color)',
+            color: 'var(--theme-secondary-text-color)',
+          } : {
+            backgroundColor: '#9ca3af',
+            color: '#ffffff',
+          }}
+          onMouseEnter={(e) => {
+            if (!isLoading) {
+              e.currentTarget.style.backgroundColor = 'var(--theme-secondary-color-hover)';
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!isLoading) {
+              e.currentTarget.style.backgroundColor = 'var(--theme-secondary-color)';
+            }
+          }}
         >
           {isLoading ? 'Guardando...' : 'Guardar cambios'}
         </button>

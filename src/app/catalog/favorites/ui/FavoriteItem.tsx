@@ -165,7 +165,10 @@ export const FavoriteItem = ({ favorite }: Props) => {
   return (
     <>
       <div 
-        className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow bg-white"
+        className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow"
+        style={{
+          backgroundColor: 'var(--theme-primary-color)',
+        }}
       >
         {/* Imagen a la izquierda */}
         <a 
@@ -223,9 +226,10 @@ export const FavoriteItem = ({ favorite }: Props) => {
             <div className="flex items-center gap-2">
               <button
                 onClick={handleAddToCart}
-                className="text-white px-6 py-2 rounded-md font-semibold transition-colors whitespace-nowrap"
+                className="px-6 py-2 rounded-md font-semibold transition-colors whitespace-nowrap"
                 style={{
                   backgroundColor: 'var(--theme-secondary-color)',
+                  color: 'var(--theme-secondary-text-color)',
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = 'var(--theme-secondary-color-hover)'

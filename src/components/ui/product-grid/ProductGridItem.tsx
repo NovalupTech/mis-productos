@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { Product, ProductInCart } from '@/interfaces'
 import { useCartStore } from '@/store/cart/cart-store'
@@ -26,13 +26,14 @@ const ProductGridItem = ({product, selectedTag, imageSize = 'medium'}: Props) =>
   const priceConfig = usePriceConfig();
   const { discounts } = useDiscounts();
   const { data: session } = useSession();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [image, setImage] = useState(product.images[0]);
   const [isHovered, setIsHovered] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [isLoadingFavorite, setIsLoadingFavorite] = useState(false);
   const addProductToCart = useCartStore(state => state.addProductToCart);
-  const router = useRouter();
 
   // Verificar si el producto está en favoritos cuando el componente se monta
   useEffect(() => {
@@ -178,9 +179,10 @@ const ProductGridItem = ({product, selectedTag, imageSize = 'medium'}: Props) =>
               <div className='flex flex-col gap-2'>
                 <button
                   onClick={handleAddToCart}
-                  className='text-white px-6 py-3 rounded-md font-semibold transition-colors duration-200 w-full'
+                  className='px-6 py-3 rounded-md font-semibold transition-colors duration-200 w-full'
                   style={{
                     backgroundColor: 'var(--theme-secondary-color)',
+                    color: 'var(--theme-secondary-text-color)',
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = 'var(--theme-secondary-color-hover)';
@@ -204,7 +206,11 @@ const ProductGridItem = ({product, selectedTag, imageSize = 'medium'}: Props) =>
         
         {/* Contenido - En mobile se expande, en desktop ocupa el espacio restante */}
         <div className='p-3 sm:p-4 flex flex-col flex-grow min-w-0'>
-            <Link className='hover:text-blue-600 line-clamp-2 mb-1 text-sm sm:text-base' href={`/catalog/product/${product.slug}`}>
+            <Link 
+              className='line-clamp-2 mb-1 text-sm sm:text-base hover:opacity-80 transition-opacity' 
+              href={`/catalog/product/${product.slug}`}
+              style={{ color: 'var(--theme-primary-text-color)' }}
+            >
                 {product.title}
             </Link>
             <div className="flex items-center gap-2 flex-wrap">
@@ -234,7 +240,18 @@ const ProductGridItem = ({product, selectedTag, imageSize = 'medium'}: Props) =>
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        router.push(`/catalog/?tag=${encodeURIComponent(tag.name)}`);
+                        const params = new URLSearchParams(searchParams.toString());
+                        
+                        if (isSelected) {
+                          // Si ya está seleccionado, eliminar el filtro
+                          params.delete('tag');
+                        } else {
+                          // Si no está seleccionado, agregar el filtro
+                          params.set('tag', tag.name);
+                        }
+                        
+                        const newUrl = params.toString() ? `/catalog?${params.toString()}` : '/catalog';
+                        router.push(newUrl);
                       }}
                       className={`text-xs px-2 py-1 rounded transition-colors cursor-pointer ${
                         isSelected
@@ -243,6 +260,7 @@ const ProductGridItem = ({product, selectedTag, imageSize = 'medium'}: Props) =>
                       }`}
                       style={isSelected ? {
                         backgroundColor: 'var(--theme-secondary-color)',
+                        color: 'var(--theme-secondary-text-color)',
                       } : {}}
                     >
                       {tag.name}
@@ -255,9 +273,10 @@ const ProductGridItem = ({product, selectedTag, imageSize = 'medium'}: Props) =>
             <div className='mt-2 sm:hidden flex flex-col gap-2'>
               <button
                 onClick={handleAddToCart}
-                className='text-white px-4 py-2 rounded-md text-sm font-semibold transition-colors w-full'
+                className='px-4 py-2 rounded-md text-sm font-semibold transition-colors w-full'
                 style={{
                   backgroundColor: 'var(--theme-secondary-color)',
+                  color: 'var(--theme-secondary-text-color)',
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = 'var(--theme-secondary-color-hover)';

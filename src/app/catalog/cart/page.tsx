@@ -20,7 +20,7 @@ export default async function CartPage() {
   }
 
   return (
-    <div className="flex justify-center items-center mb-72 px-8 sm:px-0">
+    <div className="flex justify-center items-center mb-72 px-8 sm:px-0" style={{ backgroundColor: 'var(--theme-primary-color)', minHeight: '100vh' }}>
       <div className="flex flex-col w-[1000px]">
 
         <Title title="Carrito" />
@@ -59,7 +59,7 @@ export default async function CartPage() {
         </div>
 
         { /* Checkout - Resumen de orden */ }
-        <div className="bg-white rounded-xl shadow-xl p-7 h-[300px] ">
+        <div className="rounded-xl shadow-xl p-7 h-[300px]" style={{ backgroundColor: 'var(--theme-primary-color)' }}>
           <h2 className="text-2xl mb-2">Resumen de orden</h2>
           <CartSummary/>
 

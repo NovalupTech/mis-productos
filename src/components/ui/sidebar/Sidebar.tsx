@@ -81,7 +81,7 @@ export const Sidebar = () => {
       <nav
         className={
           clsx(
-            "fixed right-0 top-0 h-screen bg-white z-50 shadow-2xl transform transition-transform duration-300 ease-in-out overflow-y-auto",
+            "fixed right-0 top-0 h-screen z-50 shadow-2xl transform transition-transform duration-300 ease-in-out overflow-y-auto",
             "w-[85%] max-w-sm", // En mobile: 85% del ancho, máximo 384px (sm)
             {
               "translate-x-0": isSideMenuOpen, // Visible cuando está abierto
@@ -89,6 +89,7 @@ export const Sidebar = () => {
             }
           )
         }
+        style={{ backgroundColor: 'var(--theme-primary-color)' }}
       >
         <div className="p-5">
           {/* Botón de cerrar */}

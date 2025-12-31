@@ -185,6 +185,8 @@ export default async function ShopLayout({
   const configsMap: Record<string, any> = configs && typeof configs === 'object' ? configs : {};
   const primaryColor = (configsMap['theme.primaryColor'] as string | undefined) || '#ffffff'; // Blanco por defecto
   const secondaryColor = (configsMap['theme.secondaryColor'] as string | undefined) || '#2563eb'; // Azul eléctrico por defecto
+  const primaryTextColor = (configsMap['theme.primaryTextColor'] as string | undefined) || '#1f2937'; // Gris oscuro por defecto
+  const secondaryTextColor = (configsMap['theme.secondaryTextColor'] as string | undefined) || '#ffffff'; // Blanco por defecto
   
   // Calcular color hover (oscurecer 15%)
   const secondaryHover = calculateHoverColor(secondaryColor);
@@ -200,18 +202,25 @@ export default async function ShopLayout({
 
   // Si hay companyId, renderizar el shop normal
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen" style={{ backgroundColor: primaryColor }}>
       <style dangerouslySetInnerHTML={{
         __html: `
           :root {
             --theme-primary-color: ${primaryColor};
             --theme-secondary-color: ${secondaryColor};
             --theme-secondary-color-hover: ${secondaryHover};
+            --theme-primary-text-color: ${primaryTextColor};
+            --theme-secondary-text-color: ${secondaryTextColor};
           }
         `
       }} />
       <CompanyProvider company={company} />
-      <ThemeProvider primaryColor={primaryColor} secondaryColor={secondaryColor}>
+      <ThemeProvider 
+        primaryColor={primaryColor} 
+        secondaryColor={secondaryColor}
+        primaryTextColor={primaryTextColor}
+        secondaryTextColor={secondaryTextColor}
+      >
         <PriceConfigProvider priceConfig={priceConfig}>
           <PayPalProvider clientId={paypalClientId}>
             <DiscountProvider>
@@ -219,7 +228,7 @@ export default async function ShopLayout({
               <Sidebar/>
               <Toast />
 
-          <div className="mx-0 sm:mx-10">
+          <div className="mx-0 sm:mx-10" style={{ backgroundColor: primaryColor }}>
             { children }
           </div>
 

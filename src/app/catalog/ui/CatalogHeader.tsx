@@ -23,7 +23,12 @@ export const CatalogHeader = ({ tag, search, viewMode, onViewChange }: CatalogHe
       <div className="flex items-center justify-between mt-3">
         {/* Título y botón de remover tag */}
         <div className="flex items-center gap-2 flex-1">
-          <h2 className="text-xl pl-4 sm:pl-0">{getTitle()}</h2>
+          <h2 
+            className="text-xl pl-4 sm:pl-0"
+            style={{ color: 'var(--theme-primary-text-color)' }}
+          >
+            {getTitle()}
+          </h2>
           {tag && <RemoveTagButton />}
         </div>
 

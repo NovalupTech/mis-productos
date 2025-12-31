@@ -26,6 +26,8 @@ const COLUMN_OPTIONS = [
 // Valores por defecto
 const DEFAULT_PRIMARY_COLOR = '#ffffff';
 const DEFAULT_SECONDARY_COLOR = '#2563eb';
+const DEFAULT_PRIMARY_TEXT_COLOR = '#1f2937';
+const DEFAULT_SECONDARY_TEXT_COLOR = '#ffffff';
 const DEFAULT_COLUMNS = 4;
 const DEFAULT_IMAGE_SIZE = 'medium';
 
@@ -36,6 +38,12 @@ export const AppearanceForm = ({ initialConfig }: AppearanceFormProps) => {
   );
   const [secondaryColor, setSecondaryColor] = useState<string>(
     initialConfig['theme.secondaryColor'] || DEFAULT_SECONDARY_COLOR
+  );
+  const [primaryTextColor, setPrimaryTextColor] = useState<string>(
+    initialConfig['theme.primaryTextColor'] || DEFAULT_PRIMARY_TEXT_COLOR
+  );
+  const [secondaryTextColor, setSecondaryTextColor] = useState<string>(
+    initialConfig['theme.secondaryTextColor'] || DEFAULT_SECONDARY_TEXT_COLOR
   );
   const [catalogColumns, setCatalogColumns] = useState<number>(
     initialConfig['catalog.columns'] || DEFAULT_COLUMNS
@@ -50,6 +58,8 @@ export const AppearanceForm = ({ initialConfig }: AppearanceFormProps) => {
   // Verificar si cada configuración existe (no es default)
   const hasPrimaryColor = !!initialConfig['theme.primaryColor'];
   const hasSecondaryColor = !!initialConfig['theme.secondaryColor'];
+  const hasPrimaryTextColor = !!initialConfig['theme.primaryTextColor'];
+  const hasSecondaryTextColor = !!initialConfig['theme.secondaryTextColor'];
   const hasCatalogColumns = initialConfig['catalog.columns'] !== undefined;
   const hasImageSize = initialConfig['catalog.imageSize'] !== undefined;
 
@@ -62,6 +72,8 @@ export const AppearanceForm = ({ initialConfig }: AppearanceFormProps) => {
       const result = await updateCompanyConfig([
         { key: 'theme.primaryColor', value: primaryColor },
         { key: 'theme.secondaryColor', value: secondaryColor },
+        { key: 'theme.primaryTextColor', value: primaryTextColor },
+        { key: 'theme.secondaryTextColor', value: secondaryTextColor },
         { key: 'catalog.columns', value: catalogColumns },
         { key: 'catalog.imageSize', value: imageSize },
       ]);
@@ -95,6 +107,10 @@ export const AppearanceForm = ({ initialConfig }: AppearanceFormProps) => {
           setSecondaryColor(DEFAULT_SECONDARY_COLOR);
         } else if (key === 'catalog.columns') {
           setCatalogColumns(DEFAULT_COLUMNS);
+        } else if (key === 'theme.primaryTextColor') {
+          setPrimaryTextColor(DEFAULT_PRIMARY_TEXT_COLOR);
+        } else if (key === 'theme.secondaryTextColor') {
+          setSecondaryTextColor(DEFAULT_SECONDARY_TEXT_COLOR);
         } else if (key === 'catalog.imageSize') {
           setImageSize(DEFAULT_IMAGE_SIZE);
         }
@@ -157,10 +173,6 @@ export const AppearanceForm = ({ initialConfig }: AppearanceFormProps) => {
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
-            {/* Preview */}
-            <div className="mt-3 p-4 rounded-lg" style={{ backgroundColor: primaryColor }}>
-              <p className="text-white font-medium text-center">Vista previa</p>
-            </div>
           </div>
 
           {/* Color secundario */}
@@ -198,14 +210,97 @@ export const AppearanceForm = ({ initialConfig }: AppearanceFormProps) => {
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
+          </div>
+
+          {/* Color de texto primario */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Color de texto primario
+                <span className="text-xs text-gray-500 ml-2">(Texto en las páginas)</span>
+              </label>
+              {hasPrimaryTextColor && (
+                <button
+                  type="button"
+                  onClick={() => handleResetToDefault('theme.primaryTextColor')}
+                  disabled={deletingKey === 'theme.primaryTextColor'}
+                  className="flex items-center gap-1 text-xs text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  title="Restaurar al valor por defecto"
+                >
+                  <IoRefreshOutline size={14} />
+                  <span>Default</span>
+                </button>
+              )}
+            </div>
+            <div className="flex items-center gap-3">
+              <input
+                type="color"
+                value={primaryTextColor}
+                onChange={(e) => setPrimaryTextColor(e.target.value)}
+                className="w-16 h-16 rounded-lg border-2 border-gray-300 cursor-pointer"
+              />
+              <input
+                type="text"
+                value={primaryTextColor}
+                onChange={(e) => setPrimaryTextColor(e.target.value)}
+                placeholder={DEFAULT_PRIMARY_TEXT_COLOR}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+            {/* Preview */}
+            <div className="mt-3 p-4 rounded-lg" style={{ backgroundColor: primaryColor }}>
+              <p className="font-medium text-center" style={{ color: primaryTextColor }}>
+                Vista previa del texto
+              </p>
+            </div>
+          </div>
+
+          {/* Color de texto secundario */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Color de texto secundario
+                <span className="text-xs text-gray-500 ml-2">(Texto en los botones)</span>
+              </label>
+              {hasSecondaryTextColor && (
+                <button
+                  type="button"
+                  onClick={() => handleResetToDefault('theme.secondaryTextColor')}
+                  disabled={deletingKey === 'theme.secondaryTextColor'}
+                  className="flex items-center gap-1 text-xs text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  title="Restaurar al valor por defecto"
+                >
+                  <IoRefreshOutline size={14} />
+                  <span>Default</span>
+                </button>
+              )}
+            </div>
+            <div className="flex items-center gap-3">
+              <input
+                type="color"
+                value={secondaryTextColor}
+                onChange={(e) => setSecondaryTextColor(e.target.value)}
+                className="w-16 h-16 rounded-lg border-2 border-gray-300 cursor-pointer"
+              />
+              <input
+                type="text"
+                value={secondaryTextColor}
+                onChange={(e) => setSecondaryTextColor(e.target.value)}
+                placeholder={DEFAULT_SECONDARY_TEXT_COLOR}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
             {/* Preview */}
             <div className="mt-3">
               <button
                 type="button"
-                className="w-full py-3 rounded-lg text-white font-medium"
-                style={{ backgroundColor: secondaryColor }}
+                className="w-full py-3 rounded-lg font-medium"
+                style={{ 
+                  backgroundColor: secondaryColor,
+                  color: secondaryTextColor
+                }}
               >
-                Vista previa del botón
+                Vista previa del texto del botón
               </button>
             </div>
           </div>

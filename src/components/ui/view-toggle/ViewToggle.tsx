@@ -45,18 +45,20 @@ export const ViewToggle = ({ onViewChange, value }: Props) => {
           backgroundColor: viewMode === 'grid' 
             ? 'var(--theme-secondary-color)' 
             : 'var(--theme-primary-color)',
-          color: viewMode === 'grid' ? '#ffffff' : '#374151',
+          color: viewMode === 'grid' 
+            ? 'var(--theme-secondary-text-color)' 
+            : 'var(--theme-primary-text-color)',
         }}
         onMouseEnter={(e) => {
           if (viewMode !== 'grid') {
             e.currentTarget.style.backgroundColor = 'var(--theme-secondary-color-hover)';
-            e.currentTarget.style.color = '#ffffff';
+            e.currentTarget.style.color = 'var(--theme-secondary-text-color)';
           }
         }}
         onMouseLeave={(e) => {
           if (viewMode !== 'grid') {
             e.currentTarget.style.backgroundColor = 'var(--theme-primary-color)';
-            e.currentTarget.style.color = '#374151';
+            e.currentTarget.style.color = 'var(--theme-primary-text-color)';
           }
         }}
         title="Vista de cuadrícula"
@@ -71,18 +73,20 @@ export const ViewToggle = ({ onViewChange, value }: Props) => {
           backgroundColor: viewMode === 'list' 
             ? 'var(--theme-secondary-color)' 
             : 'var(--theme-primary-color)',
-          color: viewMode === 'list' ? '#ffffff' : '#374151',
+          color: viewMode === 'list' 
+            ? 'var(--theme-secondary-text-color)' 
+            : 'var(--theme-primary-text-color)',
         }}
         onMouseEnter={(e) => {
           if (viewMode !== 'list') {
             e.currentTarget.style.backgroundColor = 'var(--theme-secondary-color-hover)';
-            e.currentTarget.style.color = '#ffffff';
+            e.currentTarget.style.color = 'var(--theme-secondary-text-color)';
           }
         }}
         onMouseLeave={(e) => {
           if (viewMode !== 'list') {
             e.currentTarget.style.backgroundColor = 'var(--theme-primary-color)';
-            e.currentTarget.style.color = '#374151';
+            e.currentTarget.style.color = 'var(--theme-primary-text-color)';
           }
         }}
         title="Vista de listado"

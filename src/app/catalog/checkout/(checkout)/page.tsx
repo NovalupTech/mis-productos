@@ -17,7 +17,7 @@ export default async function CheckoutPage() {
   }
 
   return (
-    <div className="flex justify-center items-center mb-72 px-8 sm:px-0">
+    <div className="flex justify-center items-center mb-72 px-8 sm:px-0" style={{ backgroundColor: 'var(--theme-primary-color)', minHeight: '100vh' }}>
       <div className="flex flex-col w-[1000px]">
 
         <Title title="Todo listo! esta es tu orden" />

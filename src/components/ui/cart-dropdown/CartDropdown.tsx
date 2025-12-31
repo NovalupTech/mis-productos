@@ -182,9 +182,10 @@ export const CartDropdown = ({ isVisible }: Props) => {
         )}
         <Link 
           href="/catalog/cart"
-          className="block w-full text-center text-white py-2 px-4 rounded-md transition-colors font-medium"
+          className="block w-full text-center py-2 px-4 rounded-md transition-colors font-medium"
           style={{
             backgroundColor: 'var(--theme-secondary-color)',
+            color: 'var(--theme-secondary-text-color)',
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.backgroundColor = 'var(--theme-secondary-color-hover)';

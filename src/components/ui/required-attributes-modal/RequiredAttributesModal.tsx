@@ -146,8 +146,8 @@ export const RequiredAttributesModal = ({
 
       {/* Modal */}
       <div 
-        className="relative bg-white rounded-lg shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col"
-        style={{ zIndex: 10000, position: 'relative' }}
+        className="relative rounded-lg shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col"
+        style={{ zIndex: 10000, position: 'relative', backgroundColor: 'var(--theme-primary-color)' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -205,9 +205,10 @@ export const RequiredAttributesModal = ({
           </button>
           <button
             onClick={handleAddToCart}
-            className="px-6 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors font-semibold"
+            className="px-6 py-2 rounded-md transition-colors font-semibold"
             style={{
               backgroundColor: 'var(--theme-secondary-color)',
+              color: 'var(--theme-secondary-text-color)',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = 'var(--theme-secondary-color-hover)';

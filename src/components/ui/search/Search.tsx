@@ -198,14 +198,34 @@ export const Search = ({ onClose }: SearchProps) => {
           {(Object.keys(filters).length > 0 || search) && (
             <button
               onClick={clearFilters}
-              className="px-3 py-2 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-md hover:bg-gray-100 transition-colors whitespace-nowrap"
+              className="px-3 py-2 text-sm rounded-md transition-colors whitespace-nowrap"
+              style={{
+                backgroundColor: 'var(--theme-secondary-color)',
+                color: 'var(--theme-secondary-text-color)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--theme-secondary-color-hover)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--theme-secondary-color)';
+              }}
             >
               Limpiar
             </button>
           )}
           <button
             onClick={handleClose}
-            className="px-3 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-md hover:bg-gray-100 transition-colors"
+            className="px-3 py-2 rounded-md transition-colors"
+            style={{
+              backgroundColor: 'var(--theme-secondary-color)',
+              color: 'var(--theme-secondary-text-color)',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'var(--theme-secondary-color-hover)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'var(--theme-secondary-color)';
+            }}
             title="Cerrar búsqueda"
           >
             <IoCloseOutline className="w-5 h-5" />

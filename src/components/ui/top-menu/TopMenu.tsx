@@ -317,9 +317,10 @@ export const TopMenu = () => {
                   {
                     (loaded && totalItemsInCart > 0) &&
                     <span 
-                      className="absolute text-xs px-1 font-bold -top-2 -right-2 rounded-full text-white fade-in"
+                      className="absolute text-xs px-1 font-bold -top-2 -right-2 rounded-full fade-in"
                       style={{
                         backgroundColor: 'var(--theme-secondary-color)',
+                        color: 'var(--theme-secondary-text-color)',
                       }}
                     >
                       { totalItemsInCart }
@@ -333,9 +334,10 @@ export const TopMenu = () => {
                   {
                     (loaded && totalItemsInCart > 0) &&
                     <span 
-                      className="absolute text-xs px-1 font-bold -top-2 -right-2 rounded-full text-white fade-in"
+                      className="absolute text-xs px-1 font-bold -top-2 -right-2 rounded-full fade-in"
                       style={{
                         backgroundColor: 'var(--theme-secondary-color)',
+                        color: 'var(--theme-secondary-text-color)',
                       }}
                     >
                       { totalItemsInCart }
@@ -440,9 +442,10 @@ export const TopMenu = () => {
                 href="/gestion"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hidden md:block m-2 px-4 py-2 text-white rounded-md transition-all font-medium"
+                className="hidden md:block m-2 px-4 py-2 rounded-md transition-all font-medium"
                 style={{
                   backgroundColor: 'var(--theme-secondary-color)',
+                  color: 'var(--theme-secondary-text-color)',
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = 'var(--theme-secondary-color-hover)';

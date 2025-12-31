@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Product, ProductInCart } from '@/interfaces'
 import { useCartStore } from '@/store/cart/cart-store'
 import { formatPrice } from '@/utils'
@@ -22,6 +22,7 @@ export const ProductListItem = ({product, selectedTag}: Props) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const addProductToCart = useCartStore(state => state.addProductToCart);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const priceConfig = usePriceConfig();
   const { discounts } = useDiscounts();
 
@@ -109,7 +110,8 @@ export const ProductListItem = ({product, selectedTag}: Props) => {
       <div className="flex-1 min-w-0">
         <Link 
           href={`/catalog/product/${product.slug}`}
-          className="block hover:text-blue-600 transition-colors"
+          className="block transition-opacity hover:opacity-80"
+          style={{ color: 'var(--theme-primary-text-color)' }}
         >
           <h3 className="font-semibold text-lg mb-1 line-clamp-2">{product.title}</h3>
         </Link>
@@ -146,7 +148,18 @@ export const ProductListItem = ({product, selectedTag}: Props) => {
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        router.push(`/catalog?tag=${encodeURIComponent(tag.name)}`);
+                        const params = new URLSearchParams(searchParams.toString());
+                        
+                        if (isSelected) {
+                          // Si ya está seleccionado, eliminar el filtro
+                          params.delete('tag');
+                        } else {
+                          // Si no está seleccionado, agregar el filtro
+                          params.set('tag', tag.name);
+                        }
+                        
+                        const newUrl = params.toString() ? `/catalog?${params.toString()}` : '/catalog';
+                        router.push(newUrl);
                       }}
                       className={`text-xs px-2 py-1 rounded transition-colors cursor-pointer ${
                         isSelected
@@ -155,6 +168,7 @@ export const ProductListItem = ({product, selectedTag}: Props) => {
                       }`}
                       style={isSelected ? {
                         backgroundColor: 'var(--theme-secondary-color)',
+                        color: 'var(--theme-secondary-text-color)',
                       } : {}}
                     >
                       {tag.name}
@@ -167,9 +181,10 @@ export const ProductListItem = ({product, selectedTag}: Props) => {
           
           <button
             onClick={handleBuyClick}
-            className="text-white px-6 py-2 rounded-md font-semibold transition-colors whitespace-nowrap"
+            className="px-6 py-2 rounded-md font-semibold transition-colors whitespace-nowrap"
             style={{
               backgroundColor: 'var(--theme-secondary-color)',
+              color: 'var(--theme-secondary-text-color)',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = 'var(--theme-secondary-color-hover)';

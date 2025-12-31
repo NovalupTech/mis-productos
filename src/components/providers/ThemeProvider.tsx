@@ -5,6 +5,8 @@ import { createContext, useContext, ReactNode, useMemo } from 'react';
 interface ThemeConfig {
   primaryColor: string;
   secondaryColor: string;
+  primaryTextColor: string;
+  secondaryTextColor: string;
 }
 
 interface ThemeContextType {
@@ -17,30 +19,40 @@ interface ThemeProviderProps {
   children: ReactNode;
   primaryColor?: string;
   secondaryColor?: string;
+  primaryTextColor?: string;
+  secondaryTextColor?: string;
 }
 
 export const ThemeProvider = ({ 
   children, 
   primaryColor = '#ffffff', // Blanco por defecto
-  secondaryColor = '#2563eb' // Azul eléctrico por defecto (#2563eb = blue-600)
+  secondaryColor = '#2563eb', // Azul eléctrico por defecto (#2563eb = blue-600)
+  primaryTextColor = '#1f2937', // Gris oscuro por defecto (gray-800)
+  secondaryTextColor = '#ffffff' // Blanco por defecto
 }: ThemeProviderProps) => {
   const theme: ThemeConfig = {
     primaryColor,
     secondaryColor,
+    primaryTextColor,
+    secondaryTextColor,
   };
 
   // Normalizar colores y calcular hover
-  const { normalizedPrimary, normalizedSecondary, secondaryHover } = useMemo(() => {
+  const { normalizedPrimary, normalizedSecondary, normalizedPrimaryText, normalizedSecondaryText, secondaryHover } = useMemo(() => {
     const normPrimary = primaryColor.startsWith('#') ? primaryColor : `#${primaryColor}`;
     const normSecondary = secondaryColor.startsWith('#') ? secondaryColor : `#${secondaryColor}`;
+    const normPrimaryText = primaryTextColor.startsWith('#') ? primaryTextColor : `#${primaryTextColor}`;
+    const normSecondaryText = secondaryTextColor.startsWith('#') ? secondaryTextColor : `#${secondaryTextColor}`;
     const hover = adjustBrightness(normSecondary, -15);
     
     return {
       normalizedPrimary: normPrimary,
       normalizedSecondary: normSecondary,
+      normalizedPrimaryText: normPrimaryText,
+      normalizedSecondaryText: normSecondaryText,
       secondaryHover: hover,
     };
-  }, [primaryColor, secondaryColor]);
+  }, [primaryColor, secondaryColor, primaryTextColor, secondaryTextColor]);
 
   return (
     <ThemeContext.Provider value={{ theme }}>
@@ -50,6 +62,8 @@ export const ThemeProvider = ({
             --theme-primary-color: ${normalizedPrimary};
             --theme-secondary-color: ${normalizedSecondary};
             --theme-secondary-color-hover: ${secondaryHover};
+            --theme-primary-text-color: ${normalizedPrimaryText};
+            --theme-secondary-text-color: ${normalizedSecondaryText};
           }
         `
       }} />

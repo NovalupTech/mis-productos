@@ -44,18 +44,20 @@ export const SortToggle = ({ onSortChange, value }: Props) => {
           backgroundColor: sortMode === 'price-desc' 
             ? 'var(--theme-secondary-color)' 
             : 'var(--theme-primary-color)',
-          color: sortMode === 'price-desc' ? '#ffffff' : '#374151',
+          color: sortMode === 'price-desc' 
+            ? 'var(--theme-secondary-text-color)' 
+            : 'var(--theme-primary-text-color)',
         }}
         onMouseEnter={(e) => {
           if (sortMode !== 'price-desc') {
             e.currentTarget.style.backgroundColor = 'var(--theme-secondary-color-hover)';
-            e.currentTarget.style.color = '#ffffff';
+            e.currentTarget.style.color = 'var(--theme-secondary-text-color)';
           }
         }}
         onMouseLeave={(e) => {
           if (sortMode !== 'price-desc') {
             e.currentTarget.style.backgroundColor = 'var(--theme-primary-color)';
-            e.currentTarget.style.color = '#374151';
+            e.currentTarget.style.color = 'var(--theme-primary-text-color)';
           }
         }}
         title="Mayor precio"
@@ -71,18 +73,20 @@ export const SortToggle = ({ onSortChange, value }: Props) => {
           backgroundColor: sortMode === 'price-asc' 
             ? 'var(--theme-secondary-color)' 
             : 'var(--theme-primary-color)',
-          color: sortMode === 'price-asc' ? '#ffffff' : '#374151',
+          color: sortMode === 'price-asc' 
+            ? 'var(--theme-secondary-text-color)' 
+            : 'var(--theme-primary-text-color)',
         }}
         onMouseEnter={(e) => {
           if (sortMode !== 'price-asc') {
             e.currentTarget.style.backgroundColor = 'var(--theme-secondary-color-hover)';
-            e.currentTarget.style.color = '#ffffff';
+            e.currentTarget.style.color = 'var(--theme-secondary-text-color)';
           }
         }}
         onMouseLeave={(e) => {
           if (sortMode !== 'price-asc') {
             e.currentTarget.style.backgroundColor = 'var(--theme-primary-color)';
-            e.currentTarget.style.color = '#374151';
+            e.currentTarget.style.color = 'var(--theme-primary-text-color)';
           }
         }}
         title="Menor precio"

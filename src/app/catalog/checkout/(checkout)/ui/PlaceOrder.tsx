@@ -53,7 +53,7 @@ export const PlaceOrder = ({ handlesShipping }: PlaceOrderProps) => {
     }
 
 	return (
-		<div className="bg-white rounded-xl shadow-xl p-7">
+		<div className="rounded-xl shadow-xl p-7" style={{ backgroundColor: 'var(--theme-primary-color)' }}>
 			{handlesShipping && (
 				<>
 					<h2 className="text-2xl font-bold mb-2">Direccion de entrega</h2>
