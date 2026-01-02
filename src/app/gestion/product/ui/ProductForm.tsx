@@ -112,20 +112,89 @@ export const ProductForm = ({ product, categories }: Props) => {
     setSelectedFiles([]); // Limpiar archivos seleccionados al cambiar de producto
   }, [product.id, reset]);
 
-  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Función para comprimir imágenes
+  const compressImage = async (file: File, maxWidth: number = 1920, quality: number = 0.8): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+
+          // Redimensionar si es necesario
+          if (width > maxWidth) {
+            height = (height * maxWidth) / width;
+            width = maxWidth;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            reject(new Error('No se pudo obtener el contexto del canvas'));
+            return;
+          }
+
+          ctx.drawImage(img, 0, 0, width, height);
+
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) {
+                reject(new Error('Error al comprimir la imagen'));
+                return;
+              }
+              const compressedFile = new File([blob], file.name, {
+                type: file.type,
+                lastModified: Date.now(),
+              });
+              resolve(compressedFile);
+            },
+            file.type,
+            quality
+          );
+        };
+        img.onerror = () => reject(new Error('Error al cargar la imagen'));
+      };
+      reader.onerror = () => reject(new Error('Error al leer el archivo'));
+    });
+  };
+
+  const handleFileInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
-      // Agregar los nuevos archivos al estado
-      setSelectedFiles(prev => [...prev, ...Array.from(files)]);
-      // Limpiar el input para permitir seleccionar el mismo archivo nuevamente
-      e.target.value = '';
+      try {
+        // Comprimir cada archivo antes de agregarlo
+        const compressionPromises = Array.from(files).map(file => compressImage(file));
+        const compressedFiles = await Promise.all(compressionPromises);
+        
+        // Agregar los archivos comprimidos al estado
+        setSelectedFiles(prev => [...prev, ...compressedFiles]);
+        // Limpiar el input para permitir seleccionar el mismo archivo nuevamente
+        e.target.value = '';
+      } catch (error) {
+        console.error('Error al comprimir imágenes:', error);
+        showErrorToast('Error al procesar las imágenes. Intenta nuevamente.');
+      }
     }
   };
 
-  const handleDesktopFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleDesktopFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
-      setSelectedFiles(prev => [...prev, ...Array.from(files)]);
+      try {
+        // Comprimir cada archivo antes de agregarlo
+        const compressionPromises = Array.from(files).map(file => compressImage(file));
+        const compressedFiles = await Promise.all(compressionPromises);
+        setSelectedFiles(prev => [...prev, ...compressedFiles]);
+      } catch (error) {
+        console.error('Error al comprimir imágenes:', error);
+        showErrorToast('Error al procesar las imágenes. Intenta nuevamente.');
+      }
     }
   };
 
