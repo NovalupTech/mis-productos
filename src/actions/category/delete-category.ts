@@ -62,6 +62,7 @@ export async function deleteCategory(categoryId: string) {
 
     revalidatePath('/gestion/product');
     revalidatePath('/gestion/products');
+    revalidatePath('/gestion/tags');
 
     return {
       ok: true,

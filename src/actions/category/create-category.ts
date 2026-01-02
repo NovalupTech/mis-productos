@@ -54,6 +54,7 @@ export async function createCategory(data: CreateCategoryData) {
 
     revalidatePath('/gestion/product');
     revalidatePath('/gestion/products');
+    revalidatePath('/gestion/tags');
 
     return {
       ok: true,

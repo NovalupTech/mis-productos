@@ -67,7 +67,7 @@ const navItems: NavItem[] = [
   },
   {
     href: "/gestion/tags",
-    label: "Tags",
+    label: "Categorias y Tags",
     icon: IoBookmarkOutline,
   },
   {

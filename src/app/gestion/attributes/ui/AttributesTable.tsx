@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Fragment } from 'react';
 import { useRouter } from 'next/navigation';
 import { updateAttribute, deleteAttribute } from '@/actions';
 import { IoPencilOutline, IoTrashOutline, IoCheckmarkCircleOutline, IoCloseCircleOutline, IoChevronDownOutline, IoChevronUpOutline } from 'react-icons/io5';
@@ -116,8 +116,8 @@ export const AttributesTable = ({ attributes }: Props) => {
               const valuesCount = attribute.values?.length || 0;
 
               return (
-                <div key={attribute.id}>
-                  <tr key={attribute.id} className="hover:bg-gray-50">
+                <Fragment key={attribute.id}>
+                  <tr className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="text-sm font-medium text-gray-900">{attribute.name}</span>
                     </td>
@@ -188,7 +188,7 @@ export const AttributesTable = ({ attributes }: Props) => {
                       </td>
                     </tr>
                   )}
-                </div>
+                </Fragment>
               );
             })}
           </tbody>

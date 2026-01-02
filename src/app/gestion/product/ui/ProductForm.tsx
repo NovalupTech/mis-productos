@@ -326,8 +326,12 @@ export const ProductForm = ({ product, categories }: Props) => {
               { ...register('images') }
               multiple
               className="p-2 border rounded-md bg-gray-200"
-              accept="image/png, image/jpeg, image/avif"
+              accept="image/png, image/jpeg, image/avif, image/webp"
+              capture="environment"
             />
+            <p className="text-xs text-gray-500 mt-1">
+              En móvil puedes tomar una foto o elegir de la galería
+            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
