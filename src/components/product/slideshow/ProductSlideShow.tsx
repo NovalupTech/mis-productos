@@ -15,6 +15,7 @@ import './slideshow.css';
 // import required modules
 import { Autoplay, FreeMode, Navigation, Thumbs } from 'swiper/modules';
 import Image from 'next/image';
+import { ImageModal } from './ImageModal';
 
 interface Props {
     images: string[];
@@ -25,8 +26,28 @@ interface Props {
 
 export const ProductSlideShow = ({images, title, slug, className}: Props) => {
   const [thumbsSwiper, setThumbsSwiper] = useState<SwiperObject>();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+
+  const handleImageClick = (index: number) => {
+    setSelectedImageIndex(index);
+    setIsModalOpen(true);
+  };
+
+  const handleNext = () => {
+    if (selectedImageIndex < images.length - 1) {
+      setSelectedImageIndex(selectedImageIndex + 1);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (selectedImageIndex > 0) {
+      setSelectedImageIndex(selectedImageIndex - 1);
+    }
+  };
 
   return (
+    <>
     <div className={className}>
         <Swiper
         style={{
@@ -43,15 +64,20 @@ export const ProductSlideShow = ({images, title, slug, className}: Props) => {
           {
             images.map((image, index) => (
                 <SwiperSlide key={image}>
-                    <Image
-                        key={index}
-                        alt={title}
-                        src={image.startsWith('http') || image.startsWith('https') ? image : `/products/${image}`}
-                        width={600}
-                        height={500}
-                        className='rounded-lg object-contain w-full h-full'
-                        style={{ viewTransitionName: `product-image-${slug}` }}
-                    />
+                    <div 
+                      className="cursor-pointer"
+                      onClick={() => handleImageClick(index)}
+                    >
+                      <Image
+                          key={index}
+                          alt={title}
+                          src={image.startsWith('http') || image.startsWith('https') ? image : `/products/${image}`}
+                          width={600}
+                          height={500}
+                          className='rounded-lg object-contain w-full h-full'
+                          style={{ viewTransitionName: `product-image-${slug}` }}
+                      />
+                    </div>
                 </SwiperSlide>
             ))
           }
@@ -68,18 +94,34 @@ export const ProductSlideShow = ({images, title, slug, className}: Props) => {
         {
             images.map((image, index) => (
                 <SwiperSlide key={image}>
-                    <Image
-                        key={index}
-                        alt={title}
-                        src={image.startsWith('http') || image.startsWith('https') ? image : `/products/${image}`}
-                        width={150}
-                        height={150}
-                        className='rounded-lg object-contain w-full h-full'
-                    />
+                    <div 
+                      className="cursor-pointer"
+                      onClick={() => handleImageClick(index)}
+                    >
+                      <Image
+                          key={index}
+                          alt={title}
+                          src={image.startsWith('http') || image.startsWith('https') ? image : `/products/${image}`}
+                          width={150}
+                          height={150}
+                          className='rounded-lg object-contain w-full h-full'
+                      />
+                    </div>
                 </SwiperSlide>
             ))
             }
       </Swiper>
     </div>
+
+    <ImageModal
+      isOpen={isModalOpen}
+      images={images}
+      currentIndex={selectedImageIndex}
+      title={title}
+      onClose={() => setIsModalOpen(false)}
+      onNext={handleNext}
+      onPrevious={handlePrevious}
+    />
+    </>
   );
 };

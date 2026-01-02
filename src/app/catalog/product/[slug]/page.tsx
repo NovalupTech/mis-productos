@@ -127,7 +127,7 @@ export default async function ProductPage({params}: {params: Promise<{slug: stri
   const formattedPrice = formatPrice(product.price, priceConfig);
 
   return (
-    <div className="flex flex-col md:flex-row mt-5 mb-20 gap-4 md:gap-6 max-w-5xl mx-auto px-4">
+    <div className="flex flex-col md:flex-row mt-10 mb-20 gap-4 md:gap-6 max-w-5xl mx-auto px-4">
       {/* Botones para volver al catálogo y compartir - Mobile */}
       <div className="w-full md:hidden flex gap-2">
         <BackToCatalogButton />
