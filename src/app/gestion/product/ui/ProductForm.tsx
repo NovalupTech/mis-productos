@@ -118,8 +118,12 @@ export const ProductForm = ({ product, categories }: Props) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
       reader.onload = (event) => {
-        const img = new Image();
-        img.src = event.target?.result as string;
+        const img = document.createElement('img') as HTMLImageElement;
+        if (!event.target?.result) {
+          reject(new Error('Error al leer el archivo'));
+          return;
+        }
+        img.src = event.target.result as string;
         img.onload = () => {
           const canvas = document.createElement('canvas');
           let width = img.width;
