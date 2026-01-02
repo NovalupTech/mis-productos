@@ -5,6 +5,7 @@ import { useSidebar } from "../providers/SidebarProvider";
 import { useEffect, useState } from "react";
 import { IoMenuOutline } from "react-icons/io5";
 import { AdminCompanySelectorClient } from "./AdminCompanySelectorClient";
+import { Toast } from "@/components/ui/toast/Toast";
 
 interface AdminLayoutContentProps {
   children: React.ReactNode;
@@ -48,6 +49,7 @@ export function AdminLayoutContent({ children, selectedCompanyId }: AdminLayoutC
         <div className="flex-1 p-4 sm:p-6">
           {children}
         </div>
+        <Toast />
       </main>
     </div>
   );

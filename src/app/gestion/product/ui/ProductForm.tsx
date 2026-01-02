@@ -12,10 +12,10 @@ import { deleteProduct } from "@/actions/product/delete-product";
 import { TagsModal } from './TagsModal';
 import { CategoriesModal } from './CategoriesModal';
 import { AttributesManager } from './AttributesManager';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ProductAttributeWithDetails } from '@/interfaces';
-import { IoTrashOutline } from 'react-icons/io5';
-import { showErrorToast } from '@/utils/toast';
+import { IoTrashOutline, IoSaveOutline } from 'react-icons/io5';
+import { showErrorToast, showSuccessToast } from '@/utils/toast';
 import { confirmDelete } from '@/utils/confirm';
 
 interface Props {
@@ -45,13 +45,19 @@ export const ProductForm = ({ product, categories }: Props) => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [categoriesList, setCategoriesList] = useState<Category[]>(categories);
-  const [selectedTagIds, setSelectedTagIds] = useState<string[]>(
+  
+  // Inicialización lazy para evitar problemas de hidratación
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>(() => 
     product.tags?.map(tag => tag.id) || []
   );
-  const [selectedTagNames, setSelectedTagNames] = useState<string[]>(
+  const [selectedTagNames, setSelectedTagNames] = useState<string[]>(() =>
     product.tags?.map(tag => tag.name) || []
   );
   const [productAttributes, setProductAttributes] = useState<any[]>([]);
+  const [isMobile, setIsMobile] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const {
     handleSubmit,
@@ -60,68 +66,132 @@ export const ProductForm = ({ product, categories }: Props) => {
     getValues,
     setValue,
     watch,
+    reset,
   } = useForm<FormInputs>({
     defaultValues: {
-      ...product,
+      title: product.title || '',
+      slug: product.slug || '',
+      description: product.description || '',
+      price: product.price ?? 0,
+      inStock: product.inStock ?? 0,
       tagIds: product.tags?.map(tag => tag.id) || [],
+      categoryId: product.categoryId || '',
       featured: product.featured ?? false,
       code: product.code || '',
       images: undefined,
     },
   });
 
+  // Detectar si es mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Sincronizar el formulario cuando cambien las props del producto
+  useEffect(() => {
+    reset({
+      title: product.title || '',
+      slug: product.slug || '',
+      description: product.description || '',
+      price: product.price ?? 0,
+      inStock: product.inStock ?? 0,
+      tagIds: product.tags?.map(tag => tag.id) || [],
+      categoryId: product.categoryId || '',
+      featured: product.featured ?? false,
+      code: product.code || '',
+      images: undefined,
+    });
+    setSelectedTagIds(product.tags?.map(tag => tag.id) || []);
+    setSelectedTagNames(product.tags?.map(tag => tag.name) || []);
+    setSelectedFiles([]); // Limpiar archivos seleccionados al cambiar de producto
+  }, [product.id, reset]);
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      // Agregar los nuevos archivos al estado
+      setSelectedFiles(prev => [...prev, ...Array.from(files)]);
+      // Limpiar el input para permitir seleccionar el mismo archivo nuevamente
+      e.target.value = '';
+    }
+  };
+
+  const handleDesktopFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      setSelectedFiles(prev => [...prev, ...Array.from(files)]);
+    }
+  };
+
 
   const onSubmit = async (data: FormInputs) => {
-    const formData = new FormData();
+    try {
+      const formData = new FormData();
 
-    const { images, ...productToSave } = data;
+      const { images, ...productToSave } = data;
 
-    if ( product.id ){
-      formData.append("id", product.id ?? "");
-    }
-    
-    formData.append("title", productToSave.title);
-    formData.append("slug", productToSave.slug);
-    formData.append("description", productToSave.description);
-    formData.append("price", productToSave.price.toString());
-    formData.append("inStock", productToSave.inStock.toString());
-    formData.append("featured", productToSave.featured.toString());
-    if (productToSave.code) {
-      formData.append("code", productToSave.code);
-    }
-    // Enviar los tagIds como array
-    selectedTagIds.forEach(tagId => {
-      formData.append("tagIds", tagId);
-    });
-    formData.append("categoryId", productToSave.categoryId);
-    
-    // Enviar los atributos como JSON (solo los que tienen valores válidos)
-    const validAttributes = productAttributes.filter(attr => {
-      if (attr.attributeValueIds && attr.attributeValueIds.length > 0) return true;
-      if (attr.valueText !== undefined && attr.valueText !== null && attr.valueText !== '') return true;
-      if (attr.valueNumber !== undefined && attr.valueNumber !== null) return true;
-      return false;
-    });
-    formData.append("attributes", JSON.stringify(validAttributes));
-    
-    if ( images ) {
-      for ( let i = 0; i < images.length; i++  ) {
-        formData.append('images', images[i]);
+      if ( product.id ){
+        formData.append("id", product.id ?? "");
       }
+      
+      formData.append("title", productToSave.title);
+      formData.append("slug", productToSave.slug);
+      formData.append("description", productToSave.description);
+      formData.append("price", productToSave.price.toString());
+      formData.append("inStock", productToSave.inStock.toString());
+      formData.append("featured", productToSave.featured.toString());
+      if (productToSave.code) {
+        formData.append("code", productToSave.code);
+      }
+      // Enviar los tagIds como array
+      selectedTagIds.forEach(tagId => {
+        formData.append("tagIds", tagId);
+      });
+      formData.append("categoryId", productToSave.categoryId);
+      
+      // Enviar los atributos como JSON (solo los que tienen valores válidos)
+      const validAttributes = productAttributes.filter(attr => {
+        if (attr.attributeValueIds && attr.attributeValueIds.length > 0) return true;
+        if (attr.valueText !== undefined && attr.valueText !== null && attr.valueText !== '') return true;
+        if (attr.valueNumber !== undefined && attr.valueNumber !== null) return true;
+        return false;
+      });
+      formData.append("attributes", JSON.stringify(validAttributes));
+      
+      // Agregar archivos del input de desktop (si hay)
+      if ( images && images.length > 0 ) {
+        for ( let i = 0; i < images.length; i++  ) {
+          formData.append('images', images[i]);
+        }
+      }
+      
+      // Agregar archivos seleccionados desde mobile
+      if ( selectedFiles.length > 0 ) {
+        selectedFiles.forEach(file => {
+          formData.append('images', file);
+        });
+      }
+
+      const { ok, product:updatedProduct, message } = await createUpdateProduct(formData);
+
+      if ( !ok ) {
+        showErrorToast(message || 'Error al guardar el producto. Por favor, intenta nuevamente.');
+        return;
+      }
+
+      showSuccessToast(product.id ? 'Producto actualizado exitosamente' : 'Producto creado exitosamente');
+      setSelectedFiles([]); // Limpiar archivos seleccionados después de guardar
+      router.replace(`/gestion/product/${ updatedProduct?.slug }`);
+    } catch (error) {
+      console.error('Error inesperado al guardar el producto:', error);
+      showErrorToast('Error inesperado al guardar el producto. Por favor, intenta nuevamente.');
     }
-
-
-
-    const { ok, product:updatedProduct } = await createUpdateProduct(formData);
-
-    if ( !ok ) {
-      showErrorToast('Producto no se pudo actualizar');
-      return;
-    }
-
-    router.replace(`/gestion/product/${ updatedProduct?.slug }`)
-
-
   };
 
   const handleTagsChange = (tagIds: string[], tagNames: string[]) => {
@@ -154,13 +224,14 @@ export const ProductForm = ({ product, categories }: Props) => {
       const result = await deleteProduct(product.id);
       
       if (result.ok) {
+        showSuccessToast(result.message || 'Producto eliminado exitosamente');
         router.push('/gestion/products');
         router.refresh();
       } else {
         showErrorToast(result.message || 'Error al eliminar el producto');
       }
     } catch (error) {
-      showErrorToast('Error al eliminar el producto');
+      showErrorToast('Error inesperado al eliminar el producto');
     } finally {
       setIsDeleting(false);
     }
@@ -170,6 +241,7 @@ export const ProductForm = ({ product, categories }: Props) => {
     <form
       onSubmit={handleSubmit(onSubmit)}
       className="grid px-4 sm:px-5 mb-16 grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4"
+      suppressHydrationWarning
     >
       {/* Textos */}
       <div className="w-full">
@@ -273,21 +345,6 @@ export const ProductForm = ({ product, categories }: Props) => {
             </button>
           </div>
         </div>
-
-        <button className="btn-primary w-full">Guardar</button>
-        
-        {/* Botón de eliminar producto - solo si el producto existe */}
-        {product.id && (
-          <button
-            type="button"
-            onClick={handleDeleteProduct}
-            disabled={isDeleting}
-            className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md transition-colors w-full mt-3 flex items-center justify-center gap-2"
-          >
-            <IoTrashOutline size={20} />
-            {isDeleting ? 'Eliminando...' : 'Eliminar producto'}
-          </button>
-        )}
       </div>
 
       {/* Selector de tallas y fotos */}
@@ -321,17 +378,89 @@ export const ProductForm = ({ product, categories }: Props) => {
         <div className="flex flex-col">
           <div className="flex flex-col mb-2">
             <span>Fotos</span>
+            
+            {/* Desktop: Input mejorado */}
+            <div className="hidden md:block">
+              <label className="block">
+                <input
+                  type="file"
+                  {...register('images')}
+                  multiple
+                  onChange={handleDesktopFileChange}
+                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 file:cursor-pointer cursor-pointer border border-gray-300 rounded-md bg-white p-2"
+                  accept="image/png, image/jpeg, image/avif, image/webp"
+                />
+              </label>
+            </div>
+
+            {/* Mobile: Dos botones separados */}
+            <div className="md:hidden flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors w-full flex items-center justify-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Elegir de la galería
+              </button>
+              
+              <button
+                type="button"
+                onClick={() => cameraInputRef.current?.click()}
+                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors w-full flex items-center justify-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                Tomar foto
+              </button>
+            </div>
+
+            {/* Inputs ocultos para mobile */}
             <input
+              ref={fileInputRef}
               type="file"
-              { ...register('images') }
               multiple
-              className="p-2 border rounded-md bg-gray-200"
+              className="hidden"
+              accept="image/png, image/jpeg, image/avif, image/webp"
+              onChange={handleFileInputChange}
+            />
+            <input
+              ref={cameraInputRef}
+              type="file"
+              multiple
+              className="hidden"
               accept="image/png, image/jpeg, image/avif, image/webp"
               capture="environment"
+              onChange={handleFileInputChange}
             />
-            <p className="text-xs text-gray-500 mt-1">
-              En móvil puedes tomar una foto o elegir de la galería
-            </p>
+
+            {/* Vista previa de archivos seleccionados (solo mobile) */}
+            {selectedFiles.length > 0 && (
+              <div className="md:hidden mt-2 space-y-2">
+                <p className="text-xs text-gray-600 font-medium">
+                  Archivos seleccionados ({selectedFiles.length}):
+                </p>
+                {selectedFiles.map((file, index) => (
+                  <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded-md">
+                    <span className="text-xs text-gray-700 truncate flex-1">{file.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+                      }}
+                      className="ml-2 text-red-600 hover:text-red-800"
+                      title="Eliminar"
+                    >
+                      <IoTrashOutline size={16} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -347,14 +476,42 @@ export const ProductForm = ({ product, categories }: Props) => {
 
                 <button
                   type="button"
-                  onClick={() => deleteProductImage(image.id, image.url)}
-                  className="btn-danger w-full rounded-b-xl"
+                  onClick={async () => {
+                    const result = await deleteProductImage(image.id, image.url);
+                    if (result?.ok) {
+                      showSuccessToast(result.message || 'Imagen eliminada exitosamente');
+                      router.refresh();
+                    } else {
+                      showErrorToast(result?.message || result?.error || 'Error al eliminar la imagen');
+                    }
+                  }}
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors w-full rounded-b-xl"
                 >
-                  Eliminar
+                  Eliminar foto
                 </button>
               </div>
             ))}
           </div>
+          
+          { /* separador */ }
+          <div className="h-2 bg-gray-200 rounded-md my-4"></div>
+
+          { /* botones de guardar y eliminar producto */ }
+
+          <button type="submit" className="mt-4 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors w-full flex items-center justify-center gap-2"><IoSaveOutline size={20} /> Guardar producto</button>
+        
+          {/* Botón de eliminar producto - solo si el producto existe */}
+          {product.id && (
+            <button
+              type="button"
+              onClick={handleDeleteProduct}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md transition-colors w-full mt-3 flex items-center justify-center gap-2"
+            >
+              <IoTrashOutline size={20} />
+              {isDeleting ? 'Eliminando...' : 'Eliminar producto'}
+            </button>
+          )}
         </div>
       </div>
 
