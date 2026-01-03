@@ -16,6 +16,7 @@ export const getProductDiscounts = async (): Promise<Discount[]> => {
     
     const discounts = await prisma.discount.findMany({
       where: {
+        companyId,
         isActive: true,
         AND: [
           {

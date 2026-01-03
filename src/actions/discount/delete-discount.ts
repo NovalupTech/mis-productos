@@ -25,10 +25,11 @@ export const deleteDiscount = async (discountId: string) => {
       };
     }
 
-    // Verificar que el descuento existe
+    // Verificar que el descuento existe y pertenece a la compañía
     const existingDiscount = await prisma.discount.findFirst({
       where: {
         id: discountId,
+        companyId,
       },
     });
 

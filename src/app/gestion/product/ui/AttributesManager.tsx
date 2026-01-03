@@ -181,15 +181,16 @@ export const AttributesManager = ({
       if (!existing) return prev;
 
       const updated: ProductAttributeValue = { ...existing };
-      if (!updated.attributeValueIds) {
-        updated.attributeValueIds = [];
-      }
-
-      const index = updated.attributeValueIds.indexOf(valueId);
+      const currentIds = updated.attributeValueIds || [];
+      
+      // Crear un nuevo array en lugar de mutar el existente
+      const index = currentIds.indexOf(valueId);
       if (index > -1) {
-        updated.attributeValueIds.splice(index, 1);
+        // Remover el valor si ya está seleccionado
+        updated.attributeValueIds = currentIds.filter(id => id !== valueId);
       } else {
-        updated.attributeValueIds.push(valueId);
+        // Agregar el valor si no está seleccionado
+        updated.attributeValueIds = [...currentIds, valueId];
       }
 
       newMap.set(attributeId, updated);

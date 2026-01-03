@@ -80,6 +80,7 @@ model Company {
   tags           Tag[]
   paymentMethods PaymentMethod[]
   payments       Payment[]
+  discounts      Discount[]
 }
 
 // -------------------------
@@ -516,10 +517,15 @@ model Discount {
   startsAt    DateTime?
   endsAt      DateTime?
 
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId String
+
   targets    DiscountTarget[]
   conditions DiscountCondition[]
 
   createdAt DateTime @default(now())
+
+  @@index([companyId])
 }
 
 model DiscountTarget {
@@ -528,7 +534,7 @@ model DiscountTarget {
   targetType DiscountTargetType
   targetId   String?
 
-  discount Discount @relation(fields: [discountId], references: [id])
+  discount Discount @relation(fields: [discountId], references: [id], onDelete: Cascade)
 
   @@index([discountId])
 }
@@ -539,7 +545,7 @@ model DiscountCondition {
   conditionType DiscountConditionType
   value         Float
 
-  discount Discount @relation(fields: [discountId], references: [id])
+  discount Discount @relation(fields: [discountId], references: [id], onDelete: Cascade)
 
   @@index([discountId])
 }

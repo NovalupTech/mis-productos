@@ -49,6 +49,21 @@ const ProductGridItem = ({product, selectedTag, imageSize = 'medium'}: Props) =>
     ? formatPrice(product.price, priceConfig) 
     : null;
 
+  // Obtener condiciones del descuento
+  const minQuantityCondition = appliedDiscount?.discount.conditions.find(
+    c => c.conditionType === 'MIN_QUANTITY'
+  );
+  const minAmountCondition = appliedDiscount?.discount.conditions.find(
+    c => c.conditionType === 'MIN_AMOUNT'
+  );
+
+  // Para BUY_X_GET_Y, la cantidad mínima puede venir del valor del descuento
+  const buyXGetY = appliedDiscount?.discount.type === 'BUY_X_GET_Y' 
+    && typeof appliedDiscount.discount.value === 'object' 
+    && appliedDiscount.discount.value !== null
+    ? appliedDiscount.discount.value as { buy: number; pay: number }
+    : null;
+
   // Verificar si el producto tiene atributos obligatorios
   const hasRequiredAttributes = product.attributes?.some(attr => 
     attr.attribute.required === true
@@ -274,6 +289,20 @@ const ProductGridItem = ({product, selectedTag, imageSize = 'medium'}: Props) =>
                 </span>
               )}
             </div>
+            {/* Mostrar condiciones del descuento */}
+            {appliedDiscount && (minQuantityCondition || minAmountCondition || buyXGetY) && (
+              <div className="text-xs text-gray-600 mb-2 space-y-0.5">
+                {buyXGetY && (
+                  <p>• Compra mínima: {buyXGetY.buy} unidades</p>
+                )}
+                {minQuantityCondition && (
+                  <p>• Cantidad mínima: {minQuantityCondition.value} unidades</p>
+                )}
+                {minAmountCondition && (
+                  <p>• Monto mínimo: {formatPrice(minAmountCondition.value, priceConfig)}</p>
+                )}
+              </div>
+            )}
             {product.tags && product.tags.length > 1 && (
               <div className='flex flex-wrap gap-1 mb-2'>
                 {product.tags.slice(1, 4).map(tag => {

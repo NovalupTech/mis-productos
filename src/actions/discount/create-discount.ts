@@ -59,6 +59,7 @@ export const createDiscount = async (data: CreateDiscountData) => {
     // Crear el descuento con sus relaciones
     const newDiscount = await prisma.discount.create({
       data: {
+        companyId,
         name: data.name.trim(),
         description: data.description?.trim() || null,
         type: data.type,

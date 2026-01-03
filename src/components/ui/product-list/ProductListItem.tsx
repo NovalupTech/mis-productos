@@ -47,6 +47,21 @@ export const ProductListItem = ({product, selectedTag}: Props) => {
     ? formatPrice(product.price, priceConfig) 
     : null;
 
+  // Obtener condiciones del descuento
+  const minQuantityCondition = appliedDiscount?.discount.conditions.find(
+    c => c.conditionType === 'MIN_QUANTITY'
+  );
+  const minAmountCondition = appliedDiscount?.discount.conditions.find(
+    c => c.conditionType === 'MIN_AMOUNT'
+  );
+
+  // Para BUY_X_GET_Y, la cantidad mínima puede venir del valor del descuento
+  const buyXGetY = appliedDiscount?.discount.type === 'BUY_X_GET_Y' 
+    && typeof appliedDiscount.discount.value === 'object' 
+    && appliedDiscount.discount.value !== null
+    ? appliedDiscount.discount.value as { buy: number; pay: number }
+    : null;
+
   // Verificar si el producto tiene atributos obligatorios
   const hasRequiredAttributes = product.attributes?.some(attr => 
     attr.attribute.required === true
@@ -168,60 +183,76 @@ export const ProductListItem = ({product, selectedTag}: Props) => {
         )}
         
         <div className="flex items-center justify-between flex-wrap gap-2">
-          <div className="flex items-center gap-3">
-            {formattedPrice && (
-              <span 
-                className="font-bold text-xl"
-                style={{
-                  color: 'var(--theme-secondary-color)',
-                }}
-              >
-                {formattedPrice}
-              </span>
-            )}
-            {originalPrice && (
-              <span className="text-sm text-gray-500 line-through">
-                {originalPrice}
-              </span>
-            )}
-            
-            {product.tags && product.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1">
-                {product.tags.slice(0, 3).map(tag => {
-                  const isSelected = selectedTag === tag.name;
-                  return (
-                    <button
-                      key={tag.id}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        const params = new URLSearchParams(searchParams.toString());
-                        
-                        if (isSelected) {
-                          // Si ya está seleccionado, eliminar el filtro
-                          params.delete('tag');
-                        } else {
-                          // Si no está seleccionado, agregar el filtro
-                          params.set('tag', tag.name);
-                        }
-                        
-                        const newUrl = params.toString() ? `/catalog?${params.toString()}` : '/catalog';
-                        router.push(newUrl);
-                      }}
-                      className={`text-xs px-2 py-1 rounded transition-colors cursor-pointer ${
-                        isSelected
-                          ? 'text-white font-semibold'
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-800'
-                      }`}
-                      style={isSelected ? {
-                        backgroundColor: 'var(--theme-secondary-color)',
-                        color: 'var(--theme-secondary-text-color)',
-                      } : {}}
-                    >
-                      {tag.name}
-                    </button>
-                  );
-                })}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-3 flex-wrap">
+              {formattedPrice && (
+                <span 
+                  className="font-bold text-xl"
+                  style={{
+                    color: 'var(--theme-secondary-color)',
+                  }}
+                >
+                  {formattedPrice}
+                </span>
+              )}
+              {originalPrice && (
+                <span className="text-sm text-gray-500 line-through">
+                  {originalPrice}
+                </span>
+              )}
+              
+              {product.tags && product.tags.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {product.tags.slice(0, 3).map(tag => {
+                    const isSelected = selectedTag === tag.name;
+                    return (
+                      <button
+                        key={tag.id}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          const params = new URLSearchParams(searchParams.toString());
+                          
+                          if (isSelected) {
+                            // Si ya está seleccionado, eliminar el filtro
+                            params.delete('tag');
+                          } else {
+                            // Si no está seleccionado, agregar el filtro
+                            params.set('tag', tag.name);
+                          }
+                          
+                          const newUrl = params.toString() ? `/catalog?${params.toString()}` : '/catalog';
+                          router.push(newUrl);
+                        }}
+                        className={`text-xs px-2 py-1 rounded transition-colors cursor-pointer ${
+                          isSelected
+                            ? 'text-white font-semibold'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-800'
+                        }`}
+                        style={isSelected ? {
+                          backgroundColor: 'var(--theme-secondary-color)',
+                          color: 'var(--theme-secondary-text-color)',
+                        } : {}}
+                      >
+                        {tag.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+            {/* Mostrar condiciones del descuento */}
+            {appliedDiscount && (minQuantityCondition || minAmountCondition || buyXGetY) && (
+              <div className="text-xs text-gray-600 mt-1 space-y-0.5">
+                {buyXGetY && (
+                  <p>• Compra mínima: {buyXGetY.buy} unidades</p>
+                )}
+                {minQuantityCondition && (
+                  <p>• Cantidad mínima: {minQuantityCondition.value} unidades</p>
+                )}
+                {minAmountCondition && (
+                  <p>• Monto mínimo: {formatPrice(minAmountCondition.value, priceConfig)}</p>
+                )}
               </div>
             )}
           </div>

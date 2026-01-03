@@ -16,6 +16,9 @@ export const getAllDiscounts = async () => {
     }
 
     const discounts = await prisma.discount.findMany({
+      where: {
+        companyId,
+      },
       include: {
         targets: {
           orderBy: {

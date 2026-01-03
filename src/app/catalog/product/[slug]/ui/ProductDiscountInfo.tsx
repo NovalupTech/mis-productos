@@ -47,12 +47,27 @@ export const ProductDiscountInfo = ({ product, priceConfig, showPrice = false }:
   const originalPrice = product.price;
   const hasActiveDiscount = appliedDiscount.discountAmount > 0;
 
+  // Obtener condiciones del descuento
+  const minQuantityCondition = appliedDiscount.discount.conditions.find(
+    c => c.conditionType === 'MIN_QUANTITY'
+  );
+  const minAmountCondition = appliedDiscount.discount.conditions.find(
+    c => c.conditionType === 'MIN_AMOUNT'
+  );
+
+  // Para BUY_X_GET_Y, la cantidad mínima puede venir del valor del descuento
+  const buyXGetY = appliedDiscount.discount.type === 'BUY_X_GET_Y' 
+    && typeof appliedDiscount.discount.value === 'object' 
+    && appliedDiscount.discount.value !== null
+    ? appliedDiscount.discount.value as { buy: number; pay: number }
+    : null;
+
   if (showPrice && priceConfig) {
     return (
       <div className="mb-5">
         <div className="flex items-center gap-2 mb-1">
           <span 
-            className={`text-lg font-bold ${hasActiveDiscount ? 'text-green-600' : ''}`}
+            className={`text-2xl font-bold ${hasActiveDiscount ? 'text-green-600' : ''}`}
             style={!hasActiveDiscount ? { color: 'var(--theme-secondary-color)' } : {}}
           >
             {formatPrice(displayPrice, priceConfig)}
@@ -67,6 +82,19 @@ export const ProductDiscountInfo = ({ product, priceConfig, showPrice = false }:
         <p className="text-sm text-blue-600">
           Promo: {appliedDiscount.discount.name}
         </p>
+        {(minQuantityCondition || minAmountCondition || buyXGetY) && (
+          <div className="text-xs text-gray-600 mt-1 space-y-0.5">
+            {buyXGetY && (
+              <p>• Compra mínima: {buyXGetY.buy} unidades</p>
+            )}
+            {minQuantityCondition && (
+              <p>• Cantidad mínima: {minQuantityCondition.value} unidades</p>
+            )}
+            {minAmountCondition && priceConfig && (
+              <p>• Monto mínimo: {formatPrice(minAmountCondition.value, priceConfig)}</p>
+            )}
+          </div>
+        )}
       </div>
     );
   }

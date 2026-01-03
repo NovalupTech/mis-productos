@@ -24,7 +24,11 @@ export default async function OrdersPage() {
       <div className="mb-10">
         <UsersTable users={ users } />
 
-        <Pagination totalPages={ 1 } />
+        {
+          users.length > 0 && (
+            <Pagination totalPages={1} />
+          )
+        }
       </div>
     </>
   );

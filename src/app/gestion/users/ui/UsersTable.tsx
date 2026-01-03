@@ -9,6 +9,14 @@ interface Props {
 
 export const UsersTable = ({ users }: Props) => {
 
+  if (users.length === 0) {
+    return (
+      <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
+        <p className="text-gray-500 text-lg">No hay usuarios registrados</p>
+        <p className="text-gray-400 text-sm mt-2">Los usuarios que se registren aparecerán aquí</p>
+      </div>
+    );
+  }
 
   return (
     <>

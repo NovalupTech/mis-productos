@@ -302,144 +302,94 @@ export const ProductForm = ({ product, categories }: Props) => {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="grid px-4 sm:px-5 mb-16 grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4"
+      className="px-4 sm:px-5 mb-16 space-y-6"
       suppressHydrationWarning
     >
-      {/* Textos */}
-      <div className="w-full">
-        <div className="flex flex-col mb-2">
-          <span>Título</span>
-          <input
-            type="text"
-            className="p-2 border rounded-md bg-gray-200"
-            {...register("title", { required: true })}
-          />
-        </div>
-
-        <div className="flex flex-col mb-2">
-          <span>Slug</span>
-          <input
-            type="text"
-            className="p-2 border rounded-md bg-gray-200"
-            {...register("slug", { required: true })}
-          />
-        </div>
-
-        <div className="flex flex-col mb-2">
-          <span>Código</span>
-          <input
-            type="text"
-            className="p-2 border rounded-md bg-gray-200"
-            {...register("code")}
-            placeholder="Se genera automáticamente si se deja vacío (MP-00001, MP-00002...)"
-          />
-          <p className="text-xs text-gray-500 mt-1">
-            Si se deja vacío, se generará automáticamente con formato MP-XXXXX
-          </p>
-        </div>
-
-        <div className="flex flex-col mb-2">
-          <span>Descripción</span>
-          <textarea
-            rows={5}
-            className="p-2 border rounded-md bg-gray-200"
-            {...register("description", { required: true })}
-          ></textarea>
-        </div>
-
-        <div className="flex flex-col mb-2">
-          <span>Price</span>
-          <input
-            type="number"
-            className="p-2 border rounded-md bg-gray-200"
-            {...register("price", { required: true, min: 0 })}
-          />
-        </div>
-
-        <div className="flex flex-col mb-2">
-          <span>Tags</span>
-          <div className="flex gap-2">
+      {/* Grid de dos columnas para información básica y fotos */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Columna izquierda: Información básica del producto */}
+        <div className="space-y-4">
+          <div className="flex flex-col">
+            <label className="text-sm font-medium text-gray-700 mb-1">Título *</label>
             <input
               type="text"
-              className="p-2 border rounded-md bg-gray-200 flex-1"
-              value={selectedTagNames.join(", ")}
-              readOnly
-              placeholder="Selecciona los tags del producto"
+              className="p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              {...register("title", { required: true })}
             />
-            <button
-              type="button"
-              onClick={() => setIsTagsModalOpen(true)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-            >
-              Gestionar Tags
-            </button>
           </div>
-        </div>
 
-        <div className="flex flex-col mb-4">
-          <AttributesManager
-            productAttributes={product.attributes}
-            companyId={product.companyId || product.company?.id}
-            onAttributesChange={handleAttributesChange}
-          />
-        </div>
-
-        <div className="flex flex-col mb-2">
-          <span>Categoria</span>
-          <div className="flex gap-2">
-            <select
-              className="p-2 border rounded-md bg-gray-200 flex-1"
-              {...register("categoryId", { required: true })}
-            >
-              <option value="">[Seleccione]</option>
-              {categoriesList.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-            <button
-              type="button"
-              onClick={() => setIsCategoriesModalOpen(true)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-            >
-              Gestionar Categorías
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Selector de tallas y fotos */}
-      <div className="w-full">
-        <div className="flex flex-col mb-2">
-          <span>Stock</span>
-          <input
-            type="number"
-            className="p-2 border rounded-md bg-gray-200"
-            {...register("inStock", { required: true, min: 0 })}
-          />
-        </div>
-
-        <div className="flex flex-col mb-2">
-          <label className="flex items-center gap-3 cursor-pointer">
+          <div className="flex flex-col">
+            <label className="text-sm font-medium text-gray-700 mb-1">Slug *</label>
             <input
-              type="checkbox"
-              {...register("featured")}
-              className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
+              type="text"
+              className="p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              {...register("slug", { required: true })}
             />
-            <span className="text-sm font-medium text-gray-700">
-              Producto destacado
-            </span>
-          </label>
-          <p className="text-xs text-gray-500 mt-1 ml-8">
-            Marca este producto como destacado para que aparezca en secciones especiales
-          </p>
+          </div>
+
+          <div className="flex flex-col">
+            <label className="text-sm font-medium text-gray-700 mb-1">Código</label>
+            <input
+              type="text"
+              className="p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              {...register("code")}
+              placeholder="Se genera automáticamente si se deja vacío"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Si se deja vacío, se generará automáticamente con formato MP-XXXXX
+            </p>
+          </div>
+
+          <div className="flex flex-col">
+            <label className="text-sm font-medium text-gray-700 mb-1">Descripción *</label>
+            <textarea
+              rows={5}
+              className="p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              {...register("description", { required: true })}
+            ></textarea>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col">
+              <label className="text-sm font-medium text-gray-700 mb-1">Precio *</label>
+              <input
+                type="number"
+                className="p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                {...register("price", { required: true, min: 0 })}
+              />
+            </div>
+
+            <div className="flex flex-col">
+              <label className="text-sm font-medium text-gray-700 mb-1">Stock *</label>
+              <input
+                type="number"
+                className="p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                {...register("inStock", { required: true, min: 0 })}
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col">
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                {...register("featured")}
+                className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
+              />
+              <span className="text-sm font-medium text-gray-700">
+                Producto destacado
+              </span>
+            </label>
+            <p className="text-xs text-gray-500 mt-1 ml-8">
+              Marca este producto como destacado para que aparezca en secciones especiales
+            </p>
+          </div>
         </div>
 
-        {/* As checkboxes */}
-        <div className="flex flex-col">
-          <div className="flex flex-col mb-2">
-            <span>Fotos</span>
+        {/* Columna derecha: Fotos del producto */}
+        <div className="space-y-4">
+          <div className="flex flex-col">
+            <label className="text-sm font-medium text-gray-700 mb-2">Fotos del Producto</label>
             
             {/* Desktop: Input mejorado */}
             <div className="hidden md:block">
@@ -522,58 +472,119 @@ export const ProductForm = ({ product, categories }: Props) => {
                 ))}
               </div>
             )}
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {product.productImage?.map((image) => (
-              <div key={image.id}>
-                <ProductImage
-                  alt={product.title ?? ""}
-                  src={ image.url }
-                  width={300}
-                  height={300}
-                  className="rounded-t shadow-md"
-                />
-
-                <button
-                  type="button"
-                  onClick={async () => {
-                    const result = await deleteProductImage(image.id, image.url);
-                    if (result?.ok) {
-                      showSuccessToast(result.message || 'Imagen eliminada exitosamente');
-                      router.refresh();
-                    } else {
-                      showErrorToast(result?.message || result?.error || 'Error al eliminar la imagen');
-                    }
-                  }}
-                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors w-full rounded-b-xl"
-                >
-                  Eliminar foto
-                </button>
+            {/* Grid de imágenes existentes */}
+            {product.productImage && product.productImage.length > 0 && (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-4">
+                {product.productImage.map((image) => (
+                  <div key={image.id} className="relative group">
+                    <ProductImage
+                      alt={product.title ?? ""}
+                      src={image.url}
+                      width={300}
+                      height={300}
+                      className="rounded-lg shadow-md w-full h-auto object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const result = await deleteProductImage(image.id, image.url);
+                        if (result?.ok) {
+                          showSuccessToast(result.message || 'Imagen eliminada exitosamente');
+                          router.refresh();
+                        } else {
+                          showErrorToast(result?.message || result?.error || 'Error al eliminar la imagen');
+                        }
+                      }}
+                      className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="Eliminar foto"
+                    >
+                      <IoTrashOutline size={16} />
+                    </button>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
           </div>
-          
-          { /* separador */ }
-          <div className="h-2 bg-gray-200 rounded-md my-4"></div>
+        </div>
+      </div>
 
-          { /* botones de guardar y eliminar producto */ }
-
-          <button type="submit" className="mt-4 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors w-full flex items-center justify-center gap-2"><IoSaveOutline size={20} /> Guardar producto</button>
-        
-          {/* Botón de eliminar producto - solo si el producto existe */}
-          {product.id && (
+      {/* Sección de Tags, Atributos y Categoría - Ancho completo */}
+      <div className="border-t pt-6 space-y-4">
+        <div className="flex flex-col">
+          <label className="text-sm font-medium text-gray-700 mb-2">Tags</label>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              className="p-2 border rounded-md flex-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={selectedTagNames.join(", ")}
+              readOnly
+              placeholder="Selecciona los tags del producto"
+            />
             <button
               type="button"
-              onClick={handleDeleteProduct}
-              disabled={isDeleting}
-              className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md transition-colors w-full mt-3 flex items-center justify-center gap-2"
+              onClick={() => setIsTagsModalOpen(true)}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors whitespace-nowrap"
             >
-              <IoTrashOutline size={20} />
-              {isDeleting ? 'Eliminando...' : 'Eliminar producto'}
+              Gestionar Tags
             </button>
-          )}
+          </div>
         </div>
+
+        <div className="flex flex-col">
+          <AttributesManager
+            productAttributes={product.attributes}
+            companyId={product.companyId || product.company?.id}
+            onAttributesChange={handleAttributesChange}
+          />
+        </div>
+
+        <div className="flex flex-col">
+          <label className="text-sm font-medium text-gray-700 mb-2">Categoría *</label>
+          <div className="flex gap-2">
+            <select
+              className="p-2 border rounded-md flex-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              {...register("categoryId", { required: true })}
+            >
+              <option value="">[Seleccione]</option>
+              {categoriesList.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              onClick={() => setIsCategoriesModalOpen(true)}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors whitespace-nowrap"
+            >
+              Gestionar Categorías
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Botones de acción al final */}
+      <div className="border-t pt-6 flex flex-col sm:flex-row gap-3">
+        <button 
+          type="submit" 
+          className="flex-1 px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors flex items-center justify-center gap-2 font-medium"
+        >
+          <IoSaveOutline size={20} /> 
+          {product.id ? 'Actualizar producto' : 'Crear producto'}
+        </button>
+        
+        {product.id && (
+          <button
+            type="button"
+            onClick={handleDeleteProduct}
+            disabled={isDeleting}
+            className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors flex items-center justify-center gap-2 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <IoTrashOutline size={20} />
+            {isDeleting ? 'Eliminando...' : 'Eliminar producto'}
+          </button>
+        )}
       </div>
 
       {/* Modal de Tags */}
