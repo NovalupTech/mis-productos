@@ -23,6 +23,11 @@ const COLUMN_OPTIONS = [
   { value: 6, label: '6 columnas' },
 ];
 
+const GRID_POSITION_OPTIONS = [
+  { value: 'extended', label: 'Ancho total' },
+  { value: 'centered', label: 'Centrada' },
+];
+
 // Valores por defecto
 const DEFAULT_PRIMARY_COLOR = '#ffffff';
 const DEFAULT_SECONDARY_COLOR = '#2563eb';
@@ -30,6 +35,7 @@ const DEFAULT_PRIMARY_TEXT_COLOR = '#1f2937';
 const DEFAULT_SECONDARY_TEXT_COLOR = '#ffffff';
 const DEFAULT_COLUMNS = 4;
 const DEFAULT_IMAGE_SIZE = 'medium';
+const DEFAULT_GRID_POSITION = 'extended';
 
 export const AppearanceForm = ({ initialConfig }: AppearanceFormProps) => {
   const router = useRouter();
@@ -51,6 +57,9 @@ export const AppearanceForm = ({ initialConfig }: AppearanceFormProps) => {
   const [imageSize, setImageSize] = useState<string>(
     initialConfig['catalog.imageSize'] || DEFAULT_IMAGE_SIZE
   );
+  const [gridPosition, setGridPosition] = useState<string>(
+    initialConfig['catalog.centered'] || DEFAULT_GRID_POSITION
+  );
   const [loading, setLoading] = useState(false);
   const [deletingKey, setDeletingKey] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -62,6 +71,7 @@ export const AppearanceForm = ({ initialConfig }: AppearanceFormProps) => {
   const hasSecondaryTextColor = !!initialConfig['theme.secondaryTextColor'];
   const hasCatalogColumns = initialConfig['catalog.columns'] !== undefined;
   const hasImageSize = initialConfig['catalog.imageSize'] !== undefined;
+  const hasGridPosition = initialConfig['catalog.centered'] !== undefined;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,6 +86,7 @@ export const AppearanceForm = ({ initialConfig }: AppearanceFormProps) => {
         { key: 'theme.secondaryTextColor', value: secondaryTextColor },
         { key: 'catalog.columns', value: catalogColumns },
         { key: 'catalog.imageSize', value: imageSize },
+        { key: 'catalog.centered', value: gridPosition },
       ]);
 
       if (result.ok) {
@@ -113,6 +124,8 @@ export const AppearanceForm = ({ initialConfig }: AppearanceFormProps) => {
           setSecondaryTextColor(DEFAULT_SECONDARY_TEXT_COLOR);
         } else if (key === 'catalog.imageSize') {
           setImageSize(DEFAULT_IMAGE_SIZE);
+        } else if (key === 'catalog.centered') {
+          setGridPosition(DEFAULT_GRID_POSITION);
         }
 
         setMessage({ type: 'success', text: result.message || 'Configuración restaurada al valor por defecto' });
@@ -388,6 +401,48 @@ export const AppearanceForm = ({ initialConfig }: AppearanceFormProps) => {
                 </label>
               ))}
             </div>
+          </div>
+
+          {/* Posición de la grilla */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Posición de la grilla
+              </label>
+              {hasGridPosition && (
+                <button
+                  type="button"
+                  onClick={() => handleResetToDefault('catalog.centered')}
+                  disabled={deletingKey === 'catalog.centered'}
+                  className="flex items-center gap-1 text-xs text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  title="Restaurar al valor por defecto"
+                >
+                  <IoRefreshOutline size={14} />
+                  <span>Default</span>
+                </button>
+              )}
+            </div>
+            <div className="space-y-2">
+              {GRID_POSITION_OPTIONS.map((option) => (
+                <label
+                  key={option.value}
+                  className="flex items-center gap-3 p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                >
+                  <input
+                    type="radio"
+                    name="gridPosition"
+                    value={option.value}
+                    checked={gridPosition === option.value}
+                    onChange={(e) => setGridPosition(e.target.value)}
+                    className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm font-medium text-gray-700">{option.label}</span>
+                </label>
+              ))}
+            </div>
+            <p className="mt-2 text-xs text-gray-500">
+              Define si la grilla de productos se muestra centrada o a ancho total
+            </p>
           </div>
         </div>
       </div>

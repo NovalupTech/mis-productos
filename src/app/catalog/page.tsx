@@ -9,10 +9,11 @@ import { PriceConfig } from "@/utils";
 export default async function CatalogPage({ searchParams } :{searchParams: Promise<{page?: string, search?: string, [key: string]: string | undefined}>} & {params: Promise<{page?: string, search?: string}>}) {
 
   const params = await searchParams;
-  const {page, search, tag, ...restParams} = params;
+  const {page, search, tag, category, ...restParams} = params;
   const pageNumber = page ? +page : 1;
   const searchQuery = search ? search : '';
   const tagFilter = tag ? tag : undefined;
+  const categoryFilter = category ? category : undefined;
   
   // Extraer filtros de atributos (parámetros que empiezan con filter_)
   const attributeFilters: Record<string, string> = {};
@@ -27,6 +28,7 @@ export default async function CatalogPage({ searchParams } :{searchParams: Promi
     page: 1, // Siempre empezar desde la página 1 para el scroll infinito
     search: searchQuery,
     tag: tagFilter,
+    categoryId: categoryFilter,
     attributeFilters: Object.keys(attributeFilters).length > 0 ? attributeFilters : undefined,
   });
 
@@ -34,6 +36,7 @@ export default async function CatalogPage({ searchParams } :{searchParams: Promi
   const companyId = await getCurrentCompanyId();
   let columns = 4; // Valor por defecto: 4 columnas
   let imageSize: 'small' | 'medium' | 'large' = 'medium'; // Valor por defecto: medium
+  let gridCentered = false; // Valor por defecto: extended (ancho total)
   let priceConfig: PriceConfig = { currency: 'USD', format: 'symbol-before', showPrices: true, decimals: 2 }; // Valores por defecto
   if (companyId) {
     const { configs } = await getCompanyConfigPublic(companyId);
@@ -46,6 +49,10 @@ export default async function CatalogPage({ searchParams } :{searchParams: Promi
       const catalogImageSize = configsMap['catalog.imageSize'];
       if (typeof catalogImageSize === 'string' && ['small', 'medium', 'large'].includes(catalogImageSize)) {
         imageSize = catalogImageSize as 'small' | 'medium' | 'large';
+      }
+      const catalogCentered = configsMap['catalog.centered'];
+      if (catalogCentered === 'centered') {
+        gridCentered = true;
       }
       // Configuración de precios
       priceConfig = {
@@ -62,12 +69,14 @@ export default async function CatalogPage({ searchParams } :{searchParams: Promi
       <CatalogHeaderWrapper 
         tag={tagFilter} 
         search={searchQuery}
+        categoryId={categoryFilter}
         initialProducts={products as unknown as Product[]}
         initialPage={1}
         initialTotalPages={totalPages}
         attributeFilters={Object.keys(attributeFilters).length > 0 ? attributeFilters : undefined}
         catalogColumns={columns}
         catalogImageSize={imageSize}
+        catalogCentered={gridCentered}
       />
     </>
   );

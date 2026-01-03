@@ -65,7 +65,8 @@ export const ProductSlideShow = ({images, title, slug, className}: Props) => {
             images.map((image, index) => (
                 <SwiperSlide key={image}>
                     <div 
-                      className="cursor-pointer"
+                      className="cursor-pointer flex items-center justify-center w-full h-full bg-white rounded-lg"
+                      style={{ height: '500px' }}
                       onClick={() => handleImageClick(index)}
                     >
                       <Image
@@ -74,8 +75,14 @@ export const ProductSlideShow = ({images, title, slug, className}: Props) => {
                           src={image.startsWith('http') || image.startsWith('https') ? image : `/products/${image}`}
                           width={600}
                           height={500}
-                          className='rounded-lg object-contain w-full h-full'
-                          style={{ viewTransitionName: `product-image-${slug}` }}
+                          className='rounded-lg object-contain'
+                          style={{ 
+                            viewTransitionName: `product-image-${slug}`,
+                            maxWidth: '100%',
+                            maxHeight: '100%',
+                            width: 'auto',
+                            height: 'auto'
+                          }}
                       />
                     </div>
                 </SwiperSlide>
@@ -95,16 +102,23 @@ export const ProductSlideShow = ({images, title, slug, className}: Props) => {
             images.map((image, index) => (
                 <SwiperSlide key={image}>
                     <div 
-                      className="cursor-pointer"
+                      className="cursor-pointer flex items-center justify-center w-full h-full bg-white rounded-lg"
+                      style={{ height: '100px' }}
                       onClick={() => handleImageClick(index)}
                     >
                       <Image
                           key={index}
                           alt={title}
                           src={image.startsWith('http') || image.startsWith('https') ? image : `/products/${image}`}
-                          width={150}
-                          height={150}
-                          className='rounded-lg object-contain w-full h-full'
+                          width={100}
+                          height={100}
+                          className='rounded-lg object-contain'
+                          style={{
+                            maxWidth: '100%',
+                            maxHeight: '100%',
+                            width: 'auto',
+                            height: 'auto'
+                          }}
                       />
                     </div>
                 </SwiperSlide>

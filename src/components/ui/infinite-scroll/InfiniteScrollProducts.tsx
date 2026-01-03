@@ -17,9 +17,11 @@ interface InfiniteScrollProductsProps {
   initialTotalPages: number
   search?: string
   tag?: string
+  categoryId?: string
   attributeFilters?: Record<string, string>
   catalogColumns?: number
   catalogImageSize?: 'small' | 'medium' | 'large'
+  catalogCentered?: boolean
   viewMode?: ViewMode
   onViewModeChange?: (view: ViewMode) => void
 }
@@ -30,9 +32,11 @@ export const InfiniteScrollProducts = ({
   initialTotalPages,
   search,
   tag,
+  categoryId,
   attributeFilters,
   catalogColumns = 4,
   catalogImageSize = 'medium',
+  catalogCentered = false,
   viewMode: externalViewMode,
   onViewModeChange,
 }: InfiniteScrollProductsProps) => {
@@ -52,7 +56,7 @@ export const InfiniteScrollProducts = ({
   const viewMode = externalViewMode ?? storeViewMode
 
   // Crear una clave única para detectar cambios en los filtros
-  const filtersKey = JSON.stringify({ search, tag, attributeFilters })
+  const filtersKey = JSON.stringify({ search, tag, categoryId, attributeFilters })
 
   // Función para ordenar productos según el modo de ordenamiento
   const sortProducts = useCallback((productsToSort: Product[], sort: SortMode): Product[] => {
@@ -93,16 +97,16 @@ export const InfiniteScrollProducts = ({
   }, [initialProducts, initialPage, initialTotalPages, filtersKey])
 
   // Usar refs para mantener los valores más recientes sin causar recreaciones del callback
-  const filtersRef = useRef({ search, tag, attributeFilters })
+  const filtersRef = useRef({ search, tag, categoryId, attributeFilters })
   const currentPageRef = useRef(currentPage)
   const hasMoreRef = useRef(hasMore)
 
   // Actualizar refs cuando cambian los valores
   useEffect(() => {
-    filtersRef.current = { search, tag, attributeFilters }
+    filtersRef.current = { search, tag, categoryId, attributeFilters }
     currentPageRef.current = currentPage
     hasMoreRef.current = hasMore
-  }, [search, tag, attributeFilters, currentPage, hasMore])
+  }, [search, tag, categoryId, attributeFilters, currentPage, hasMore])
 
   // Sincronizar isLoadingRef con isLoading
   useEffect(() => {
@@ -124,6 +128,7 @@ export const InfiniteScrollProducts = ({
         page: nextPage,
         search: filters.search,
         tag: filters.tag,
+        categoryId: filters.categoryId,
         attributeFilters: filters.attributeFilters,
       })
 
@@ -185,7 +190,7 @@ export const InfiniteScrollProducts = ({
     <>
       {/* Vista de productos según el modo seleccionado */}
       {viewMode === 'grid' ? (
-        <ProductGrid products={sortedProducts} selectedTag={tag} columns={catalogColumns} imageSize={catalogImageSize} />
+        <ProductGrid products={sortedProducts} selectedTag={tag} columns={catalogColumns} imageSize={catalogImageSize} centered={catalogCentered} />
       ) : (
         <ProductList products={sortedProducts} selectedTag={tag} />
       )}

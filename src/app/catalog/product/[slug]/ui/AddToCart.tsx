@@ -190,10 +190,12 @@ export const AddToCart = ({product, stockConfig}: Props) => {
         )}
 
         {/* selector de cantidad */}
-        <QuantitySelector quantity={selectedCount} onQuantityChanged={setSelectedCount} />
+        <div className="w-full md:w-auto mb-4">
+          <QuantitySelector quantity={selectedCount} onQuantityChanged={setSelectedCount} />
+        </div>
 
         {/* Boton de añadir al carrito */}
-        <button onClick={addToCart} className="btn-primary my-5">Agregar al carrito</button>
+        <button onClick={addToCart} className="btn-primary my-5 w-full md:w-auto">Agregar al carrito</button>
     </>
   )
 }

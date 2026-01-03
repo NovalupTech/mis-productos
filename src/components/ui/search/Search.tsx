@@ -6,6 +6,8 @@ import { useCompanyStore } from "@/store/company/company-store";
 import { IoCloseOutline } from "react-icons/io5";
 import { SortToggle } from "@/components/ui/sort-toggle/SortToggle";
 import { useCatalogSortStore } from "@/store/catalog/catalog-sort-store";
+import { getCategories } from "@/actions/category/get-categories";
+import type { Category } from "@/interfaces";
 
 interface SearchProps {
   onClose: () => void;
@@ -24,7 +26,19 @@ export const Search = ({ onClose }: SearchProps) => {
   
   const [search, setSearch] = useState(searchParams.get('search') || '');
   const [filters, setFilters] = useState<Record<string, string>>({});
+  const [categoryId, setCategoryId] = useState(searchParams.get('category') || '');
+  const [categories, setCategories] = useState<Category[]>([]);
   const { sortMode, setSortMode } = useCatalogSortStore();
+
+  // Cargar categorías
+  useEffect(() => {
+    const loadCategories = async () => {
+      if (!company?.id) return;
+      const cats = await getCategories(company.id);
+      setCategories(cats);
+    };
+    loadCategories();
+  }, [company?.id]);
 
   // Inicializar filtros desde los search params
   useEffect(() => {
@@ -38,6 +52,10 @@ export const Search = ({ onClose }: SearchProps) => {
       }
     });
     setFilters(initialFilters);
+    
+    // Inicializar categoría desde search params
+    const initialCategory = searchParams.get('category') || '';
+    setCategoryId(initialCategory);
     
     // Marcar que la inicialización está completa después de un pequeño delay
     setTimeout(() => {
@@ -73,15 +91,26 @@ export const Search = ({ onClose }: SearchProps) => {
         setFilters(currentFilters);
       }
     }
+    
+    // Sincronizar categoría
+    const currentCategory = searchParams.get('category') || '';
+    if (currentCategory !== categoryId) {
+      setCategoryId(currentCategory);
+    }
   }, [searchParams]); // Cuando cambian los searchParams externamente
 
   // Función para actualizar la URL con debounce
-  const updateSearchUrl = (searchValue: string, currentFilters: Record<string, string>) => {
+  const updateSearchUrl = (searchValue: string, currentFilters: Record<string, string>, currentCategoryId: string) => {
     const params = new URLSearchParams();
     
     // Agregar búsqueda de texto
     if (searchValue.trim()) {
       params.set('search', searchValue.trim());
+    }
+    
+    // Agregar filtro de categoría
+    if (currentCategoryId) {
+      params.set('category', currentCategoryId);
     }
     
     // Agregar filtros de atributos
@@ -116,7 +145,7 @@ export const Search = ({ onClose }: SearchProps) => {
 
     // Crear nuevo timeout con debounce de 500ms
     debounceTimeoutRef.current = setTimeout(() => {
-      updateSearchUrl(search, filters);
+      updateSearchUrl(search, filters, categoryId);
     }, 500);
 
     // Limpiar timeout al desmontar
@@ -134,8 +163,8 @@ export const Search = ({ onClose }: SearchProps) => {
       return;
     }
 
-    updateSearchUrl(search, filters);
-  }, [filters]); // Se ejecuta cuando cambian los filtros
+    updateSearchUrl(search, filters, categoryId);
+  }, [filters, categoryId]); // Se ejecuta cuando cambian los filtros o la categoría
 
   const handleFilterChange = (attrId: string, value: string) => {
     const newFilters = {
@@ -148,6 +177,7 @@ export const Search = ({ onClose }: SearchProps) => {
   const clearFilters = () => {
     setFilters({});
     setSearch('');
+    setCategoryId('');
     router.replace(pathName, { scroll: false });
     
     // Restaurar el foco al input después de limpiar
@@ -195,7 +225,7 @@ export const Search = ({ onClose }: SearchProps) => {
             className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
             autoFocus
           />
-          {(Object.keys(filters).length > 0 || search) && (
+          {(Object.keys(filters).length > 0 || search || categoryId) && (
             <button
               onClick={clearFilters}
               className="px-3 py-2 text-sm rounded-md transition-colors whitespace-nowrap"
@@ -242,9 +272,31 @@ export const Search = ({ onClose }: SearchProps) => {
           </div>
         </div>
 
-        {/* Filtros por atributos - Horizontal */}
-        {filterableAttributes.length > 0 && (
+        {/* Filtros - Categoría y Atributos - Horizontal */}
+        {(categories.length > 0 || filterableAttributes.length > 0) && (
           <div className="flex flex-wrap gap-3 items-end">
+            {/* Filtro de categoría */}
+            {categories.length > 0 && (
+              <div className="flex flex-col min-w-[150px] flex-1 max-w-[200px]">
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Categoría
+                </label>
+                <select
+                  value={categoryId}
+                  onChange={(e) => setCategoryId(e.target.value)}
+                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                >
+                  <option value="">Todas</option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            
+            {/* Filtros por atributos */}
             {filterableAttributes.map((attr) => (
               <div key={attr.id} className="flex flex-col min-w-[150px] flex-1 max-w-[200px]">
                 <label className="block text-xs font-medium text-gray-700 mb-1">

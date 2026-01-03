@@ -30,7 +30,7 @@ export const ProductDiscountInfo = ({ product, priceConfig, showPrice = false }:
     if (showPrice && priceConfig) {
       return (
         <p 
-          className="text-lg mb-5 font-bold"
+          className="text-2xl mb-5 font-bold"
           style={{ color: 'var(--theme-secondary-color)' }}
         >
           {formatPrice(product.price, priceConfig)}

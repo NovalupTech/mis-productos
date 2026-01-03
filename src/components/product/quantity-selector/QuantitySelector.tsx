@@ -15,7 +15,7 @@ export const QuantitySelector = ({quantity, onQuantityChanged}: Props) => {
   }
 
   return (
-    <div className="flex">
+    <div className="flex w-full md:w-auto justify-center md:justify-start">
         <button onClick={() => onValueChanged(-1)}>
             <IoRemoveCircleOutline size={30} />
         </button>

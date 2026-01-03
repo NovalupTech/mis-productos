@@ -60,7 +60,7 @@ export const ProductMobileSlideShow = ({images, title, slug, className}: Props) 
             images.map((image, index) => (
                 <SwiperSlide key={image}>
                     <div 
-                      className="cursor-pointer"
+                      className="cursor-pointer flex items-center justify-center w-full h-full"
                       onClick={() => handleImageClick(index)}
                     >
                       <Image
@@ -69,7 +69,7 @@ export const ProductMobileSlideShow = ({images, title, slug, className}: Props) 
                           src={image.startsWith('http') || image.startsWith('https') ? image : `/products/${image}`}
                           width={600}
                           height={400}
-                          className='object-contain w-full h-full'
+                          className='object-contain max-w-full max-h-full justify-center'
                           style={{ viewTransitionName: `product-image-${slug}` }}
                       />
                     </div>

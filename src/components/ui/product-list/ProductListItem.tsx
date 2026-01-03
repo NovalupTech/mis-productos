@@ -4,13 +4,17 @@ import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { Product, ProductInCart } from '@/interfaces'
 import { useCartStore } from '@/store/cart/cart-store'
+import { useFavoritesStore } from '@/store/favorites/favorites-store'
 import { formatPrice } from '@/utils'
 import { usePriceConfig } from '@/components/providers/PriceConfigProvider'
 import { useDiscounts } from '@/components/providers/DiscountProvider'
 import { RequiredAttributesModal, DiscountBadge } from '@/components'
 import { getBestDiscount } from '@/utils/discounts'
+import { toggleFavorite } from '@/actions/favorites/toggle-favorite'
+import { IoHeart, IoHeartOutline } from 'react-icons/io5'
 
 interface Props {
     product: Product
@@ -20,11 +24,17 @@ interface Props {
 export const ProductListItem = ({product, selectedTag}: Props) => {
   const [image, setImage] = useState(product.images[0]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoadingFavorite, setIsLoadingFavorite] = useState(false);
   const addProductToCart = useCartStore(state => state.addProductToCart);
+  const { data: session } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
   const priceConfig = usePriceConfig();
   const { discounts } = useDiscounts();
+  const { isFavorite: checkIsFavorite, addFavorite, removeFavorite } = useFavoritesStore();
+  
+  // Usar el store para verificar si es favorito
+  const isFavorite = checkIsFavorite(product.id);
 
   // Calcular descuento aplicable (no verificar condiciones para mostrar badges de BUY_X_GET_Y)
   const appliedDiscount = getBestDiscount(discounts, product, 1, 0, false);
@@ -78,6 +88,28 @@ export const ProductListItem = ({product, selectedTag}: Props) => {
     addProductToCart(productCart);
   };
 
+  const handleToggleFavorite = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!session?.user) {
+      router.push('/login');
+      return;
+    }
+
+    setIsLoadingFavorite(true);
+    const result = await toggleFavorite(product.id);
+    if (result.ok) {
+      // Actualizar el store en lugar del estado local
+      if (result.isFavorite) {
+        addFavorite(product.id);
+      } else {
+        removeFavorite(product.id);
+      }
+    }
+    setIsLoadingFavorite(false);
+  };
+
   return (
     <div 
       className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow"
@@ -103,6 +135,21 @@ export const ProductListItem = ({product, selectedTag}: Props) => {
           <div className="absolute top-1 left-1 z-10">
             <DiscountBadge text={appliedDiscount.badgeText} />
           </div>
+        )}
+        {/* Botón de favorito - Solo visible si el usuario está logueado */}
+        {session?.user && (
+          <button
+            onClick={handleToggleFavorite}
+            disabled={isLoadingFavorite}
+            className="absolute top-1 right-1 z-10 p-1.5 bg-white/90 hover:bg-white rounded-full transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+          >
+            {isFavorite ? (
+              <IoHeart className="w-4 h-4" style={{ color: 'var(--theme-secondary-color)' }} />
+            ) : (
+              <IoHeartOutline className="w-4 h-4 text-gray-700" />
+            )}
+          </button>
         )}
       </a>
       

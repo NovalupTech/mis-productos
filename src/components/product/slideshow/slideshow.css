@@ -1,16 +1,38 @@
 .swiper-slide {
-  
-    /* Center slide text vertically */
+    /* Center slide content */
     display: flex;
+    align-items: center;
+    justify-content: center;
+    background-size: cover;
+    background-position: center;
   }
   
-  .swiper-slide img {
+  /* Slideshow principal - tamaño fijo para todas las imágenes */
+  .mySwiper2 {
+    height: 500px !important;
+  }
+  
+  .mySwiper2 .swiper-slide {
+    height: 500px;
+  }
+  
+  /* Para imágenes con object-contain en el slideshow principal */
+  .mySwiper2 .swiper-slide img[class*="object-contain"] {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+  
+  /* Para imágenes sin object-contain (usar cover) */
+  .swiper-slide img:not([class*="object-contain"]) {
     display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
-  
   
   .swiper {
     width: 100%;
@@ -19,21 +41,15 @@
     margin-right: auto;
   }
   
-  .swiper-slide {
-    background-size: cover;
-    background-position: center;
-  }
-  
-  
   .mySwiper {
-    height: 20%;
+    height: 120px;
     box-sizing: border-box;
     padding: 10px 0;
   }
   
   .mySwiper .swiper-slide {
     width: 25%;
-    height: 100%;
+    height: 100px;
     opacity: 0.4;
   }
   
@@ -41,9 +57,43 @@
     opacity: 1;
   }
   
-  .swiper-slide img {
+  /* Para thumbnails con object-contain */
+  .mySwiper .swiper-slide img[class*="object-contain"] {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+  
+  /* Para thumbnails sin object-contain (usar cover) */
+  .mySwiper .swiper-slide img:not([class*="object-contain"]) {
     display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
+  }
+  
+  /* Estilos para las flechas de navegación */
+  .swiper-button-next,
+  .swiper-button-prev {
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    color: white !important;
+    transition: background-color 0.3s ease;
+  }
+  
+  .swiper-button-next:hover,
+  .swiper-button-prev:hover {
+    background-color: rgba(0, 0, 0, 0.7);
+  }
+  
+  .swiper-button-next::after,
+  .swiper-button-prev::after {
+    font-size: 20px;
+    font-weight: bold;
   }

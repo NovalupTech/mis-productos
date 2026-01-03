@@ -9,23 +9,27 @@ import { useCatalogViewStore } from '@/store/catalog/catalog-view-store';
 interface CatalogHeaderWrapperProps {
   tag?: string;
   search?: string;
+  categoryId?: string;
   initialProducts: Product[];
   initialPage: number;
   initialTotalPages: number;
   attributeFilters?: Record<string, string>;
   catalogColumns?: number;
   catalogImageSize?: 'small' | 'medium' | 'large';
+  catalogCentered?: boolean;
 }
 
 export const CatalogHeaderWrapper = ({
   tag,
   search,
+  categoryId,
   initialProducts,
   initialPage,
   initialTotalPages,
   attributeFilters,
   catalogColumns,
   catalogImageSize,
+  catalogCentered,
 }: CatalogHeaderWrapperProps) => {
   const { viewMode, setViewMode } = useCatalogViewStore();
 
@@ -47,9 +51,11 @@ export const CatalogHeaderWrapper = ({
         initialTotalPages={initialTotalPages}
         search={search}
         tag={tag}
+        categoryId={categoryId}
         attributeFilters={attributeFilters}
         catalogColumns={catalogColumns}
         catalogImageSize={catalogImageSize}
+        catalogCentered={catalogCentered}
         viewMode={viewMode}
       />
     </>

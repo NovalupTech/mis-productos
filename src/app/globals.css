@@ -89,3 +89,9 @@ body {
   animation-duration: 0.3s;
   animation-timing-function: ease-in-out;
 }
+
+.swiper-slide {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}

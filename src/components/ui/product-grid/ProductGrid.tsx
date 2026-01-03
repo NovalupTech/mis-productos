@@ -6,6 +6,7 @@ interface Props {
     selectedTag?: string
     columns?: number
     imageSize?: 'small' | 'medium' | 'large'
+    centered?: boolean
 }
 
 // Mapeo de número de columnas a clases de Tailwind CSS
@@ -23,16 +24,27 @@ const getGridColsClass = (columns: number): string => {
   return colsMap[columns] || 'sm:grid-cols-4'; // Por defecto 4 columnas
 };
 
-export const ProductGrid = ({products, selectedTag, columns = 4, imageSize = 'medium'}: Props) => {
+export const ProductGrid = ({products, selectedTag, columns = 4, imageSize = 'medium', centered = false}: Props) => {
   const gridColsClass = getGridColsClass(columns);
   
-  return (
-    <div className={`grid grid-cols-1 ${gridColsClass} gap-4 sm:gap-10 mb-10`}>
+  const gridContent = (
+    <div className={`grid grid-cols-1 ${gridColsClass} gap-4 sm:gap-6 mb-10`}>
         {
             products.map(product =>
                 <ProductGridItem key={product.slug} product={product} selectedTag={selectedTag} imageSize={imageSize}/>
             )
         }
     </div>
-  )
+  );
+
+  // Si está centrado, envolver en un container
+  if (centered) {
+    return (
+      <div className="container mx-auto px-4 sm:px-6">
+        {gridContent}
+      </div>
+    );
+  }
+
+  return gridContent;
 }

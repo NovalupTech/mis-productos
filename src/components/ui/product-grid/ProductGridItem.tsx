@@ -120,7 +120,7 @@ const ProductGridItem = ({product, selectedTag, imageSize = 'medium'}: Props) =>
 
   return (
     <div 
-      className='rounded-md overflow-hidden fade-in relative group flex flex-row sm:flex-col h-full border border-gray-200 sm:border-0'
+      className='bg-white rounded-lg overflow-hidden fade-in relative group flex flex-col h-full shadow-md hover:shadow-lg transition-shadow duration-300'
       onMouseEnter={() => {
         setIsHovered(true);
         if (product.images[1]) setImage(product.images[1]);
@@ -130,18 +130,16 @@ const ProductGridItem = ({product, selectedTag, imageSize = 'medium'}: Props) =>
         setImage(product.images[0]);
       }}
     >
-        {/* Imagen - En mobile ocupa menos espacio, en desktop según el tamaño configurado */}
-        <div className={`w-32 sm:w-full flex-shrink-0 ${
-          imageSize === 'small' ? 'sm:flex sm:justify-center sm:items-start' : ''
-        }`}>
+        {/* Imagen - Centrada con padding elegante */}
+        <div className='w-full flex justify-center items-center bg-white px-4 sm:px-6 py-4 sm:py-6'>
           <a 
             href={`/catalog/product/${product.slug}`} 
-            className={`block relative overflow-hidden aspect-square ${
+            className={`block relative overflow-hidden ${
               imageSize === 'small' 
-                ? 'sm:w-[180px] sm:h-[180px]' // Pequeño: 180x180px
+                ? 'w-[180px] h-[180px]' // Pequeño: 180x180px
                 : imageSize === 'large'
-                ? 'sm:w-full sm:max-h-[450px]' // Grande: altura máxima 450px
-                : 'sm:w-full sm:max-h-[280px]' // Medio: altura máxima 280px
+                ? 'w-full max-h-[450px] aspect-square' // Grande: altura máxima 450px
+                : 'w-full max-h-[280px] aspect-square' // Medio: altura máxima 280px
             }`}
           >
             <Image
@@ -149,7 +147,7 @@ const ProductGridItem = ({product, selectedTag, imageSize = 'medium'}: Props) =>
                 alt={product.title}
                 width={500}
                 height={500}
-                className='w-full h-full object-cover rounded sm:rounded transition-transform duration-300 group-hover:scale-105'
+                className='w-full h-full object-contain transition-transform duration-300 group-hover:scale-105'
                 style={{ viewTransitionName: `product-image-${product.slug}` }}
             />
             {/* Badge de descuento */}
@@ -206,18 +204,63 @@ const ProductGridItem = ({product, selectedTag, imageSize = 'medium'}: Props) =>
         </div>
         
         {/* Contenido - En mobile se expande, en desktop ocupa el espacio restante */}
-        <div className='p-3 sm:p-4 flex flex-col flex-grow min-w-0'>
+        <div className='px-4 sm:px-6 pb-4 sm:pb-6 flex flex-col flex-grow min-w-0'>
+            {/* Tags/Categoría - Mostrar primero si existen */}
+            {product.tags && product.tags.length > 0 && (
+              <div className='flex flex-wrap gap-1 mb-2'>
+                {product.tags.slice(0, 1).map(tag => {
+                  const isSelected = selectedTag === tag.name;
+                  return (
+                    <button
+                      key={tag.id}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const params = new URLSearchParams(searchParams.toString());
+                        
+                        if (isSelected) {
+                          // Si ya está seleccionado, eliminar el filtro
+                          params.delete('tag');
+                        } else {
+                          // Si no está seleccionado, agregar el filtro
+                          params.set('tag', tag.name);
+                        }
+                        
+                        const newUrl = params.toString() ? `/catalog?${params.toString()}` : '/catalog';
+                        router.push(newUrl);
+                      }}
+                      className={`text-xs px-2 py-1 rounded transition-colors cursor-pointer uppercase font-medium ${
+                        isSelected
+                          ? 'text-white font-semibold'
+                          : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                      }`}
+                      style={isSelected ? {
+                        backgroundColor: 'var(--theme-secondary-color)',
+                        color: 'var(--theme-secondary-text-color)',
+                      } : {}}
+                    >
+                      {tag.name}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
             <Link 
-              className='line-clamp-2 mb-1 text-sm sm:text-base hover:opacity-80 transition-opacity' 
+              className='line-clamp-2 mb-1 text-sm sm:text-base font-semibold hover:opacity-80 transition-opacity' 
               href={`/catalog/product/${product.slug}`}
               style={{ color: 'var(--theme-primary-text-color)' }}
             >
                 {product.title}
             </Link>
-            <div className="flex items-center gap-2 flex-wrap">
+            {product.description && (
+              <p className='line-clamp-2 text-xs sm:text-sm text-gray-600 mb-2'>
+                {product.description}
+              </p>
+            )}
+            <div className="flex items-center gap-2 flex-wrap mb-2">
               {formattedPrice && (
                 <span 
-                  className='font-bold text-base sm:text-lg'
+                  className='font-bold text-lg sm:text-xl'
                   style={{
                     color: 'var(--theme-secondary-color)',
                   }}
@@ -231,9 +274,9 @@ const ProductGridItem = ({product, selectedTag, imageSize = 'medium'}: Props) =>
                 </span>
               )}
             </div>
-            {product.tags && product.tags.length > 0 && (
-              <div className='flex flex-wrap gap-1 mt-2'>
-                {product.tags.slice(0, 3).map(tag => {
+            {product.tags && product.tags.length > 1 && (
+              <div className='flex flex-wrap gap-1 mb-2'>
+                {product.tags.slice(1, 4).map(tag => {
                   const isSelected = selectedTag === tag.name;
                   return (
                     <button
@@ -271,7 +314,7 @@ const ProductGridItem = ({product, selectedTag, imageSize = 'medium'}: Props) =>
               </div>
             )}
             {/* Botones visibles solo en mobile */}
-            <div className='mt-2 sm:hidden flex flex-col gap-2'>
+            <div className='mt-3 sm:hidden flex flex-col gap-2'>
               <button
                 onClick={handleAddToCart}
                 className='px-4 py-2 rounded-md text-sm font-semibold transition-colors w-full'
