@@ -10,6 +10,7 @@ import { PriceConfig } from "@/utils/priceFormat";
 import { ImportProductsButton } from "./ui/ImportProductsButton";
 import { ApiImportButton } from "./ui/ApiImportButton";
 import { ProductSearch } from "./ui/ProductSearch";
+import { IoAddOutline } from "react-icons/io5";
 
 interface Props {
   searchParams: {
@@ -52,7 +53,8 @@ export default async function OrdersPage({ searchParams }: {searchParams: Promis
         <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3">
           <ImportProductsButton />
           <ApiImportButton />
-          <Link href="/gestion/product/new" className="btn-primary text-center">
+          <Link href="/gestion/product/new" className="bg-green-500 text-white px-4 py-2 rounded-md text-center flex items-center gap-2">
+            <IoAddOutline size={20} />
             Nuevo producto
           </Link>
         </div>
