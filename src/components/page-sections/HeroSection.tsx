@@ -16,10 +16,7 @@ interface HeroSectionProps {
 export const HeroSection = ({ content }: HeroSectionProps) => {
   return (
     <section 
-      className="relative w-full h-[500px] flex items-center justify-center text-white"
-      style={{
-        backgroundColor: 'var(--theme-secondary-color)',
-      }}
+      className="relative w-full h-[500px] flex items-center justify-center"
     >
       {content.image && (
         <div className="absolute inset-0 z-0">
@@ -27,7 +24,7 @@ export const HeroSection = ({ content }: HeroSectionProps) => {
             src={content.image}
             alt={content.title || 'Hero'}
             fill
-            className="object-cover opacity-30"
+            className="object-cover opacity-60"
           />
         </div>
       )}

@@ -44,6 +44,7 @@ export * from './user/update-user-profile';
 export * from './page/get-pages';
 export * from './page/update-page';
 export * from './page/create-page';
+export * from './page/upload-page-image';
 export * from './page-section/create-section';
 export * from './page-section/update-section';
 export * from './page-section/delete-section';

@@ -75,7 +75,7 @@ export const updateCompanySocial = async (data: UpdateCompanySocialData) => {
     if (data.enabled !== undefined) updateData.enabled = data.enabled;
     if (data.order !== undefined) updateData.order = data.order;
 
-    await prisma.companySocial.update({
+    const updatedSocial = await prisma.companySocial.update({
       where: { id: data.socialId },
       data: updateData,
     });
@@ -84,7 +84,8 @@ export const updateCompanySocial = async (data: UpdateCompanySocialData) => {
     revalidatePath('/');
     return {
       ok: true,
-      message: 'Red social actualizada correctamente'
+      message: 'Red social actualizada correctamente',
+      social: updatedSocial,
     };
   } catch (error) {
     console.log(error);

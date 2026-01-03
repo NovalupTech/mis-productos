@@ -132,9 +132,20 @@ export const SocialsManager = ({ initialSocials }: Props) => {
     setLoading(null);
   };
 
-  const handleModalSuccess = () => {
+  const handleModalSuccess = (social: CompanySocial) => {
     setIsModalOpen(false);
+    const wasEditing = !!editingSocial;
     setEditingSocial(null);
+    
+    // Actualizar el estado local inmediatamente
+    if (wasEditing) {
+      // Actualizar red social existente
+      setSocials(socials.map((s) => (s.id === social.id ? social : s)));
+    } else {
+      // Agregar nueva red social
+      setSocials([...socials, social]);
+    }
+    
     router.refresh();
   };
 

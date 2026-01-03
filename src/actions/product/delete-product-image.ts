@@ -22,7 +22,7 @@ export const deleteProductImage = async( imageId: number, imageUrl: string ) => 
     ?.split('.')[0] ?? '';
 
   const domain = await getCurrentDomain();
-  const folder = `products/${domain}/`;
+  const folder = `misproductos/products/${domain}/`;
 
   try {
 

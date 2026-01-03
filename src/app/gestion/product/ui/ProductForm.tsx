@@ -33,8 +33,6 @@ interface FormInputs {
   categoryId: string;
   featured: boolean;
   code?: string | null;
-
-  images?: FileList;
 }
 
 export const ProductForm = ({ product, categories }: Props) => {
@@ -207,7 +205,7 @@ export const ProductForm = ({ product, categories }: Props) => {
     try {
       const formData = new FormData();
 
-      const { images, ...productToSave } = data;
+      const productToSave = data;
 
       if ( product.id ){
         formData.append("id", product.id ?? "");
@@ -237,14 +235,7 @@ export const ProductForm = ({ product, categories }: Props) => {
       });
       formData.append("attributes", JSON.stringify(validAttributes));
       
-      // Agregar archivos del input de desktop (si hay)
-      if ( images && images.length > 0 ) {
-        for ( let i = 0; i < images.length; i++  ) {
-          formData.append('images', images[i]);
-        }
-      }
-      
-      // Agregar archivos seleccionados desde mobile
+      // Agregar archivos seleccionados (tanto desktop como mobile usan selectedFiles)
       if ( selectedFiles.length > 0 ) {
         selectedFiles.forEach(file => {
           formData.append('images', file);
@@ -457,7 +448,6 @@ export const ProductForm = ({ product, categories }: Props) => {
               <label className="block">
                 <input
                   type="file"
-                  {...register('images')}
                   multiple
                   onChange={handleDesktopFileChange}
                   className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 file:cursor-pointer cursor-pointer border border-gray-300 rounded-md bg-white p-2"

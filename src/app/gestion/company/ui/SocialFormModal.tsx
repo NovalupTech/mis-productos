@@ -21,7 +21,7 @@ interface CompanySocial {
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (social: CompanySocial) => void;
   editingSocial: CompanySocial | null;
 }
 
@@ -92,15 +92,33 @@ export const SocialFormModal = ({
           socialId: editingSocial.id,
           ...formData,
         });
-        if (result.ok) {
-          onSuccess();
+        if (result.ok && result.social) {
+          // Convertir la red social del servidor al formato del componente
+          const updatedSocial: CompanySocial = {
+            id: result.social.id,
+            type: result.social.type,
+            url: result.social.url,
+            label: result.social.label,
+            enabled: result.social.enabled,
+            order: result.social.order,
+          };
+          onSuccess(updatedSocial);
         } else {
           setError(result.message);
         }
       } else {
         const result = await createCompanySocial(formData);
-        if (result.ok) {
-          onSuccess();
+        if (result.ok && result.social) {
+          // Convertir la red social del servidor al formato del componente
+          const newSocial: CompanySocial = {
+            id: result.social.id,
+            type: result.social.type,
+            url: result.social.url,
+            label: result.social.label,
+            enabled: result.social.enabled,
+            order: result.social.order,
+          };
+          onSuccess(newSocial);
         } else {
           setError(result.message);
         }
