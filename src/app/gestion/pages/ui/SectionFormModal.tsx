@@ -148,7 +148,7 @@ export const SectionFormModal = ({ isOpen, onClose, onSuccess, pageId, editingSe
 
     try {
       // Validar y parsear campos JSON si es necesario
-      const processedContent = { ...formData.content };
+      const processedContent: Record<string, unknown> = { ...formData.content };
       
       if (formData.type === 'FEATURES' && processedContent.features) {
         try {
@@ -167,7 +167,7 @@ export const SectionFormModal = ({ isOpen, onClose, onSuccess, pageId, editingSe
         } catch {
           // Si no es JSON válido, intentar como URLs separadas por coma
           const urlsString = processedContent.images as string;
-          const urlsArray = urlsString
+          const urlsArray: string[] = urlsString
             .split(',')
             .map(url => url.trim())
             .filter(Boolean);
@@ -178,7 +178,7 @@ export const SectionFormModal = ({ isOpen, onClose, onSuccess, pageId, editingSe
             return;
           }
           
-          processedContent.images = urlsArray;
+          processedContent.images = urlsArray as unknown;
         }
       }
 
