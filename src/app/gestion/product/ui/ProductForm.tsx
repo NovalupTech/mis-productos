@@ -76,7 +76,6 @@ export const ProductForm = ({ product, categories }: Props) => {
       categoryId: product.categoryId || '',
       featured: product.featured ?? false,
       code: product.code || '',
-      images: undefined,
     },
   });
 
@@ -103,7 +102,6 @@ export const ProductForm = ({ product, categories }: Props) => {
       categoryId: product.categoryId || '',
       featured: product.featured ?? false,
       code: product.code || '',
-      images: undefined,
     });
     setSelectedTagIds(product.tags?.map(tag => tag.id) || []);
     setSelectedTagNames(product.tags?.map(tag => tag.name) || []);
