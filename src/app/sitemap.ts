@@ -96,7 +96,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         },
         select: {
           slug: true,
-          updatedAt: true,
         },
         take: 1000, // Limitar para no sobrecargar el sitemap
       });
@@ -104,7 +103,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       products.forEach((product) => {
         urls.push({
           url: `${companyUrl}/catalog/product/${product.slug}`,
-          lastModified: product.updatedAt,
+          lastModified: new Date(),
           changeFrequency: 'weekly',
           priority: 0.8,
         });
