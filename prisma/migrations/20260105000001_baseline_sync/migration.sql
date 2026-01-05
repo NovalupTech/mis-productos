@@ -1,0 +1,3 @@
+-- Baseline migration to sync migration history with database state
+-- This migration resolves drift caused by modified migration files
+-- No actual schema changes, just synchronization

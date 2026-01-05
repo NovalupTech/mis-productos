@@ -10,7 +10,7 @@ import { confirmDelete } from '@/utils/confirm';
 
 interface PageSection {
   id: string;
-  type: 'HERO' | 'BANNER' | 'TEXT' | 'IMAGE' | 'FEATURES' | 'GALLERY' | 'CTA' | 'MAP' | 'SLIDER';
+  type: 'HERO' | 'BANNER' | 'TEXT' | 'IMAGE' | 'FEATURES' | 'GALLERY' | 'CTA' | 'MAP' | 'SLIDER' | 'CAROUSEL';
   position: number;
   enabled: boolean;
   content: Record<string, unknown>;
@@ -41,6 +41,10 @@ const getSectionPreview = (section: PageSection): string => {
       return content.title as string || 'Sin título';
     case 'CTA':
       return content.title as string || content.description as string || 'Sin contenido';
+    case 'SLIDER':
+      return 'Slider de imágenes';
+    case 'CAROUSEL':
+      return content.title as string || 'Carousel de productos';
     default:
       return 'Sin contenido';
   }

@@ -11,7 +11,7 @@ import { showErrorToast } from '@/utils/toast';
 
 interface PageSection {
   id: string;
-  type: 'HERO' | 'BANNER' | 'TEXT' | 'IMAGE' | 'FEATURES' | 'GALLERY' | 'CTA' | 'MAP';
+  type: 'HERO' | 'BANNER' | 'TEXT' | 'IMAGE' | 'FEATURES' | 'GALLERY' | 'CTA' | 'MAP' | 'SLIDER' | 'CAROUSEL';
   position: number;
   enabled: boolean;
   content: JsonValue;

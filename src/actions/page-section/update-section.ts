@@ -8,7 +8,7 @@ import { InputJsonValue } from '@prisma/client/runtime/client';
 
 interface UpdateSectionData {
   sectionId: string;
-  type?: 'HERO' | 'BANNER' | 'TEXT' | 'IMAGE' | 'FEATURES' | 'GALLERY' | 'CTA' | 'MAP' | 'SLIDER';
+  type?: 'HERO' | 'BANNER' | 'TEXT' | 'IMAGE' | 'FEATURES' | 'GALLERY' | 'CTA' | 'MAP' | 'SLIDER' | 'CAROUSEL';
   position?: number;
   content?: Record<string, unknown>;
   config?: Record<string, unknown> | null;

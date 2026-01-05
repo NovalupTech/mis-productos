@@ -1,15 +1,16 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { createSection, updateSection, uploadPageImage } from '@/actions';
-import { IoCloseOutline, IoCloudUploadOutline, IoImageOutline, IoArrowUpOutline, IoArrowDownOutline } from 'react-icons/io5';
+import { createSection, updateSection, uploadPageImage, getAllCategories, getAllTags, getPaginatedProductsWithImages } from '@/actions';
+import { IoCloseOutline, IoCloudUploadOutline, IoImageOutline, IoArrowUpOutline, IoArrowDownOutline, IoSearchOutline } from 'react-icons/io5';
 import Image from 'next/image';
 import { showErrorToast } from '@/utils/toast';
 import clsx from 'clsx';
+import { Product } from '@/interfaces';
 
 interface PageSection {
   id: string;
-  type: 'HERO' | 'BANNER' | 'TEXT' | 'IMAGE' | 'FEATURES' | 'GALLERY' | 'CTA' | 'MAP' | 'SLIDER';
+  type: 'HERO' | 'BANNER' | 'TEXT' | 'IMAGE' | 'FEATURES' | 'GALLERY' | 'CTA' | 'MAP' | 'SLIDER' | 'CAROUSEL';
   position: number;
   enabled: boolean;
   content: Record<string, unknown>;
@@ -34,6 +35,7 @@ const SECTION_TYPES: Array<{ value: PageSection['type']; label: string }> = [
   { value: 'CTA', label: 'Llamado a la Acción' },
   { value: 'MAP', label: 'Mapa' },
   { value: 'SLIDER', label: 'Slider' },
+  { value: 'CAROUSEL', label: 'Carousel' },
 ];
 
 // Configuración de campos por tipo de sección
@@ -83,6 +85,9 @@ const SECTION_FIELDS: Record<PageSection['type'], Array<{ key: string; label: st
   SLIDER: [
     { key: 'images', label: 'Imágenes del Slider', type: 'textarea' },
   ],
+  CAROUSEL: [
+    { key: 'title', label: 'Título', type: 'text' },
+  ],
 };
 
 export const SectionFormModal = ({ isOpen, onClose, onSuccess, pageId, editingSection }: Props) => {
@@ -108,6 +113,17 @@ export const SectionFormModal = ({ isOpen, onClose, onSuccess, pageId, editingSe
   const fileInputRef = useRef<HTMLInputElement>(null);
   const galleryFileInputRef = useRef<HTMLInputElement>(null);
   const sliderFileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Estados para CAROUSEL
+  const [categories, setCategories] = useState<Array<{ id: string; name: string }>>([]);
+  const [tags, setTags] = useState<Array<{ id: string; name: string }>>([]);
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
+  const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
+  const [selectedProducts, setSelectedProducts] = useState<Product[]>([]);
+  const [productSearch, setProductSearch] = useState('');
+  const [searchedProducts, setSearchedProducts] = useState<Product[]>([]);
+  const [isSearchingProducts, setIsSearchingProducts] = useState(false);
 
   useEffect(() => {
     if (editingSection) {
@@ -157,6 +173,9 @@ export const SectionFormModal = ({ isOpen, onClose, onSuccess, pageId, editingSe
       } else if (editingSection.type === 'SLIDER') {
         // Si es SLIDER y no hay config, usar valores por defecto
         config = { width: '100%', height: '400px', transitionTime: '5' };
+      } else if (editingSection.type === 'CAROUSEL') {
+        // Si es CAROUSEL y no hay config, usar valores por defecto
+        config = { limit: '20' };
       }
       
       setFormData({
@@ -178,6 +197,44 @@ export const SectionFormModal = ({ isOpen, onClose, onSuccess, pageId, editingSe
       if (editingSection.type === 'SLIDER' && content.images) {
         setSliderUploadMode('url');
       }
+      // Inicializar datos del carousel
+      if (editingSection.type === 'CAROUSEL') {
+        setSelectedCategoryIds(Array.isArray(content.categoryIds) ? content.categoryIds as string[] : []);
+        setSelectedTagIds(Array.isArray(content.tagIds) ? content.tagIds as string[] : []);
+        const productIds = Array.isArray(content.productIds) ? content.productIds as string[] : [];
+        setSelectedProductIds(productIds);
+        setProductSearch((content.search as string) || '');
+        if (content.featured !== undefined) {
+          setFormData(prev => ({
+            ...prev,
+            content: { ...prev.content, featured: String(content.featured) },
+          }));
+        }
+        // Cargar información de productos seleccionados si hay IDs
+        if (productIds.length > 0) {
+          const loadSelectedProducts = async () => {
+            try {
+              const result = await getPaginatedProductsWithImages({
+                page: 1,
+                take: 100,
+              });
+              const filtered = result.products.filter(p => productIds.includes(p.id));
+              const transformed = filtered.map(product => ({
+                ...product,
+                tags: product.tags?.map(tag => ({
+                  id: tag.id,
+                  name: tag.name,
+                  createdAt: (tag as any).createdAt || new Date(),
+                })) || [],
+              }));
+              setSelectedProducts(transformed);
+            } catch (error) {
+              console.error('Error al cargar productos seleccionados:', error);
+            }
+          };
+          loadSelectedProducts();
+        }
+      }
     } else {
       setFormData({
         type: 'TEXT',
@@ -187,8 +244,72 @@ export const SectionFormModal = ({ isOpen, onClose, onSuccess, pageId, editingSe
       });
       setImageUploadMode('url');
       setGalleryUploadMode('url');
+      setSliderUploadMode('url');
+      // Resetear estados del carousel
+      setSelectedCategoryIds([]);
+      setSelectedTagIds([]);
+      setSelectedProductIds([]);
+      setSelectedProducts([]);
+      setProductSearch('');
+      setSearchedProducts([]);
     }
   }, [editingSection, isOpen]);
+
+  // Cargar categorías y tags cuando se abre el modal y el tipo es CAROUSEL
+  useEffect(() => {
+    if (isOpen && formData.type === 'CAROUSEL') {
+      const loadData = async () => {
+        const [categoriesResult, tagsResult] = await Promise.all([
+          getAllCategories(),
+          getAllTags(),
+        ]);
+        
+        if (categoriesResult.ok) {
+          setCategories(categoriesResult.categories);
+        }
+        if (tagsResult.ok) {
+          setTags(tagsResult.tags);
+        }
+      };
+      
+      loadData();
+    }
+  }, [isOpen, formData.type]);
+
+  // Buscar productos cuando cambia el término de búsqueda
+  useEffect(() => {
+    if (formData.type === 'CAROUSEL' && productSearch && productSearch.length >= 2) {
+      const searchProducts = async () => {
+        setIsSearchingProducts(true);
+        try {
+          const result = await getPaginatedProductsWithImages({
+            page: 1,
+            take: 10,
+            search: productSearch,
+          });
+          // Transformar productos para asegurar que los tags tengan createdAt
+          const transformedProducts = result.products.map(product => ({
+            ...product,
+            tags: product.tags?.map(tag => ({
+              id: tag.id,
+              name: tag.name,
+              createdAt: (tag as any).createdAt || new Date(),
+            })) || [],
+          }));
+          setSearchedProducts(transformedProducts);
+        } catch (error) {
+          console.error('Error al buscar productos:', error);
+        } finally {
+          setIsSearchingProducts(false);
+        }
+      };
+
+      const timeoutId = setTimeout(searchProducts, 500); // Debounce
+      return () => clearTimeout(timeoutId);
+    } else {
+      setSearchedProducts([]);
+    }
+  }, [productSearch, formData.type]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -197,7 +318,7 @@ export const SectionFormModal = ({ isOpen, onClose, onSuccess, pageId, editingSe
 
     try {
       // Validar y parsear campos JSON si es necesario
-      const processedContent: Record<string, unknown> = { ...formData.content };
+      let processedContent: Record<string, unknown> = { ...formData.content };
       
       if (formData.type === 'FEATURES' && processedContent.features) {
         try {
@@ -264,6 +385,31 @@ export const SectionFormModal = ({ isOpen, onClose, onSuccess, pageId, editingSe
         }
       }
 
+      // Preparar contenido para CAROUSEL
+      if (formData.type === 'CAROUSEL') {
+        const carouselContent: Record<string, unknown> = {
+          title: formData.content.title || '',
+        };
+        
+        if (selectedProductIds.length > 0) {
+          carouselContent.productIds = selectedProductIds;
+        }
+        if (productSearch) {
+          carouselContent.search = productSearch;
+        }
+        if (selectedCategoryIds.length > 0) {
+          carouselContent.categoryIds = selectedCategoryIds;
+        }
+        if (selectedTagIds.length > 0) {
+          carouselContent.tagIds = selectedTagIds;
+        }
+        if (formData.content.featured === 'true') {
+          carouselContent.featured = true;
+        }
+        
+        processedContent = carouselContent;
+      }
+
       // Preparar config para SLIDER (ya no necesita link y openInNewTab globales)
       let processedConfig: Record<string, unknown> | undefined = undefined;
       if (formData.type === 'SLIDER' && formData.config) {
@@ -271,6 +417,13 @@ export const SectionFormModal = ({ isOpen, onClose, onSuccess, pageId, editingSe
           width: formData.config.width || '100%',
           height: formData.config.height || '400px',
           transitionTime: formData.config.transitionTime || '5',
+        };
+      }
+      
+      // Preparar config para CAROUSEL
+      if (formData.type === 'CAROUSEL' && formData.config) {
+        processedConfig = {
+          limit: formData.config.limit ? Number(formData.config.limit) : 20,
         };
       }
 
@@ -613,11 +766,19 @@ export const SectionFormModal = ({ isOpen, onClose, onSuccess, pageId, editingSe
                     ...formData,
                     type: newType,
                     content: {}, // Limpiar contenido al cambiar tipo
-                    config: newType === 'SLIDER' ? { width: '100%', height: '400px', transitionTime: '5' } : {}, // Inicializar config para SLIDER
+                    config: newType === 'SLIDER' ? { width: '100%', height: '400px', transitionTime: '5' } : newType === 'CAROUSEL' ? { limit: '20' } : {}, // Inicializar config
                   });
                   setImageUploadMode('url'); // Resetear modo de imagen al cambiar tipo
                   setGalleryUploadMode('url'); // Resetear modo de galería al cambiar tipo
                   setSliderUploadMode('url'); // Resetear modo de slider al cambiar tipo
+                  // Resetear estados del carousel
+                  if (newType !== 'CAROUSEL') {
+                    setSelectedCategoryIds([]);
+                    setSelectedTagIds([]);
+                    setSelectedProductIds([]);
+                    setProductSearch('');
+                    setSearchedProducts([]);
+                  }
                 }}
                 disabled={loading || !!editingSection}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
@@ -1098,7 +1259,197 @@ export const SectionFormModal = ({ isOpen, onClose, onSuccess, pageId, editingSe
                   )}
                 </div>
               );
-            })}
+            }            )}
+
+            {/* Campos especiales para CAROUSEL */}
+            {formData.type === 'CAROUSEL' && (
+              <div className="space-y-4 pt-4 border-t border-gray-200">
+                <h3 className="text-sm font-semibold text-gray-700">Configuración de Productos</h3>
+                
+                {/* Búsqueda de productos por nombre/código */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Buscar productos por nombre o código
+                  </label>
+                  <div className="relative">
+                    <IoSearchOutline className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <input
+                      type="text"
+                      value={productSearch}
+                      onChange={(e) => setProductSearch(e.target.value)}
+                      disabled={loading}
+                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                      placeholder="Buscar productos..."
+                    />
+                  </div>
+                  {isSearchingProducts && (
+                    <p className="mt-1 text-xs text-blue-600">Buscando productos...</p>
+                  )}
+                  {searchedProducts.length > 0 && (
+                    <div className="mt-2 max-h-40 overflow-y-auto border border-gray-200 rounded-md p-2 space-y-1">
+                      {searchedProducts.map((product) => (
+                        <div
+                          key={product.id}
+                          className="flex items-center justify-between p-2 hover:bg-gray-50 rounded"
+                        >
+                          <span className="text-sm text-gray-700">{product.title} {product.code && `(${product.code})`}</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (!selectedProductIds.includes(product.id)) {
+                                setSelectedProductIds([...selectedProductIds, product.id]);
+                                setSelectedProducts([...selectedProducts, product]);
+                              }
+                            }}
+                            disabled={selectedProductIds.includes(product.id) || loading}
+                            className="text-xs px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                          >
+                            {selectedProductIds.includes(product.id) ? 'Agregado' : 'Agregar'}
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Productos seleccionados */}
+                {selectedProductIds.length > 0 && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Productos seleccionados ({selectedProductIds.length})
+                    </label>
+                    <div className="space-y-1 max-h-32 overflow-y-auto border border-gray-200 rounded-md p-2">
+                      {selectedProductIds.map((productId) => (
+                        <div key={productId} className="flex items-center justify-between text-sm">
+                          <span className="text-gray-700">ID: {productId}</span>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedProductIds(selectedProductIds.filter(id => id !== productId))}
+                            disabled={loading}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <IoCloseOutline size={16} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Selección por categorías */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Filtrar por categorías
+                  </label>
+                  <select
+                    multiple
+                    value={selectedCategoryIds}
+                    onChange={(e) => {
+                      const selected = Array.from(e.target.selectedOptions, option => option.value);
+                      setSelectedCategoryIds(selected);
+                    }}
+                    disabled={loading}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                    size={Math.min(categories.length, 5)}
+                  >
+                    {categories.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Mantén presionado Ctrl (Cmd en Mac) para seleccionar múltiples categorías
+                  </p>
+                </div>
+
+                {/* Selección por tags */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Filtrar por tags
+                  </label>
+                  <select
+                    multiple
+                    value={selectedTagIds}
+                    onChange={(e) => {
+                      const selected = Array.from(e.target.selectedOptions, option => option.value);
+                      setSelectedTagIds(selected);
+                    }}
+                    disabled={loading}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                    size={Math.min(tags.length, 5)}
+                  >
+                    {tags.map((tag) => (
+                      <option key={tag.id} value={tag.id}>
+                        {tag.name}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Mantén presionado Ctrl (Cmd en Mac) para seleccionar múltiples tags
+                  </p>
+                </div>
+
+                {/* Filtro por featured */}
+                <div className="flex items-center gap-2">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={formData.content.featured === 'true'}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          content: {
+                            ...formData.content,
+                            featured: String(e.target.checked),
+                          },
+                        })
+                      }
+                      disabled={loading}
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <span className="text-sm text-gray-700">Solo productos destacados</span>
+                  </label>
+                </div>
+
+                <p className="text-xs text-gray-500 italic">
+                  💡 Puedes usar una combinación de filtros. Si seleccionas productos específicos, esos tendrán prioridad.
+                </p>
+              </div>
+            )}
+
+            {/* Campos de configuración para CAROUSEL */}
+            {formData.type === 'CAROUSEL' && (
+              <div className="space-y-4 pt-4 border-t border-gray-200">
+                <h3 className="text-sm font-semibold text-gray-700">Configuración del Carousel</h3>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Límite de productos
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="50"
+                    value={formData.config?.limit || '20'}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        config: {
+                          ...formData.config,
+                          limit: e.target.value,
+                        },
+                      })
+                    }
+                    disabled={loading}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                    placeholder="20"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Número máximo de productos a mostrar en el carousel (1-50)
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Campos de configuración para SLIDER */}
             {formData.type === 'SLIDER' && (

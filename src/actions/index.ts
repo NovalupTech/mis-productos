@@ -34,6 +34,7 @@ export * from './shipping/update-shipping-config';
 export * from './product/get-product-by-slug';
 export * from './product/get-stock-by-slug';
 export * from './product/product-pagination';
+export * from './product/get-products-for-carousel';
 
 
 export * from './user/change-user-role';
