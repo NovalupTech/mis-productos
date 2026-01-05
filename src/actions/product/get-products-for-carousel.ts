@@ -182,18 +182,15 @@ export const getProductsForCarousel = async (params: GetProductsForCarouselParam
           name: pt.tag!.name,
           createdAt: pt.tag!.createdAt,
         })),
-      attributes: product.ProductAttribute.map((pa) => ({
-        attribute: {
-          id: pa.attribute.id,
-          name: pa.attribute.name,
-          type: pa.attribute.type,
-          required: pa.attribute.required,
-          companyId: pa.attribute.companyId,
-        },
-        attributeValue: pa.attributeValue ? {
-          id: pa.attributeValue.id,
-          value: pa.attributeValue.value,
-        } : undefined,
+      attributes: product.ProductAttribute.map((pa: any) => ({
+        id: pa.id,
+        productId: pa.productId,
+        attributeId: pa.attributeId,
+        attributeValueId: pa.attributeValueId,
+        valueText: pa.valueText,
+        valueNumber: pa.valueNumber,
+        attribute: pa.attribute,
+        attributeValue: pa.attributeValue,
       })),
     }));
   } catch (error) {
