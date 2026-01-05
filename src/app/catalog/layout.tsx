@@ -1,4 +1,4 @@
-import { TopMenu, Sidebar, Footer, FloatingSocialButton } from "@/components";
+import { TopMenu, Sidebar, Footer, FloatingSocialButton, StructuredData } from "@/components";
 import { CompanyProvider } from "@/components/providers/CompanyProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { PriceConfigProvider } from "@/components/providers/PriceConfigProvider";
@@ -8,6 +8,7 @@ import { FavoritesProvider } from "@/components/providers/FavoritesProvider";
 import { Toast } from "@/components/ui/toast/Toast";
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
 import { getCurrentCompanyId, getCurrentDomain } from '@/lib/domain';
 import { getCompanyConfigPublic, getPaymentMethodsPublic } from '@/actions';
 import { getPaypalConfig } from '@/actions/payment-methods/get-paypal-config';
@@ -52,15 +53,28 @@ function calculateHoverColor(hex: string): string {
 export async function generateMetadata(): Promise<Metadata> {
   // Buscar el companyId asociado al dominio
   const companyId = await getCurrentCompanyId();
+  const domain = await getCurrentDomain();
+  
+  // Obtener headers para construir URLs absolutas
+  const headersList = await headers();
+  const host = headersList.get('host') || headersList.get('x-forwarded-host');
+  const forwardedProto = headersList.get('x-forwarded-proto');
+  const protocol = forwardedProto || (process.env.NODE_ENV === 'production' ? 'https' : 'http');
+  const baseUrl = host ? `${protocol}://${host}` : 'https://misproductos.shop';
 
   // Si no hay companyId, retornar metadatos por defecto
   if (!companyId) {
     return {
       title: {
-        default: 'Misproductos',
+        default: 'Misproductos - Catálogo Online',
         template: '%s - Misproductos',
       },
       description: 'Catálogo online personalizable para vender tus productos y servicios',
+      keywords: ['misproductos', 'catálogo online', 'tienda online', 'ecommerce'],
+      openGraph: {
+        url: baseUrl,
+        type: 'website',
+      },
     };
   }
 
@@ -71,37 +85,88 @@ export async function generateMetadata(): Promise<Metadata> {
       id: true,
       name: true,
       logo: true,
+      address: true,
     },
   });
 
+  // Construir keywords dinámicos incluyendo el dominio y "misproductos"
+  const domainParts = domain.split('.');
+  const subdomain = domainParts.length > 2 ? domainParts[0] : null;
+  const keywords = [
+    company?.name || 'tienda',
+    'misproductos',
+    domain,
+    ...(subdomain ? [`${subdomain} misproductos`, `${subdomain}.misproductos.shop`] : []),
+    'catálogo online',
+    'tienda online',
+    'ecommerce',
+    'comprar online',
+  ];
+
   // Construir la URL del favicon basado en el logo de la compañía
-  let faviconUrl = '/icon.svg'; // Favicon por defecto
+  let faviconUrl = '/icon.svg';
+  let logoUrl = '/oc_image.png';
   
   if (company?.logo) {
-    // Si el logo es una URL completa, usarla directamente
-    // Si no, construir la ruta relativa
     faviconUrl = company.logo.startsWith('http') || company.logo.startsWith('https')
       ? company.logo
       : `/logos/${company.logo}`;
+    logoUrl = faviconUrl;
   }
+
+  const companyName = company?.name || 'Tienda';
+  const description = `Catálogo online de ${companyName}. Compra productos de calidad en ${domain}. Tienda online con Misproductos.`;
 
   return {
     title: {
-      default: company?.name || 'Shop',
-      template: `%s - ${company?.name || 'Shop'}`,
+      default: `${companyName} - Catálogo Online | Misproductos`,
+      template: `%s - ${companyName}`,
     },
-    description: `Tienda de productos de ${company?.name || 'Shop'}`,
+    description,
+    keywords,
+    authors: [{ name: companyName }],
+    creator: companyName,
+    publisher: companyName,
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
+    },
     icons: {
       icon: faviconUrl,
       shortcut: faviconUrl,
       apple: faviconUrl,
     },
     openGraph: {
-      images: company?.logo 
-        ? [company.logo.startsWith('http') || company.logo.startsWith('https')
-            ? company.logo
-            : `/logos/${company.logo}`]
-        : ['/oc_image.png'],
+      title: `${companyName} - Catálogo Online`,
+      description,
+      url: `${baseUrl}/catalog`,
+      siteName: companyName,
+      type: 'website',
+      locale: 'es_ES',
+      images: [
+        {
+          url: logoUrl.startsWith('http') ? logoUrl : `${baseUrl}${logoUrl}`,
+          width: 1200,
+          height: 630,
+          alt: `${companyName} - Catálogo Online`,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${companyName} - Catálogo Online`,
+      description,
+      images: [logoUrl.startsWith('http') ? logoUrl : `${baseUrl}${logoUrl}`],
+    },
+    alternates: {
+      canonical: `${baseUrl}/catalog`,
     },
   };
 }
@@ -113,6 +178,13 @@ export default async function ShopLayout({
 }) {
   // Buscar el companyId asociado al dominio
   const companyId = await getCurrentCompanyId();
+  const domain = await getCurrentDomain();
+  
+  const headersList = await headers();
+  const host = headersList.get('host') || headersList.get('x-forwarded-host');
+  const forwardedProto = headersList.get('x-forwarded-proto');
+  const protocol = forwardedProto || (process.env.NODE_ENV === 'production' ? 'https' : 'http');
+  const baseUrl = host ? `${protocol}://${host}` : 'https://misproductos.shop';
 
   // Si no hay companyId, verificar si debemos redirigir
   if (!companyId) {
@@ -215,6 +287,59 @@ export default async function ShopLayout({
           }
         `
       }} />
+      {company && (() => {
+        const logoUrl = company.logo 
+          ? (company.logo.startsWith('http') ? company.logo : `${baseUrl}${company.logo.startsWith('/') ? company.logo : `/logos/${company.logo}`}`)
+          : `${baseUrl}/oc_image.png`;
+        
+        const storeSchema = {
+          '@context': 'https://schema.org',
+          '@type': 'Store',
+          name: company.name,
+          url: baseUrl,
+          image: logoUrl,
+          description: `Tienda online de ${company.name} - Catálogo de productos en ${domain}`,
+          ...(company.address && {
+            address: {
+              '@type': 'PostalAddress',
+              addressLocality: company.address,
+            },
+          }),
+          ...(company.email && { email: company.email }),
+          ...(company.phone && { telephone: company.phone }),
+          potentialAction: {
+            '@type': 'SearchAction',
+            target: {
+              '@type': 'EntryPoint',
+              urlTemplate: `${baseUrl}/catalog?search={search_term_string}`,
+            },
+            'query-input': 'required name=search_term_string',
+          },
+        };
+
+        const organizationSchema = {
+          '@context': 'https://schema.org',
+          '@type': 'Organization',
+          name: company.name,
+          url: baseUrl,
+          logo: logoUrl,
+          ...(company.address && {
+            address: {
+              '@type': 'PostalAddress',
+              addressLocality: company.address,
+            },
+          }),
+          ...(company.email && { email: company.email }),
+          ...(company.phone && { telephone: company.phone }),
+        };
+
+        return (
+          <>
+            <StructuredData data={storeSchema} />
+            <StructuredData data={organizationSchema} />
+          </>
+        );
+      })()}
       <CompanyProvider company={company} />
       <ThemeProvider 
         primaryColor={primaryColor} 

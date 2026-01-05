@@ -4,22 +4,121 @@ import styles from './landing.module.css';
 import ContactForm from './ContactForm';
 import CalendlyButton from './CalendlyButton';
 import MobileNav from './MobileNav';
+import { StructuredData } from '@/components/seo/StructuredData';
 
 export const metadata: Metadata = {
   title: 'Misproductos | Catálogo online personalizable para vender',
   description: 'Crea tu catálogo online, acepta pagos y personaliza la experiencia de tus clientes con Misproductos. Lanzamos tu tienda en 48 horas.',
+  keywords: [
+    'misproductos',
+    'catálogo online',
+    'tienda online',
+    'ecommerce',
+    'vender online',
+    'plataforma ecommerce',
+    'tienda virtual',
+    'catálogo digital',
+    'misproductos.shop',
+    'subdominios',
+    'tienda personalizada',
+    'pagos online',
+    'catálogo personalizable',
+  ],
+  authors: [{ name: 'Misproductos' }],
+  creator: 'Misproductos',
+  publisher: 'Misproductos',
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
   openGraph: {
-    title: 'Misproductos | Catálogo online personalizable',
-    description: 'Autoadministrable, con pagos integrados y subdominios cliente.misproductos.shop.',
+    title: 'Misproductos | Catálogo online personalizable para vender',
+    description: 'Crea tu catálogo online, acepta pagos y personaliza la experiencia de tus clientes con Misproductos. Lanzamos tu tienda en 48 horas.',
     url: 'https://misproductos.shop/',
+    siteName: 'Misproductos',
     type: 'website',
-    images: ['https://via.placeholder.com/1200x630.png?text=Misproductos+OG'],
+    locale: 'es_ES',
+    images: [
+      {
+        url: 'https://misproductos.shop/oc_image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Misproductos - Catálogo online personalizable',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Misproductos | Catálogo online personalizable',
+    description: 'Crea tu catálogo online, acepta pagos y personaliza la experiencia de tus clientes con Misproductos.',
+    images: ['https://misproductos.shop/oc_image.png'],
+  },
+  alternates: {
+    canonical: 'https://misproductos.shop/',
   },
 };
 
 export default function LandingPage() {
+  const organizationSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'Misproductos',
+    url: 'https://misproductos.shop',
+    logo: 'https://misproductos.shop/logo.png',
+    description: 'Plataforma para crear catálogos online personalizables con pagos integrados',
+    sameAs: [
+      // Agregar redes sociales si las tienes
+    ],
+    contactPoint: {
+      '@type': 'ContactPoint',
+      contactType: 'customer service',
+      availableLanguage: ['Spanish'],
+    },
+  };
+
+  const websiteSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'Misproductos',
+    url: 'https://misproductos.shop',
+    description: 'Crea tu catálogo online, acepta pagos y personaliza la experiencia de tus clientes con Misproductos',
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: {
+        '@type': 'EntryPoint',
+        urlTemplate: 'https://misproductos.shop/catalog?search={search_term_string}',
+      },
+      'query-input': 'required name=search_term_string',
+    },
+  };
+
+  const softwareApplicationSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: 'Misproductos',
+    applicationCategory: 'ECommerce',
+    operatingSystem: 'Web',
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'USD',
+    },
+    description: 'Plataforma para crear catálogos online personalizables con pagos integrados y subdominios personalizados',
+  };
+
   return (
-    <div style={{ fontFamily: '"Poppins", system-ui, -apple-system, "Segoe UI", sans-serif', color: 'var(--color-text)', background: 'var(--color-bg)', lineHeight: '1.6', margin: 0 }}>
+    <>
+      <StructuredData data={organizationSchema} />
+      <StructuredData data={websiteSchema} />
+      <StructuredData data={softwareApplicationSchema} />
+      <div style={{ fontFamily: '"Poppins", system-ui, -apple-system, "Segoe UI", sans-serif', color: 'var(--color-text)', background: 'var(--color-bg)', lineHeight: '1.6', margin: 0 }}>
       <MobileNav>
         <header className={styles.header} aria-label="Barra de navegación principal">
           <div className={`${styles.container} ${styles.header__bar}`}>
@@ -441,6 +540,7 @@ export default function LandingPage() {
         </svg>
         <span className={styles.whatsappTooltip}>¿Necesitas ayuda? Escríbenos</span>
       </a>
-    </div>
+      </div>
+    </>
   );
 }

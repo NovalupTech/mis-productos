@@ -23,3 +23,4 @@ export { CoordinateWithSellerButton } from './ui/coordinate-with-seller/Coordina
 export { RequiredAttributesModal } from './ui/required-attributes-modal/RequiredAttributesModal';
 export { FloatingSocialButton } from './ui/floating-social-button/FloatingSocialButton';
 export { DiscountBadge } from './ui/discount-badge/DiscountBadge';
+export { StructuredData } from './seo/StructuredData';

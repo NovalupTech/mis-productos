@@ -7,13 +7,15 @@ import { ProductMobileSlideShow, ProductSlideShow, StockLabel, DiscountBadge } f
 import { getProductBySlug } from "@/actions/product/get-product-by-slug";
 import { titleFont } from "@/config/fonts";
 import { AddToCart } from "./ui/AddToCart";
-import { getCurrentCompanyId } from '@/lib/domain';
+import { getCurrentCompanyId, getCurrentDomain } from '@/lib/domain';
 import { getCompanyConfigPublic } from '@/actions';
 import { getPriceConfig, formatPrice } from '@/utils';
 import { PriceConfig } from "@/utils/priceFormat";
 import { ProductDiscountInfo } from "./ui/ProductDiscountInfo";
 import { BackToCatalogButton } from "./ui/BackToCatalogButton";
 import { ShareButton } from "./ui/ShareButton";
+import prisma from '@/lib/prisma';
+import { StructuredData } from '@/components/seo/StructuredData';
 
 interface Props {
   params: {
@@ -61,12 +63,42 @@ export async function generateMetadata(
     }
   }
 
+  // Obtener información de la compañía para keywords
+  const companyId = product.companyId;
+  const company = companyId ? await prisma.company.findUnique({
+    where: { id: companyId },
+    select: { name: true },
+  }) : null;
+
+  const domain = await getCurrentDomain();
+  const domainParts = domain.split('.');
+  const subdomain = domainParts.length > 2 ? domainParts[0] : null;
+  
+  const keywords = [
+    product.title,
+    product.code || '',
+    company?.name || '',
+    'misproductos',
+    domain,
+    ...(subdomain ? [`${subdomain} misproductos`] : []),
+    'producto',
+    'comprar online',
+    product.category?.name || '',
+  ].filter(Boolean);
+
+  const productDescription = product.description || `${product.title} - Compra online en ${domain}. Producto disponible en ${company?.name || 'nuestra tienda'}.`;
+
   return {
-    title: product.title,
-    description: product.description || product.title,
+    title: `${product.title} | ${company?.name || 'Tienda'} - Misproductos`,
+    description: productDescription,
+    keywords,
     openGraph: {
       title: product.title,
-      description: product.description || product.title,
+      description: productDescription,
+      url: `${baseUrl}/catalog/product/${product.slug}`,
+      siteName: company?.name || 'Tienda',
+      type: 'website',
+      locale: 'es_ES',
       images: imageUrl ? [
         {
           url: imageUrl,
@@ -75,13 +107,15 @@ export async function generateMetadata(
           alt: product.title,
         }
       ] : [],
-      type: 'website',
     },
     twitter: {
       card: 'summary_large_image',
       title: product.title,
-      description: product.description || product.title,
+      description: productDescription,
       images: imageUrl ? [imageUrl] : [],
+    },
+    alternates: {
+      canonical: `${baseUrl}/catalog/product/${product.slug}`,
     },
   }
 }
@@ -126,8 +160,59 @@ export default async function ProductPage({params}: {params: Promise<{slug: stri
   }
   const formattedPrice = formatPrice(product.price, priceConfig);
 
+  // Generar structured data para el producto
+  const headersList = await headers();
+  const host = headersList.get('host') || headersList.get('x-forwarded-host');
+  const forwardedProto = headersList.get('x-forwarded-proto');
+  const protocol = forwardedProto || (process.env.NODE_ENV === 'production' ? 'https' : 'http');
+  const baseUrl = host ? `${protocol}://${host}` : 'https://misproductos.shop';
+  const domain = await getCurrentDomain();
+
+  const company = companyId ? await prisma.company.findUnique({
+    where: { id: companyId },
+    select: {
+      name: true,
+      logo: true,
+    },
+  }) : null;
+
+  const productImage = product.images?.[0] || product.images?.[1];
+  const productImageUrl = productImage 
+    ? (productImage.startsWith('http') ? productImage : `${baseUrl}/products/${productImage}`)
+    : `${baseUrl}/products/no-image.webp`;
+
+  const productSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.title,
+    description: product.description || product.title,
+    image: product.images?.map(img => 
+      img.startsWith('http') ? img : `${baseUrl}/products/${img}`
+    ) || [productImageUrl],
+    sku: product.code || product.id,
+    brand: {
+      '@type': 'Brand',
+      name: company?.name || 'Tienda',
+    },
+    offers: {
+      '@type': 'Offer',
+      url: `${baseUrl}/catalog/product/${product.slug}`,
+      priceCurrency: priceConfig.currency || 'USD',
+      price: product.price.toString(),
+      availability: product.inStock > 0 
+        ? 'https://schema.org/InStock' 
+        : 'https://schema.org/OutOfStock',
+      itemCondition: 'https://schema.org/NewCondition',
+    },
+    ...(product.category && {
+      category: product.category.name,
+    }),
+  };
+
   return (
-    <div className="flex flex-col md:flex-row mt-10 mb-20 gap-4 md:gap-6 max-w-5xl mx-auto px-4">
+    <>
+      <StructuredData data={productSchema} />
+      <div className="flex flex-col md:flex-row mt-10 mb-20 gap-4 md:gap-6 max-w-5xl mx-auto px-4">
       {/* Botones para volver al catálogo y compartir - Mobile */}
       <div className="w-full md:hidden flex gap-2">
         <BackToCatalogButton />
@@ -168,6 +253,7 @@ export default async function ProductPage({params}: {params: Promise<{slug: stri
         <h3 className="font-bold text-sm">Descripcion</h3>
         <p className="font-light">{product.description}</p>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

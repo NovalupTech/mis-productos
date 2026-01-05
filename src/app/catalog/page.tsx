@@ -1,10 +1,68 @@
 export const revalidate = 60;
 
+import { Metadata } from 'next';
+import { headers } from 'next/headers';
 import { getPaginatedProductsWithImages, getCompanyConfigPublic } from "@/actions";
 import { Product } from "@/interfaces";
-import { getCurrentCompanyId } from '@/lib/domain';
+import { getCurrentCompanyId, getCurrentDomain } from '@/lib/domain';
 import { CatalogHeaderWrapper } from "./ui/CatalogHeaderWrapper";
 import { PriceConfig } from "@/utils";
+import prisma from '@/lib/prisma';
+import { StructuredData } from '@/components/seo/StructuredData';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const companyId = await getCurrentCompanyId();
+  const domain = await getCurrentDomain();
+  
+  const headersList = await headers();
+  const host = headersList.get('host') || headersList.get('x-forwarded-host');
+  const forwardedProto = headersList.get('x-forwarded-proto');
+  const protocol = forwardedProto || (process.env.NODE_ENV === 'production' ? 'https' : 'http');
+  const baseUrl = host ? `${protocol}://${host}` : 'https://misproductos.shop';
+
+  if (!companyId) {
+    return {
+      title: 'Catálogo - Misproductos',
+      description: 'Explora nuestro catálogo de productos online',
+    };
+  }
+
+  const company = await prisma.company.findUnique({
+    where: { id: companyId },
+    select: {
+      name: true,
+      logo: true,
+      address: true,
+    },
+  });
+
+  const domainParts = domain.split('.');
+  const subdomain = domainParts.length > 2 ? domainParts[0] : null;
+  const keywords = [
+    company?.name || 'tienda',
+    'misproductos',
+    domain,
+    ...(subdomain ? [`${subdomain} misproductos`, `${subdomain}.misproductos.shop`] : []),
+    'catálogo',
+    'productos',
+    'comprar online',
+  ];
+
+  const companyName = company?.name || 'Tienda';
+  const description = `Catálogo de productos de ${companyName}. Compra online en ${domain}.`;
+
+  return {
+    title: `Catálogo - ${companyName} | Misproductos`,
+    description,
+    keywords,
+    openGraph: {
+      title: `Catálogo - ${companyName}`,
+      description,
+      url: `${baseUrl}/catalog`,
+      type: 'website',
+    },
+  };
+}
 
 export default async function CatalogPage({ searchParams } :{searchParams: Promise<{page?: string, search?: string, [key: string]: string | undefined}>} & {params: Promise<{page?: string, search?: string}>}) {
 
@@ -64,8 +122,58 @@ export default async function CatalogPage({ searchParams } :{searchParams: Promi
     }
   }
 
+  // Generar structured data para SEO
+  const headersList = await headers();
+  const host = headersList.get('host') || headersList.get('x-forwarded-host');
+  const forwardedProto = headersList.get('x-forwarded-proto');
+  const protocol = forwardedProto || (process.env.NODE_ENV === 'production' ? 'https' : 'http');
+  const baseUrl = host ? `${protocol}://${host}` : 'https://misproductos.shop';
+
+  let structuredData = null;
+  if (companyId) {
+    const company = await prisma.company.findUnique({
+      where: { id: companyId },
+      select: {
+        name: true,
+        logo: true,
+        address: true,
+        email: true,
+        phone: true,
+      },
+    });
+
+    if (company) {
+      const domain = await getCurrentDomain();
+      structuredData = {
+        '@context': 'https://schema.org',
+        '@type': 'Store',
+        name: company.name,
+        url: baseUrl,
+        image: company.logo 
+          ? (company.logo.startsWith('http') ? company.logo : `${baseUrl}${company.logo.startsWith('/') ? company.logo : `/logos/${company.logo}`}`)
+          : `${baseUrl}/oc_image.png`,
+        description: `Tienda online de ${company.name} - Catálogo de productos en ${domain}`,
+        ...(company.address && { address: {
+          '@type': 'PostalAddress',
+          addressLocality: company.address,
+        }}),
+        ...(company.email && { email: company.email }),
+        ...(company.phone && { telephone: company.phone }),
+        potentialAction: {
+          '@type': 'SearchAction',
+          target: {
+            '@type': 'EntryPoint',
+            urlTemplate: `${baseUrl}/catalog?search={search_term_string}`,
+          },
+          'query-input': 'required name=search_term_string',
+        },
+      };
+    }
+  }
+
   return (
     <>
+      {structuredData && <StructuredData data={structuredData} />}
       <CatalogHeaderWrapper 
         tag={tagFilter} 
         search={searchQuery}
