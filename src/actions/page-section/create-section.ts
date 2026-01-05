@@ -66,7 +66,7 @@ export const createSection = async (data: CreateSectionData) => {
         type: data.type,
         position: newPosition,
         content: data.content as InputJsonValue,
-        config: data.config ? (data.config as InputJsonValue) : null,
+        config: data.config ? (data.config as InputJsonValue) : undefined as InputJsonValue | undefined,
         enabled: data.enabled ?? true,
       },
     });
