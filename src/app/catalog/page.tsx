@@ -122,7 +122,7 @@ export default async function CatalogPage({ searchParams } :{searchParams: Promi
     }
   }
 
-  // Generar structured data para SEO
+  // Generar structured data para SEO y obtener nombre de la compañía
   const headersList = await headers();
   const host = headersList.get('host') || headersList.get('x-forwarded-host');
   const forwardedProto = headersList.get('x-forwarded-proto');
@@ -130,6 +130,8 @@ export default async function CatalogPage({ searchParams } :{searchParams: Promi
   const baseUrl = host ? `${protocol}://${host}` : 'https://misproductos.shop';
 
   let structuredData = null;
+  let companyName: string | undefined = undefined;
+  
   if (companyId) {
     const company = await prisma.company.findUnique({
       where: { id: companyId },
@@ -143,6 +145,7 @@ export default async function CatalogPage({ searchParams } :{searchParams: Promi
     });
 
     if (company) {
+      companyName = company.name;
       const domain = await getCurrentDomain();
       structuredData = {
         '@context': 'https://schema.org',
@@ -185,6 +188,7 @@ export default async function CatalogPage({ searchParams } :{searchParams: Promi
         catalogColumns={columns}
         catalogImageSize={imageSize}
         catalogCentered={gridCentered}
+        companyName={companyName}
       />
     </>
   );

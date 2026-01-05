@@ -8,9 +8,10 @@ interface CatalogHeaderProps {
   search?: string;
   viewMode?: ViewMode;
   onViewChange?: (view: ViewMode) => void;
+  companyName?: string;
 }
 
-export const CatalogHeader = ({ tag, search, viewMode, onViewChange }: CatalogHeaderProps) => {
+export const CatalogHeader = ({ tag, search, viewMode, onViewChange, companyName }: CatalogHeaderProps) => {
   // Determinar el título a mostrar
   const getTitle = () => {
     if (tag) return `Productos con tag: ${tag}`;
@@ -20,6 +21,15 @@ export const CatalogHeader = ({ tag, search, viewMode, onViewChange }: CatalogHe
 
   return (
     <div className="mb-4">
+      {/* H1 con nombre de la compañía para SEO */}
+      {companyName && (
+        <h1 
+          className="text-2xl font-bold pl-4 sm:pl-0 mt-3 mb-2"
+          style={{ color: 'var(--theme-primary-text-color)' }}
+        >
+          {companyName}
+        </h1>
+      )}
       <div className="flex items-center justify-between mt-3">
         {/* Título y botón de remover tag */}
         <div className="flex items-center gap-2 flex-1">

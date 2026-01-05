@@ -17,6 +17,7 @@ interface CatalogHeaderWrapperProps {
   catalogColumns?: number;
   catalogImageSize?: 'small' | 'medium' | 'large';
   catalogCentered?: boolean;
+  companyName?: string;
 }
 
 export const CatalogHeaderWrapper = ({
@@ -30,6 +31,7 @@ export const CatalogHeaderWrapper = ({
   catalogColumns,
   catalogImageSize,
   catalogCentered,
+  companyName,
 }: CatalogHeaderWrapperProps) => {
   const { viewMode, setViewMode } = useCatalogViewStore();
 
@@ -44,6 +46,7 @@ export const CatalogHeaderWrapper = ({
         search={search}
         viewMode={viewMode}
         onViewChange={handleViewChange}
+        companyName={companyName}
       />
       <InfiniteScrollProducts
         initialProducts={initialProducts}
