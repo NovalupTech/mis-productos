@@ -6,3 +6,4 @@ export { FeaturesSection } from './FeaturesSection';
 export { GallerySection } from './GallerySection';
 export { CTASection } from './CTASection';
 export { MapSection } from './MapSection';
+export { SliderSection } from './SliderSection';

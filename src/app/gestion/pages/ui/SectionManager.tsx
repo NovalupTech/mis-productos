@@ -10,7 +10,7 @@ import { confirmDelete } from '@/utils/confirm';
 
 interface PageSection {
   id: string;
-  type: 'HERO' | 'BANNER' | 'TEXT' | 'IMAGE' | 'FEATURES' | 'GALLERY' | 'CTA' | 'MAP';
+  type: 'HERO' | 'BANNER' | 'TEXT' | 'IMAGE' | 'FEATURES' | 'GALLERY' | 'CTA' | 'MAP' | 'SLIDER';
   position: number;
   enabled: boolean;
   content: Record<string, unknown>;

@@ -8,9 +8,10 @@ import { InputJsonValue } from '@prisma/client/runtime/client';
 
 interface CreateSectionData {
   pageId: string;
-  type: 'HERO' | 'BANNER' | 'TEXT' | 'IMAGE' | 'FEATURES' | 'GALLERY' | 'CTA' | 'MAP';
+  type: 'HERO' | 'BANNER' | 'TEXT' | 'IMAGE' | 'FEATURES' | 'GALLERY' | 'CTA' | 'MAP' | 'SLIDER';
   position: number;
   content: Record<string, unknown>;
+  config?: Record<string, unknown>;
   enabled?: boolean;
 }
 
@@ -65,6 +66,7 @@ export const createSection = async (data: CreateSectionData) => {
         type: data.type,
         position: newPosition,
         content: data.content as InputJsonValue,
+        config: data.config ? (data.config as InputJsonValue) : null,
         enabled: data.enabled ?? true,
       },
     });

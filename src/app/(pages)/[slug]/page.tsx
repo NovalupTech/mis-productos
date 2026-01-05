@@ -10,6 +10,7 @@ import {
   GallerySection,
   CTASection,
   MapSection,
+  SliderSection,
 } from '@/components/page-sections';
 
 interface PageProps {
@@ -89,6 +90,8 @@ export default async function DynamicPage({ params }: PageProps) {
                 return <CTASection key={section.id} content={content} />;
               case 'MAP':
                 return <MapSection key={section.id} content={content} />;
+              case 'SLIDER':
+                return <SliderSection key={section.id} content={content} config={section.config as Record<string, unknown> | null} />;
               default:
                 return null;
             }

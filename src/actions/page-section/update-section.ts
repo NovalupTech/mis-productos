@@ -8,9 +8,10 @@ import { InputJsonValue } from '@prisma/client/runtime/client';
 
 interface UpdateSectionData {
   sectionId: string;
-  type?: 'HERO' | 'BANNER' | 'TEXT' | 'IMAGE' | 'FEATURES' | 'GALLERY' | 'CTA' | 'MAP';
+  type?: 'HERO' | 'BANNER' | 'TEXT' | 'IMAGE' | 'FEATURES' | 'GALLERY' | 'CTA' | 'MAP' | 'SLIDER';
   position?: number;
   content?: Record<string, unknown>;
+  config?: Record<string, unknown> | null;
   enabled?: boolean;
 }
 
@@ -55,17 +56,20 @@ export const updateSection = async (data: UpdateSectionData) => {
     }
 
     // Actualizar la sección
-    const updateData: Partial<UpdateSectionData> = {};
+    const updateData: Record<string, unknown> = {};
     if (data.type !== undefined) updateData.type = data.type;
     if (data.position !== undefined) updateData.position = data.position;
-    if (data.content !== undefined) updateData.content = data.content as unknown as Record<string, unknown>;
+    if (data.content !== undefined) updateData.content = data.content as InputJsonValue;
+    if (data.config !== undefined) {
+      updateData.config = data.config ? (data.config as InputJsonValue) : null;
+    }
     if (data.enabled !== undefined) updateData.enabled = data.enabled;
 
     await prisma.pageSection.update({
       where: {
         id: data.sectionId,
       },
-      data: updateData as unknown as Record<string, unknown>,
+      data: updateData,
     });
 
     revalidatePath('/gestion/pages');

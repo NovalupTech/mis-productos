@@ -39,6 +39,7 @@ enum SectionType {
   GALLERY
   CTA
   MAP
+  SLIDER
 }
 
 enum SocialType {
@@ -442,6 +443,7 @@ model PageSection {
   type     SectionType
   position Int
   content  Json
+  config   Json?
   enabled  Boolean     @default(true)
 
   createdAt DateTime @default(now())

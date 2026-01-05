@@ -2,17 +2,18 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { createSection, updateSection, uploadPageImage } from '@/actions';
-import { IoCloseOutline, IoCloudUploadOutline, IoImageOutline } from 'react-icons/io5';
+import { IoCloseOutline, IoCloudUploadOutline, IoImageOutline, IoArrowUpOutline, IoArrowDownOutline } from 'react-icons/io5';
 import Image from 'next/image';
 import { showErrorToast } from '@/utils/toast';
 import clsx from 'clsx';
 
 interface PageSection {
   id: string;
-  type: 'HERO' | 'BANNER' | 'TEXT' | 'IMAGE' | 'FEATURES' | 'GALLERY' | 'CTA' | 'MAP';
+  type: 'HERO' | 'BANNER' | 'TEXT' | 'IMAGE' | 'FEATURES' | 'GALLERY' | 'CTA' | 'MAP' | 'SLIDER';
   position: number;
   enabled: boolean;
   content: Record<string, unknown>;
+  config?: Record<string, unknown> | null;
 }
 
 interface Props {
@@ -32,6 +33,7 @@ const SECTION_TYPES: Array<{ value: PageSection['type']; label: string }> = [
   { value: 'GALLERY', label: 'Galería' },
   { value: 'CTA', label: 'Llamado a la Acción' },
   { value: 'MAP', label: 'Mapa' },
+  { value: 'SLIDER', label: 'Slider' },
 ];
 
 // Configuración de campos por tipo de sección
@@ -78,6 +80,9 @@ const SECTION_FIELDS: Record<PageSection['type'], Array<{ key: string; label: st
     { key: 'width', label: 'Ancho (ej: 100%, 800px)', type: 'text' },
     { key: 'height', label: 'Alto (ej: 400px, 600px)', type: 'text' },
   ],
+  SLIDER: [
+    { key: 'images', label: 'Imágenes del Slider', type: 'textarea' },
+  ],
 };
 
 export const SectionFormModal = ({ isOpen, onClose, onSuccess, pageId, editingSection }: Props) => {
@@ -85,19 +90,24 @@ export const SectionFormModal = ({ isOpen, onClose, onSuccess, pageId, editingSe
     type: PageSection['type'];
     enabled: boolean;
     content: Record<string, string>;
+    config?: Record<string, string>;
   }>({
-    type: 'TEXT',
+    type: 'TEXT' as PageSection['type'],
     enabled: true,
     content: {},
+    config: {},
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [imageUploadMode, setImageUploadMode] = useState<'url' | 'upload'>('url');
   const [galleryUploadMode, setGalleryUploadMode] = useState<'url' | 'upload'>('url');
+  const [sliderUploadMode, setSliderUploadMode] = useState<'url' | 'upload'>('url');
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadingGallery, setUploadingGallery] = useState(false);
+  const [uploadingSlider, setUploadingSlider] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const galleryFileInputRef = useRef<HTMLInputElement>(null);
+  const sliderFileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (editingSection) {
@@ -110,16 +120,50 @@ export const SectionFormModal = ({ isOpen, onClose, onSuccess, pageId, editingSe
         // Convertir array a string separado por comas para mejor UX
         content.images = (content.images as string[]).join(', ');
       }
+      if (editingSection.type === 'SLIDER' && Array.isArray(content.images)) {
+        // Para SLIDER, convertir a formato de objetos con url, link, openInNewTab
+        const sliderImages = content.images.map((item) => {
+          if (typeof item === 'string') {
+            return { url: item };
+          } else if (typeof item === 'object' && item !== null) {
+            const img = item as Record<string, unknown>;
+            return {
+              url: (img.url as string) || '',
+              link: img.link as string | undefined,
+              openInNewTab: img.openInNewTab === true || img.openInNewTab === 'true',
+            };
+          }
+          return { url: '' };
+        }).filter(img => img.url);
+        content.images = JSON.stringify(sliderImages);
+      }
       // Asegurar valores por defecto para colores en BANNER
       if (editingSection.type === 'BANNER') {
         if (!content.backgroundColor) content.backgroundColor = '#3B82F6';
         if (!content.textColor) content.textColor = '#FFFFFF';
       }
       
+      // Inicializar config si existe, con valores por defecto para SLIDER
+      let config: Record<string, string> = {};
+      if (editingSection.config) {
+        const rawConfig = editingSection.config as Record<string, unknown>;
+        // Convertir todos los valores a string para el formulario
+        config = Object.entries(rawConfig).reduce((acc, [key, value]) => {
+          if (value !== null && value !== undefined) {
+            acc[key] = String(value);
+          }
+          return acc;
+        }, {} as Record<string, string>);
+      } else if (editingSection.type === 'SLIDER') {
+        // Si es SLIDER y no hay config, usar valores por defecto
+        config = { width: '100%', height: '400px', transitionTime: '5' };
+      }
+      
       setFormData({
         type: editingSection.type,
         enabled: editingSection.enabled,
         content: content as Record<string, string>,
+        config,
       });
       
       // Establecer el modo de imagen según si ya hay una imagen
@@ -130,9 +174,14 @@ export const SectionFormModal = ({ isOpen, onClose, onSuccess, pageId, editingSe
       if (editingSection.type === 'GALLERY' && content.images) {
         setGalleryUploadMode('url');
       }
+      // Establecer el modo de slider según si ya hay imágenes
+      if (editingSection.type === 'SLIDER' && content.images) {
+        setSliderUploadMode('url');
+      }
     } else {
       setFormData({
         type: 'TEXT',
+        config: {},
         enabled: true,
         content: {},
       });
@@ -182,11 +231,55 @@ export const SectionFormModal = ({ isOpen, onClose, onSuccess, pageId, editingSe
         }
       }
 
+      if (formData.type === 'SLIDER' && processedContent.images) {
+        try {
+          // Para SLIDER, parsear y normalizar a formato de objetos
+          const parsed = JSON.parse(processedContent.images as string);
+          if (!Array.isArray(parsed)) {
+            throw new Error('Debe ser un array');
+          }
+          if (parsed.length === 0) {
+            setError('Debes ingresar al menos una imagen');
+            setLoading(false);
+            return;
+          }
+          // Normalizar a formato de objetos con url, link, openInNewTab
+          processedContent.images = parsed.map((item) => {
+            if (typeof item === 'string') {
+              return { url: item };
+            } else if (typeof item === 'object' && item !== null) {
+              const img = item as Record<string, unknown>;
+              return {
+                url: (img.url as string) || '',
+                link: img.link as string | undefined,
+                openInNewTab: img.openInNewTab === true || img.openInNewTab === 'true',
+              };
+            }
+            return { url: '' };
+          }).filter(img => img.url) as unknown;
+        } catch {
+          setError('El campo "Imágenes del Slider" debe ser un array JSON válido');
+          setLoading(false);
+          return;
+        }
+      }
+
+      // Preparar config para SLIDER (ya no necesita link y openInNewTab globales)
+      let processedConfig: Record<string, unknown> | undefined = undefined;
+      if (formData.type === 'SLIDER' && formData.config) {
+        processedConfig = {
+          width: formData.config.width || '100%',
+          height: formData.config.height || '400px',
+          transitionTime: formData.config.transitionTime || '5',
+        };
+      }
+
       if (editingSection) {
         const result = await updateSection({
           sectionId: editingSection.id,
           type: formData.type,
           content: processedContent,
+          config: processedConfig,
           enabled: formData.enabled,
         });
         
@@ -201,6 +294,7 @@ export const SectionFormModal = ({ isOpen, onClose, onSuccess, pageId, editingSe
           type: formData.type,
           position: 0, // Se calculará automáticamente
           content: processedContent,
+          config: processedConfig,
           enabled: formData.enabled,
         });
         
@@ -220,13 +314,15 @@ export const SectionFormModal = ({ isOpen, onClose, onSuccess, pageId, editingSe
   const handleClose = () => {
     if (!loading) {
       setFormData({
-        type: 'TEXT',
+        type: 'TEXT' as PageSection['type'],
         enabled: true,
         content: {},
+        config: {},
       });
       setError(null);
       setImageUploadMode('url');
       setGalleryUploadMode('url');
+      setSliderUploadMode('url');
       onClose();
     }
   };
@@ -271,14 +367,27 @@ export const SectionFormModal = ({ isOpen, onClose, onSuccess, pageId, editingSe
       return;
     }
 
+    // Validar tamaño de archivos antes de subir (máximo 5MB por imagen)
+    const maxSizePerImage = 5 * 1024 * 1024; // 5MB
+    const oversizedFiles = imageFiles.filter(file => file.size > maxSizePerImage);
+    if (oversizedFiles.length > 0) {
+      showErrorToast(`Algunas imágenes exceden el tamaño máximo de 5MB por imagen`);
+      return;
+    }
+
     setUploadingGallery(true);
     try {
-      const uploadPromises = imageFiles.map(file => uploadPageImage(file));
-      const results = await Promise.all(uploadPromises);
+      // Subir imágenes de forma secuencial para evitar problemas de tamaño
+      const uploadedUrls: string[] = [];
       
-      const uploadedUrls = results
-        .filter(result => result.ok && result.url)
-        .map(result => result.url!);
+      for (const file of imageFiles) {
+        const result = await uploadPageImage(file);
+        if (result.ok && result.url) {
+          uploadedUrls.push(result.url);
+        } else {
+          showErrorToast(`Error al subir ${file.name}: ${result.message || 'Error desconocido'}`);
+        }
+      }
       
       if (uploadedUrls.length === 0) {
         showErrorToast('No se pudieron subir las imágenes');
@@ -308,6 +417,10 @@ export const SectionFormModal = ({ isOpen, onClose, onSuccess, pageId, editingSe
       });
       
       setGalleryUploadMode('url');
+      
+      if (uploadedUrls.length < imageFiles.length) {
+        showErrorToast(`Se subieron ${uploadedUrls.length} de ${imageFiles.length} imágenes`);
+      }
     } catch (err) {
       showErrorToast('Error al subir las imágenes');
     } finally {
@@ -319,6 +432,144 @@ export const SectionFormModal = ({ isOpen, onClose, onSuccess, pageId, editingSe
     const files = e.target.files;
     if (files && files.length > 0) {
       handleGalleryImagesUpload(files);
+    }
+  };
+
+  const handleSliderImagesUpload = async (files: FileList) => {
+    const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
+    
+    if (imageFiles.length === 0) {
+      showErrorToast('Debes seleccionar al menos una imagen');
+      return;
+    }
+
+    // Validar tamaño de archivos antes de subir (máximo 5MB por imagen)
+    const maxSizePerImage = 5 * 1024 * 1024; // 5MB
+    const oversizedFiles = imageFiles.filter(file => file.size > maxSizePerImage);
+    if (oversizedFiles.length > 0) {
+      showErrorToast(`Algunas imágenes exceden el tamaño máximo de 5MB por imagen`);
+      return;
+    }
+
+    setUploadingSlider(true);
+    try {
+      // Subir imágenes de forma secuencial para evitar problemas de tamaño
+      const uploadedUrls: string[] = [];
+      
+      for (const file of imageFiles) {
+        const result = await uploadPageImage(file);
+        if (result.ok && result.url) {
+          uploadedUrls.push(result.url);
+        } else {
+          showErrorToast(`Error al subir ${file.name}: ${result.message || 'Error desconocido'}`);
+        }
+      }
+      
+      if (uploadedUrls.length === 0) {
+        showErrorToast('No se pudieron subir las imágenes');
+        return;
+      }
+
+      // Obtener las imágenes existentes
+      const currentImages = formData.content.images || '';
+      const existingImages = parseSliderImages(currentImages);
+      
+      // Convertir nuevas URLs a formato de objetos
+      const newImages = uploadedUrls.map(url => ({ url }));
+      
+      // Combinar imágenes existentes con las nuevas
+      const allImages = [...existingImages, ...newImages];
+      
+      setFormData({
+        ...formData,
+        content: { ...formData.content, images: JSON.stringify(allImages) },
+      });
+      
+      setSliderUploadMode('url');
+      
+      if (uploadedUrls.length < imageFiles.length) {
+        showErrorToast(`Se subieron ${uploadedUrls.length} de ${imageFiles.length} imágenes`);
+      }
+    } catch (err) {
+      showErrorToast('Error al subir las imágenes');
+    } finally {
+      setUploadingSlider(false);
+    }
+  };
+
+  const handleSliderFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      handleSliderImagesUpload(files);
+    }
+  };
+
+  // Función auxiliar para parsear imágenes del slider (soporta formato antiguo y nuevo)
+  const parseSliderImages = (imagesValue: string): Array<{ url: string; link?: string; openInNewTab?: boolean }> => {
+    if (!imagesValue) return [];
+    try {
+      const parsed = JSON.parse(imagesValue);
+      if (!Array.isArray(parsed)) return [];
+      
+      return parsed.map((item) => {
+        if (typeof item === 'string') {
+          // Formato antiguo: solo URL
+          return { url: item };
+        } else if (typeof item === 'object' && item !== null) {
+          // Formato nuevo: objeto con url, link, openInNewTab
+          const img = item as Record<string, unknown>;
+          return {
+            url: (img.url as string) || '',
+            link: img.link as string | undefined,
+            openInNewTab: img.openInNewTab === true || img.openInNewTab === 'true',
+          };
+        }
+        return { url: '' };
+      }).filter(img => img.url);
+    } catch {
+      return [];
+    }
+  };
+
+  const moveSliderImage = (index: number, direction: 'up' | 'down') => {
+    const currentImages = formData.content.images || '';
+    const imageData = parseSliderImages(currentImages);
+
+    if (direction === 'up' && index > 0) {
+      [imageData[index - 1], imageData[index]] = [imageData[index], imageData[index - 1]];
+    } else if (direction === 'down' && index < imageData.length - 1) {
+      [imageData[index], imageData[index + 1]] = [imageData[index + 1], imageData[index]];
+    }
+
+    setFormData({
+      ...formData,
+      content: { ...formData.content, images: JSON.stringify(imageData) },
+    });
+  };
+
+  const updateSliderImageLink = (index: number, link: string) => {
+    const currentImages = formData.content.images || '';
+    const imageData = parseSliderImages(currentImages);
+    
+    if (imageData[index]) {
+      imageData[index].link = link || undefined;
+      setFormData({
+        ...formData,
+        content: { ...formData.content, images: JSON.stringify(imageData) },
+      });
+    }
+  };
+
+  const updateSliderImageOpenInNewTab = (index: number, openInNewTab: boolean) => {
+    const currentImages = formData.content.images || '';
+    const imageData = parseSliderImages(currentImages);
+    
+    if (imageData[index]) {
+      imageData[index].openInNewTab = openInNewTab;
+      setFormData({
+        ...formData,
+        content: { ...formData.content, images: JSON.stringify(imageData) },
+      });
     }
   };
 
@@ -357,13 +608,16 @@ export const SectionFormModal = ({ isOpen, onClose, onSuccess, pageId, editingSe
               <select
                 value={formData.type}
                 onChange={(e) => {
+                  const newType = e.target.value as PageSection['type'];
                   setFormData({
                     ...formData,
-                    type: e.target.value as PageSection['type'],
+                    type: newType,
                     content: {}, // Limpiar contenido al cambiar tipo
+                    config: newType === 'SLIDER' ? { width: '100%', height: '400px', transitionTime: '5' } : {}, // Inicializar config para SLIDER
                   });
                   setImageUploadMode('url'); // Resetear modo de imagen al cambiar tipo
                   setGalleryUploadMode('url'); // Resetear modo de galería al cambiar tipo
+                  setSliderUploadMode('url'); // Resetear modo de slider al cambiar tipo
                 }}
                 disabled={loading || !!editingSection}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
@@ -385,6 +639,7 @@ export const SectionFormModal = ({ isOpen, onClose, onSuccess, pageId, editingSe
               const value = formData.content[field.key] || (field.type === 'color' ? '#3B82F6' : '');
               const isImageField = (formData.type === 'HERO' || formData.type === 'IMAGE') && field.key === 'image';
               const isGalleryField = formData.type === 'GALLERY' && field.key === 'images';
+              const isSliderField = formData.type === 'SLIDER' && field.key === 'images';
 
               return (
                 <div key={field.key}>
@@ -600,6 +855,184 @@ export const SectionFormModal = ({ isOpen, onClose, onSuccess, pageId, editingSe
                         <p className="text-sm text-blue-600">Subiendo imágenes...</p>
                       )}
                     </div>
+                  ) : isSliderField ? (
+                    <div className="space-y-3">
+                      {/* Selector de modo */}
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setSliderUploadMode('url')}
+                          disabled={loading || uploadingSlider}
+                          className={clsx(
+                            'flex-1 px-3 py-2 text-sm border rounded-md transition-colors',
+                            sliderUploadMode === 'url'
+                              ? 'bg-blue-50 border-blue-500 text-blue-700'
+                              : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                          )}
+                        >
+                          <IoImageOutline className="inline mr-2" size={16} />
+                          Usar URLs
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSliderUploadMode('upload');
+                            sliderFileInputRef.current?.click();
+                          }}
+                          disabled={loading || uploadingSlider}
+                          className={clsx(
+                            'flex-1 px-3 py-2 text-sm border rounded-md transition-colors',
+                            sliderUploadMode === 'upload'
+                              ? 'bg-blue-50 border-blue-500 text-blue-700'
+                              : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                          )}
+                        >
+                          <IoCloudUploadOutline className="inline mr-2" size={16} />
+                          Subir Imágenes
+                        </button>
+                      </div>
+
+                      {/* Input de URLs separadas por coma */}
+                      {sliderUploadMode === 'url' && (
+                        <div>
+                          <textarea
+                            value={value}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                content: { ...formData.content, [field.key]: e.target.value },
+                              })
+                            }
+                            disabled={loading || uploadingSlider}
+                            rows={4}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                            placeholder='["https://ejemplo.com/imagen1.jpg", "https://ejemplo.com/imagen2.jpg"]'
+                          />
+                          <p className="mt-1 text-xs text-gray-500">
+                            Ingresa las URLs como un array JSON. Puedes reordenar las imágenes usando los botones de arriba/abajo en el preview.
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Input de archivos múltiples */}
+                      <input
+                        ref={sliderFileInputRef}
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={handleSliderFileChange}
+                        disabled={loading || uploadingSlider}
+                        className="hidden"
+                      />
+
+                      {/* Preview de imágenes con controles de orden y configuración de enlaces */}
+                      {(() => {
+                        const imageData = parseSliderImages(value);
+                        
+                        return imageData.length > 0 ? (
+                          <div className="space-y-3">
+                            <p className="text-xs text-gray-600 font-medium mb-1">
+                              Arrastra o usa los botones para reordenar las imágenes. Configura un enlace para cada imagen:
+                            </p>
+                            {imageData.map((img, index) => (
+                              <div
+                                key={index}
+                                className="relative p-3 border border-gray-300 rounded-md bg-gray-50 space-y-2"
+                              >
+                                <div className="flex items-start gap-2">
+                                  <div className="flex flex-col gap-1 pt-1">
+                                    <button
+                                      type="button"
+                                      onClick={() => moveSliderImage(index, 'up')}
+                                      disabled={index === 0 || loading}
+                                      className="p-1 text-gray-600 hover:text-gray-900 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                      title="Mover arriba"
+                                    >
+                                      <IoArrowUpOutline size={16} />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => moveSliderImage(index, 'down')}
+                                      disabled={index === imageData.length - 1 || loading}
+                                      className="p-1 text-gray-600 hover:text-gray-900 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                      title="Mover abajo"
+                                    >
+                                      <IoArrowDownOutline size={16} />
+                                    </button>
+                                  </div>
+                                  <div className="relative flex-1 h-24 border border-gray-300 rounded-md overflow-hidden bg-white">
+                                    <Image
+                                      src={img.url}
+                                      alt={`Slider ${index + 1}`}
+                                      fill
+                                      className="object-cover"
+                                      onError={() => {
+                                        // Si la imagen no se puede cargar, no hacer nada
+                                      }}
+                                    />
+                                  </div>
+                                  <div className="flex items-start gap-1 pt-1">
+                                    <span className="text-xs text-gray-500 font-medium">
+                                      #{index + 1}
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const updatedImages = imageData.filter((_, i) => i !== index);
+                                        setFormData({
+                                          ...formData,
+                                          content: {
+                                            ...formData.content,
+                                            [field.key]: updatedImages.length > 0 ? JSON.stringify(updatedImages) : '',
+                                          },
+                                        });
+                                      }}
+                                      className="p-1 text-red-500 hover:text-red-700 transition-colors"
+                                      title="Eliminar imagen"
+                                    >
+                                      <IoCloseOutline size={18} />
+                                    </button>
+                                  </div>
+                                </div>
+                                <div className="space-y-2 pl-8">
+                                  <div>
+                                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                                      Enlace (opcional)
+                                    </label>
+                                    <input
+                                      type="url"
+                                      value={img.link || ''}
+                                      onChange={(e) => updateSliderImageLink(index, e.target.value)}
+                                      disabled={loading}
+                                      className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                                      placeholder="https://ejemplo.com"
+                                    />
+                                  </div>
+                                  {img.link && (
+                                    <div className="flex items-center gap-2">
+                                      <label className="flex items-center gap-2">
+                                        <input
+                                          type="checkbox"
+                                          checked={img.openInNewTab || false}
+                                          onChange={(e) => updateSliderImageOpenInNewTab(index, e.target.checked)}
+                                          disabled={loading}
+                                          className="w-3 h-3 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                        />
+                                        <span className="text-xs text-gray-700">Abrir en nueva pestaña</span>
+                                      </label>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : null;
+                      })()}
+
+                      {uploadingSlider && (
+                        <p className="text-sm text-blue-600">Subiendo imágenes...</p>
+                      )}
+                    </div>
                   ) : field.type === 'textarea' ? (
                     <textarea
                       value={value}
@@ -666,6 +1099,90 @@ export const SectionFormModal = ({ isOpen, onClose, onSuccess, pageId, editingSe
                 </div>
               );
             })}
+
+            {/* Campos de configuración para SLIDER */}
+            {formData.type === 'SLIDER' && (
+              <div className="space-y-4 pt-4 border-t border-gray-200">
+                <h3 className="text-sm font-semibold text-gray-700">Configuración del Slider</h3>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Ancho de las Imágenes
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.config?.width || '100%'}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        config: {
+                          ...formData.config,
+                          width: e.target.value,
+                        },
+                      })
+                    }
+                    disabled={loading}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                    placeholder="100%"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Ejemplos: 100%, 800px, 50vw
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Alto de las Imágenes
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.config?.height || '400px'}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        config: {
+                          ...formData.config,
+                          height: e.target.value,
+                        },
+                      })
+                    }
+                    disabled={loading}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                    placeholder="400px"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Ejemplos: 400px, 600px, 50vh
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Tiempo de Transición (segundos)
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    step="0.5"
+                    value={formData.config?.transitionTime || '5'}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        config: {
+                          ...formData.config,
+                          transitionTime: e.target.value,
+                        },
+                      })
+                    }
+                    disabled={loading}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                    placeholder="5"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Tiempo en segundos entre cada transición automática del slider
+                  </p>
+                </div>
+                <p className="text-xs text-gray-500 italic">
+                  💡 Puedes configurar un enlace individual para cada imagen en el preview de arriba
+                </p>
+              </div>
+            )}
 
             <div className="flex items-center gap-2">
               <label className="flex items-center gap-2">

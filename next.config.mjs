@@ -31,9 +31,9 @@ const nextConfig = {
     productionBrowserSourceMaps: false,
     // Configuración de Turbopack (Next.js 16 usa Turbopack por defecto)
     turbopack: {},
-    // Aumentar el límite de tamaño del body para Server Actions (10MB)
+    // Aumentar el límite de tamaño del body para Server Actions (50MB para múltiples imágenes)
     serverActions: {
-        bodySizeLimit: '10mb',
+        bodySizeLimit: '50mb',
     },
 };
 
