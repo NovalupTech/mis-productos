@@ -158,12 +158,12 @@ export default function LandingPage() {
           <div className={`${styles.container} ${styles.hero__grid}`}>
             <div className={styles.hero__text}>
               <p className={styles.pill}>Catálogo personalizable</p>
-              <h1>Vende por WhatsApp en minutos sin configurar tiendas complejas.</h1>
+              <h1>Catálogos y pedidos para mayoristas y distribuidores. Menos errores. Más ventas.</h1>
               <b>Tu catálogo + pagos + contacto listo hoy.</b>
               <p className={styles.lead}>Misproductos: catálogos autoadministrables, precios, categorías y descuentos en segundos, pagos integrados y subdominio para tu empresa. Soporte por whatsapp constante.</p>
               <div className={styles.hero__actions}>
                 <CalendlyButton className={`${styles.button} ${styles.buttonPrimary}`}>Crear mi catálogo ahora</CalendlyButton>
-                <a className={`${styles.button} ${styles.buttonGhost}`} href="#galeria">Empezá a vender hoy</a>
+                <a className={`${styles.button} ${styles.buttonGhost}`} href="#galeria">Potenciá tus ventas hoy</a>
               </div>
             </div>
             <div className={styles.hero__media}>
@@ -515,12 +515,12 @@ export default function LandingPage() {
         <section className={styles.cta} id="cta-final">
           <div className={`${styles.container} ${styles.cta__box}`}>
             <div>
-              <h2>Agendá una reunión y empezá a vender hoy</h2>
+              <h2>Agendá una reunión y Potenciá tus ventas hoy. Sin cobros ni tarjetas de crédito.</h2>
               <p>¿Listo para vender? Hacemos todo en 48h.</p>
             </div>
             <div className={styles.cta__actions}>
               <CalendlyButton className={`${styles.button} ${styles.buttonPrimary}`}>Crear mi catálogo ahora</CalendlyButton>
-              <a className={`${styles.button} ${styles.buttonGhost}`} target="_blank" rel="noopener noreferrer" href="https://wa.me/5491163717386?text=Hola%2C%20quiero%20m%C3%A1s%20informaci%C3%B3n%20sobre%20Misproductos">Empezá a vender hoy</a>
+              <a className={`${styles.button} ${styles.buttonGhost}`} target="_blank" rel="noopener noreferrer" href="https://wa.me/5491163717386?text=Hola%2C%20quiero%20m%C3%A1s%20informaci%C3%B3n%20sobre%20Misproductos">Potenciá tus ventas hoy</a>
             </div>
           </div>
         </section>
